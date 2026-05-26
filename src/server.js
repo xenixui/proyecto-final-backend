@@ -1,18 +1,22 @@
-const express = require("express");
-const sequelize = require("./config/database");
+require('dotenv').config();
+const app = require('./app');
+const sequelize = require('./config/database');
+require('./models');
 
-const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+async function startServer() {
+  try {
+    await sequelize.authenticate();
+    console.log('Conectado a MySQL');
 
-sequelize.authenticate()
-  .then(() => {
-    console.log("Conectado a MySQL");
-  })
-  .catch(err => {
-    console.error("Error conexión BD:", err);
-  });
+    app.listen(PORT, () => {
+      console.log(`Servidor corriendo en puerto ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error conexión BD:', error);
+    process.exit(1);
+  }
+}
 
-app.listen(3000, () => {
-  console.log("Servidor corriendo en puerto 3000");
-});
+startServer();
