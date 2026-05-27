@@ -50,6 +50,30 @@ async function changePassword(req, res, next) {
 
   } catch (error) {
     next(error);
+
+  }
+}
+
+// Recuperación de contraseña
+const passwordService = require('../services/passwordService');
+
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+    const result = await passwordService.requestPasswordReset(email);
+    return res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resetPassword(req, res, next) {
+  try {
+    const { token, newPassword } = req.body;
+    const result = await passwordService.resetPassword(token, newPassword);
+    return res.json(result);
+  } catch (error) {
+    next(error);
   }
 }
 
@@ -59,4 +83,6 @@ module.exports = {
   me,
   logout,
   changePassword,
+  forgotPassword,
+  resetPassword,
 };
