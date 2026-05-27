@@ -1,7 +1,5 @@
 ---
 
-## Endpoints principales para el frontend
-
 ### Registro de usuario
 POST `/api/auth/register`
 **Body:**
