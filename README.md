@@ -1,4 +1,3 @@
----
 
 ### Registro de usuario
 POST `/api/auth/register`
@@ -65,7 +64,6 @@ POST `/api/auth/logout`
 **Descripción:**
 Finaliza la sesión en el backend. El cliente debe eliminar el token localmente (por ejemplo, del localStorage o cookies). No es necesario hacer nada más en el backend, ya que el token es stateless.
 
----
 # Proyecto Final Backend
 
 ## Pasos para ejecutar el proyecto
