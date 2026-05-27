@@ -1,3 +1,65 @@
+---
+
+## Endpoints principales para el frontend
+
+### Registro de usuario
+POST `/api/auth/register`
+**Body:**
+```json
+{
+   "email": "usuario@dominio.com",
+   "password": "contraseña",
+   "username": "nombre_usuario"
+}
+```
+
+### Login
+POST `/api/auth/login`
+**Body:**
+```json
+{
+   "email": "usuario@dominio.com",
+   "password": "contraseña"
+}
+```
+
+### Obtener usuario autenticado
+GET `/api/auth/me`
+**Headers:**
+`Authorization: Bearer <token>`
+
+### Cambiar contraseña (autenticado)
+PUT `/api/auth/password`
+**Headers:**
+`Authorization: Bearer <token>`
+**Body:**
+```json
+{
+   "currentPassword": "contraseña_actual",
+   "newPassword": "nueva_contraseña"
+}
+```
+
+### Recuperar contraseña (olvidada)
+POST `/api/auth/forgot-password`
+**Body:**
+```json
+{
+   "email": "usuario@dominio.com"
+}
+```
+
+### Restablecer contraseña (con token)
+POST `/api/auth/reset-password`
+**Body:**
+```json
+{
+   "token": "token_recibido_por_email",
+   "newPassword": "nueva_contraseña"
+}
+```
+
+---
 # Proyecto Final Backend
 
 ## Pasos para ejecutar el proyecto
