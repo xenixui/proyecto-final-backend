@@ -1,6 +1,8 @@
 const User = require('./User');
 const Profile = require('./Profile');
 const Role = require('./Role');
+const Brand = require('./Brand');
+const WatchModel = require('./WatchModel');
 
 User.hasOne(Profile, {
   foreignKey: 'fk_usuarios_id',
@@ -28,8 +30,20 @@ Role.belongsToMany(User, {
   timestamps: false,
 });
 
+Brand.hasMany(WatchModel, {
+  foreignKey: 'fk_brands_id',
+  as: 'models',
+});
+
+WatchModel.belongsTo(Brand, {
+  foreignKey: 'fk_brands_id',
+  as: 'brand',
+});
+
 module.exports = {
   User,
   Profile,
   Role,
+  Brand,
+  WatchModel,
 };

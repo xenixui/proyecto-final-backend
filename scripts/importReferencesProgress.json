@@ -1,0 +1,118 @@
+{
+  "completedModels": [
+    {
+      "id": 1,
+      "name": "A. Lange & Söhne Datograph",
+      "brandName": "A. Lange & Söhne",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 2,
+      "name": "A. Lange & Söhne Lange 1",
+      "brandName": "A. Lange & Söhne",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 3,
+      "name": "A. Lange & Söhne Odysseus",
+      "brandName": "A. Lange & Söhne",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 4,
+      "name": "A. Lange & Söhne Saxonia",
+      "brandName": "A. Lange & Söhne",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 5,
+      "name": "A. Lange & Söhne Zeitwerk",
+      "brandName": "A. Lange & Söhne",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 6,
+      "name": "Audemars Piguet Code 11.59",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 9,
+      "name": "Audemars Piguet Royal Oak Double Balance Wheel Openworked",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 10,
+      "name": "Audemars Piguet Royal Oak Dual Time",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 12,
+      "name": "Audemars Piguet Royal Oak Lady",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 13,
+      "name": "Audemars Piguet Royal Oak Offshore",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    },
+    {
+      "id": 15,
+      "name": "Audemars Piguet Royal Oak Offshore Chronograph Volcano",
+      "brandName": "Audemars Piguet",
+      "reference": "N/A",
+      "found": false
+    }
+  ],
+  "failedModels": [
+    {
+      "id": 7,
+      "name": "Audemars Piguet Royal Oak",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-05-31T18:16:53.773Z"
+    },
+    {
+      "id": 8,
+      "name": "Audemars Piguet Royal Oak Chronograph",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-05-31T18:16:54.247Z"
+    },
+    {
+      "id": 11,
+      "name": "Audemars Piguet Royal Oak Jumbo",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-05-31T18:16:55.781Z"
+    },
+    {
+      "id": 14,
+      "name": "Audemars Piguet Royal Oak Offshore Chronograph",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-05-31T18:16:57.326Z"
+    }
+  ],
+  "stats": {
+    "startedAt": "2026-05-31T18:16:50.509Z",
+    "lastUpdateAt": "2026-05-31T18:16:57.841Z",
+    "totalProcessed": 15,
+    "totalSuccess": 11,
+    "totalFailed": 4
+  }
+}
