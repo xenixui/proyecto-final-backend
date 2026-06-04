@@ -1,5 +1,5 @@
 const { verifyToken } = require('../utils/jwt');
-const { User } = require('../models');
+const { query } = require('../config/database');
 
 async function authMiddleware(req, res, next) {
   try {
@@ -12,9 +12,37 @@ async function authMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
     const payload = verifyToken(token);
 
-    const user = await User.findByPk(payload.id, {
-      attributes: { exclude: ['password'] },
-    });
+    let user;
+
+    try {
+      const users = await query(
+        `SELECT id, email, rol, status, created_at, update_at, last_login
+         FROM users
+         WHERE id = ?
+         LIMIT 1`,
+        [payload.id]
+      );
+      user = users[0];
+    } catch (error) {
+      if (!error || error.code !== 'ER_BAD_FIELD_ERROR') {
+        throw error;
+      }
+
+      const users = await query(
+        `SELECT id, email, status, created_at, update_at, last_login
+         FROM users
+         WHERE id = ?
+         LIMIT 1`,
+        [payload.id]
+      );
+
+      if (users[0]) {
+        user = {
+          ...users[0],
+          rol: 'USER',
+        };
+      }
+    }
 
     if (!user || user.status !== 'ACTIVE') {
       return res.status(401).json({ message: 'Usuario no autorizado' });

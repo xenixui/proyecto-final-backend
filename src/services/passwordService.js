@@ -1,11 +1,17 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { query } = require('../config/database');
 const { sendResetPasswordEmail } = require('../utils/email');
 const { hashPassword } = require('../utils/password');
 require('dotenv').config();
 
 const requestPasswordReset = async (email) => {
-  const user = await User.findOne({ where: { email } });
+  const users = await query(
+    'SELECT id, email FROM users WHERE email = ? LIMIT 1',
+    [email]
+  );
+
+  const user = users[0];
+
   if (user) {
     const token = jwt.sign(
       { id: user.id },
@@ -23,10 +29,15 @@ const requestPasswordReset = async (email) => {
 const resetPassword = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_RESET_SECRET);
-    const user = await User.findByPk(decoded.id);
-    if (!user) throw new Error('Usuario no encontrado');
-    user.password = hashPassword(newPassword);
-    await user.save();
+
+    const users = await query('SELECT id FROM users WHERE id = ? LIMIT 1', [decoded.id]);
+    if (!users.length) throw new Error('Usuario no encontrado');
+
+    await query(
+      'UPDATE users SET password = ?, update_at = ? WHERE id = ?',
+      [hashPassword(newPassword), new Date(), decoded.id]
+    );
+
     return { message: 'Contraseña actualizada correctamente.' };
   } catch (err) {
     throw new Error('Token inválido o expirado');
