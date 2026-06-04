@@ -3,8 +3,7 @@ require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const sequelize = require('../src/config/database');
-const { Brand, WatchModel } = require('../src/models');
+const { query, pool, testConnection } = require('../src/config/database');
 
 const API_BASE_URL = 'https://api.thewatchapi.com/v1';
 const API_TOKEN = process.env.THEWATCHAPI_TOKEN;
@@ -53,8 +52,8 @@ function requireApiToken() {
   }
 }
 
-async function requestTheWatchApi(path, params = {}) {
-  const response = await axios.get(`${API_BASE_URL}${path}`, {
+async function requestTheWatchApi(resourcePath, params = {}) {
+  const response = await axios.get(`${API_BASE_URL}${resourcePath}`, {
     params: {
       api_token: API_TOKEN,
       ...params,
@@ -72,16 +71,30 @@ async function findOrCreateBrand(name) {
     return { brand: null, created: false };
   }
 
-  const [brand, created] = await Brand.findOrCreate({
-    where: { name: cleanName },
-    defaults: {
-      name: cleanName,
-      country: 'Unknown',
-      logo_url: null,
-    },
-  });
+  const existing = await query(
+    'SELECT id, name FROM brands WHERE name = ? LIMIT 1',
+    [cleanName]
+  );
 
-  return { brand, created };
+  if (existing.length) {
+    return {
+      brand: existing[0],
+      created: false,
+    };
+  }
+
+  const result = await query(
+    'INSERT INTO brands (name, country, logo_url) VALUES (?, ?, ?)',
+    [cleanName, 'Unknown', null]
+  );
+
+  return {
+    brand: {
+      id: result.insertId,
+      name: cleanName,
+    },
+    created: true,
+  };
 }
 
 async function findOrCreateWatchModel(name, brandId) {
@@ -91,21 +104,31 @@ async function findOrCreateWatchModel(name, brandId) {
     return { model: null, created: false };
   }
 
-  const [model, created] = await WatchModel.findOrCreate({
-    where: {
-      name: cleanName,
-      fk_brands_id: brandId,
-    },
-    defaults: {
-      name: cleanName,
-      reference: 'N/A',
-      gender: 'UNISEX',
-      movement_type: 'AUTOMATIC',
-      fk_brands_id: brandId,
-    },
-  });
+  const existing = await query(
+    'SELECT id, name FROM models WHERE name = ? AND fk_brands_id = ? LIMIT 1',
+    [cleanName, brandId]
+  );
 
-  return { model, created };
+  if (existing.length) {
+    return {
+      model: existing[0],
+      created: false,
+    };
+  }
+
+  const result = await query(
+    `INSERT INTO models (name, reference, gender, movement_type, fk_brands_id)
+     VALUES (?, ?, ?, ?, ?)`,
+    [cleanName, 'N/A', 'UNISEX', 'AUTOMATIC', brandId]
+  );
+
+  return {
+    model: {
+      id: result.insertId,
+      name: cleanName,
+    },
+    created: true,
+  };
 }
 
 async function importModelsForBrand(brand) {
@@ -132,8 +155,6 @@ async function importModelsForBrand(brand) {
     existing: existingModels,
   };
 }
-
-// ========== FASE 2: Importación de Referencias ==========
 
 function loadReferencesProgress() {
   if (!fs.existsSync(REFERENCES_PROGRESS_FILE)) {
@@ -170,7 +191,7 @@ async function delayRequest() {
 async function searchReferenceForModel(modelName, brandName) {
   try {
     await delayRequest();
-    
+
     const results = await requestTheWatchApi('/model/search', {
       model: modelName,
       brand: brandName,
@@ -187,34 +208,30 @@ async function searchReferenceForModel(modelName, brandName) {
   }
 }
 
+async function getPendingModelsForReference(batchSize) {
+  return query(
+    `SELECT m.id, m.name, m.reference, b.name AS brand_name
+     FROM models m
+     LEFT JOIN brands b ON b.id = m.fk_brands_id
+     WHERE m.reference = 'N/A'
+     ORDER BY m.id ASC
+     LIMIT ?`,
+    [batchSize]
+  );
+}
+
 async function importReferences() {
   requireApiToken();
-  await sequelize.authenticate();
+  await testConnection();
 
   const refProgress = loadReferencesProgress();
 
-  // Obtener IDs de modelos ya procesados
   const processedIds = new Set([
     ...refProgress.completedModels.map((m) => m.id),
     ...refProgress.failedModels.map((m) => m.id),
   ]);
 
-  // Buscar modelos con reference = 'N/A' que no hayan sido procesados
-  const modelsToProcess = await WatchModel.findAll({
-    where: {
-      reference: 'N/A',
-    },
-    include: [
-      {
-        association: 'brand',
-        attributes: ['name'],
-      },
-    ],
-    limit: BATCH_SIZE,
-    order: [['id', 'ASC']],
-  });
-
-  // Filtrar modelos ya procesados
+  const modelsToProcess = await getPendingModelsForReference(BATCH_SIZE);
   const pendingModels = modelsToProcess.filter((m) => !processedIds.has(m.id));
 
   if (pendingModels.length === 0) {
@@ -226,7 +243,7 @@ async function importReferences() {
         (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
         100
       ).toFixed(2);
-      console.log(`  Tasa de éxito: ${rate}%\n`);
+      console.log(`  Tasa de exito: ${rate}%\n`);
     }
     return;
   }
@@ -239,15 +256,13 @@ async function importReferences() {
   console.log(`   Con error: ${refProgress.failedModels.length}\n`);
 
   for (const model of pendingModels) {
-    const brandName = model.brand?.name || 'Unknown';
+    const brandName = model.brand_name || 'Unknown';
 
     try {
       const { reference, found } = await searchReferenceForModel(model.name, brandName);
 
-      // Actualizar el modelo en la BD
-      await model.update({ reference });
+      await query('UPDATE models SET reference = ? WHERE id = ?', [reference, model.id]);
 
-      // Guardar progreso
       refProgress.completedModels.push({
         id: model.id,
         name: model.name,
@@ -281,9 +296,8 @@ async function importReferences() {
 
   saveReferencesProgress(refProgress);
 
-  // Resumen final
-  console.log(`\n📈 Resumen de esta ejecución:`);
-  console.log(`   Éxitos: ${successCount}`);
+  console.log('\n📈 Resumen de esta ejecucion:');
+  console.log(`   Exitos: ${successCount}`);
   console.log(`   Errores: ${failCount}`);
   console.log(`   Total procesado (acumulado): ${refProgress.stats.totalProcessed}`);
   if (refProgress.stats.totalSuccess + refProgress.stats.totalFailed > 0) {
@@ -291,13 +305,13 @@ async function importReferences() {
       (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
       100
     ).toFixed(2);
-    console.log(`   Tasa de éxito: ${rate}%\n`);
+    console.log(`   Tasa de exito: ${rate}%\n`);
   }
 }
 
 async function importWatches() {
   requireApiToken();
-  await sequelize.authenticate();
+  await testConnection();
 
   const progress = loadProgress();
   let pendingBrandNames = progress.failedBrands;
@@ -360,41 +374,45 @@ async function importWatches() {
 }
 
 async function showStatus() {
-  await sequelize.authenticate();
+  await testConnection();
 
   const progress = loadProgress();
   const refProgress = loadReferencesProgress();
-  const totalBrands = await Brand.count();
-  const totalModels = await WatchModel.count();
-  const modelsWithNA = await WatchModel.count({
-    where: { reference: 'N/A' },
-  });
+
+  const totalBrandsRows = await query('SELECT COUNT(*) AS total FROM brands');
+  const totalModelsRows = await query('SELECT COUNT(*) AS total FROM models');
+  const modelsWithNARows = await query("SELECT COUNT(*) AS total FROM models WHERE reference = 'N/A'");
+
+  const totalBrands = Number(totalBrandsRows[0]?.total || 0);
+  const totalModels = Number(totalModelsRows[0]?.total || 0);
+  const modelsWithNA = Number(modelsWithNARows[0]?.total || 0);
   const modelsWithRef = totalModels - modelsWithNA;
 
-  console.log('\n📊 Estado de Importación');
+  console.log('\n📊 Estado de Importacion');
   console.log('='.repeat(60));
-  console.log('🏭 FASE 1: Importación de Marcas y Modelos');
+  console.log('🏭 FASE 1: Importacion de Marcas y Modelos');
   console.log('-'.repeat(60));
   console.log(`Marcas completadas: ${progress.completedBrands.length}`);
   console.log(`Marcas con error: ${progress.failedBrands.length}`);
   console.log(`Marcas en BD: ${totalBrands}`);
   console.log(`Modelos en BD: ${totalModels}`);
-  
-  console.log('\n🔍 FASE 2: Completación de Referencias');
+
+  console.log('\n🔍 FASE 2: Completacion de Referencias');
   console.log('-'.repeat(60));
   console.log(`Modelos con referencia: ${modelsWithRef}`);
   console.log(`Modelos sin referencia (N/A): ${modelsWithNA}`);
   console.log(`Modelos completados: ${refProgress.completedModels.length}`);
   console.log(`Modelos con error: ${refProgress.failedModels.length}`);
+
   if (refProgress.stats.totalSuccess + refProgress.stats.totalFailed > 0) {
     const rate = (
       (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
       100
     ).toFixed(2);
-    console.log(`Tasa de éxito: ${rate}%`);
+    console.log(`Tasa de exito: ${rate}%`);
   }
 
-  const progressPercentage = ((modelsWithRef / totalModels) * 100).toFixed(2);
+  const progressPercentage = totalModels > 0 ? ((modelsWithRef / totalModels) * 100).toFixed(2) : '0.00';
   console.log(`\n📈 Progreso total: ${progressPercentage}%`);
   console.log('='.repeat(60) + '\n');
 }
@@ -409,14 +427,13 @@ async function main() {
     } else if (command === 'refs') {
       await importReferences();
     } else {
-      // Sin argumentos o comando desconocido = ejecutar FASE 1
       await importWatches();
     }
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exitCode = 1;
   } finally {
-    await sequelize.close();
+    await pool.end();
   }
 }
 
