@@ -1,5 +1,4 @@
-const sequelize = require('../config/database');
-const { User, Profile, Role } = require('../models');
+const { query, withTransaction } = require('../config/database');
 const { hashPassword, verifyPassword } = require('../utils/password');
 const { signToken } = require('../utils/jwt');
 
@@ -7,11 +6,156 @@ function publicUser(user) {
   return {
     id: user.id,
     email: user.email,
-    rol: user.rol,
+    rol: user.rol || 'USER',
     status: user.status,
     created_at: user.created_at,
     last_login: user.last_login,
   };
+}
+
+async function getUserByEmail(email) {
+  try {
+    const users = await query(
+      `SELECT id, email, password, rol, status, created_at, last_login
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [email]
+    );
+
+    return users[0] || null;
+  } catch (error) {
+    if (error && error.code !== 'ER_BAD_FIELD_ERROR') {
+      throw error;
+    }
+
+    const users = await query(
+      `SELECT id, email, password, status, created_at, last_login
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [email]
+    );
+
+    if (!users[0]) {
+      return null;
+    }
+
+    return {
+      ...users[0],
+      rol: 'USER',
+    };
+  }
+}
+
+async function getUserById(userId) {
+  try {
+    const users = await query(
+      `SELECT id, email, rol, status, created_at, update_at, last_login
+       FROM users
+       WHERE id = ?
+       LIMIT 1`,
+      [userId]
+    );
+
+    return users[0] || null;
+  } catch (error) {
+    if (error && error.code !== 'ER_BAD_FIELD_ERROR') {
+      throw error;
+    }
+
+    const users = await query(
+      `SELECT id, email, status, created_at, update_at, last_login
+       FROM users
+       WHERE id = ?
+       LIMIT 1`,
+      [userId]
+    );
+
+    if (!users[0]) {
+      return null;
+    }
+
+    return {
+      ...users[0],
+      rol: 'USER',
+    };
+  }
+}
+
+async function getRolesForUser(userId, connection = null) {
+  const execute = async (sql, params) => {
+    if (connection) {
+      const [rows] = await connection.execute(sql, params);
+      return rows;
+    }
+
+    return query(sql, params);
+  };
+
+  try {
+    return await execute(
+      `SELECT r.id, r.name
+       FROM roles r
+       INNER JOIN users_roles ur ON ur.role_id = r.id
+       WHERE ur.user_id = ?`,
+      [userId]
+    );
+  } catch (error) {
+    return execute(
+      `SELECT r.id, r.rol AS name
+       FROM roles r
+       INNER JOIN users_roles ur ON ur.fk_roles_id = r.id
+       WHERE ur.fk_users_id = ?`,
+      [userId]
+    );
+  }
+}
+
+async function assignDefaultRole(userId, now, connection) {
+  try {
+    const [roles] = await connection.execute(
+      'SELECT id FROM roles WHERE name = ? LIMIT 1',
+      ['USER']
+    );
+
+    if (!roles.length) {
+      return;
+    }
+
+    await connection.execute(
+      'INSERT INTO users_roles (user_id, role_id, assigned_at) VALUES (?, ?, ?)',
+      [userId, roles[0].id, now]
+    );
+  } catch (error) {
+    try {
+      const [roles] = await connection.execute(
+        'SELECT id FROM roles WHERE rol = ? LIMIT 1',
+        ['USER']
+      );
+
+      if (!roles.length) {
+        return;
+      }
+
+      await connection.execute(
+        'INSERT INTO users_roles (fk_users_id, fk_roles_id, assigned_at) VALUES (?, ?, ?)',
+        [userId, roles[0].id, now]
+      );
+    } catch (fallbackError) {
+      // Si la tabla puente o columnas no existen en este esquema, no bloqueamos el alta.
+    }
+  }
+}
+
+async function resolveUserRole(userId, fallbackRole = 'USER', connection = null) {
+  const roles = await getRolesForUser(userId, connection).catch(() => []);
+
+  if (roles.length && roles[0].name) {
+    return roles[0].name;
+  }
+
+  return fallbackRole;
 }
 
 async function registerUser(data) {
@@ -29,9 +173,12 @@ async function registerUser(data) {
     throw error;
   }
 
-  const existingUser = await User.findOne({ where: { email } });
+  const existingUsers = await query(
+    'SELECT id FROM users WHERE email = ? LIMIT 1',
+    [email]
+  );
 
-  if (existingUser) {
+  if (existingUsers.length) {
     const error = new Error('Ya existe un usuario con ese email');
     error.status = 409;
     throw error;
@@ -39,48 +186,65 @@ async function registerUser(data) {
 
   const now = new Date();
 
-  return sequelize.transaction(async (transaction) => {
-    const user = await User.create(
-      {
-        email,
-        password: hashPassword(password),
-        rol: 'USER',
-        status: 'ACTIVE',
-        created_at: now,
-        update_at: now,
-      },
-      { transaction }
-    );
+  return withTransaction(async (connection) => {
+    let insertUserResult;
 
-    await Profile.create(
-      {
-        username: data.username || email.split('@')[0],
-        name: data.name || null,
-        surname: data.surname || null,
-        phone: data.phone || null,
-        country: data.country || '',
-        city: data.city || '',
-        postal_code: data.postal_code || '',
-        biography: data.biography || null,
-        created_at: now,
-        fk_usuarios_id: user.id,
-      },
-      { transaction }
-    );
+    try {
+      const [result] = await connection.execute(
+        `INSERT INTO users (email, password, rol, status, created_at, update_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [email, hashPassword(password), 'USER', 'ACTIVE', now, now]
+      );
+      insertUserResult = result;
+    } catch (error) {
+      if (!error || error.code !== 'ER_BAD_FIELD_ERROR') {
+        throw error;
+      }
 
-    const role = await Role.findOne({
-      where: { name: 'USER' },
-      transaction,
-    });
-
-    if (role) {
-      await user.addRole(role, { transaction });
+      const [result] = await connection.execute(
+        `INSERT INTO users (email, password, status, created_at, update_at)
+         VALUES (?, ?, ?, ?, ?)`,
+        [email, hashPassword(password), 'ACTIVE', now, now]
+      );
+      insertUserResult = result;
     }
 
+    const userId = insertUserResult.insertId;
+
+    await connection.execute(
+      `INSERT INTO profiles
+       (username, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.username || email.split('@')[0],
+        data.name || null,
+        data.surname || null,
+        data.phone || null,
+        data.country || '',
+        data.city || '',
+        data.postal_code || '',
+        data.biography || null,
+        now,
+        userId,
+      ]
+    );
+
+    await assignDefaultRole(userId, now, connection);
+    const effectiveRole = await resolveUserRole(userId, 'USER', connection);
+
+    const user = {
+      id: userId,
+      email,
+      rol: effectiveRole,
+      status: 'ACTIVE',
+      created_at: now,
+      last_login: null,
+    };
+
     const token = signToken({
-      id: user.id,
-      email: user.email,
-      rol: user.rol,
+      id: userId,
+      email,
+      rol: effectiveRole,
     });
 
     return {
@@ -97,7 +261,7 @@ async function loginUser(email, password) {
     throw error;
   }
 
-  const user = await User.findOne({ where: { email } });
+  const user = await getUserByEmail(email);
 
   if (!user || !verifyPassword(password, user.password)) {
     const error = new Error('Credenciales incorrectas');
@@ -111,31 +275,29 @@ async function loginUser(email, password) {
     throw error;
   }
 
-  user.last_login = new Date();
-  user.update_at = new Date();
+  const now = new Date();
 
-  await user.save();
+  await query(
+    'UPDATE users SET last_login = ?, update_at = ? WHERE id = ?',
+    [now, now, user.id]
+  );
+
+  const effectiveRole = user.rol || await resolveUserRole(user.id, 'USER');
 
   const token = signToken({
     id: user.id,
     email: user.email,
-    rol: user.rol,
+    rol: effectiveRole,
   });
 
   return {
     token,
-    user: publicUser(user),
+    user: publicUser({ ...user, rol: effectiveRole }),
   };
 }
 
 async function getAuthenticatedUser(userId) {
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ['password'] },
-    include: [
-      { model: Profile, as: 'profile' },
-      { model: Role, as: 'roles', through: { attributes: [] } },
-    ],
-  });
+  const user = await getUserById(userId);
 
   if (!user) {
     const error = new Error('Usuario no encontrado');
@@ -143,7 +305,23 @@ async function getAuthenticatedUser(userId) {
     throw error;
   }
 
-  return user;
+  const profiles = await query(
+    `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
+     FROM profiles
+     WHERE fk_usuarios_id = ?
+     LIMIT 1`,
+    [userId]
+  );
+
+  const roles = await getRolesForUser(userId).catch(() => []);
+  const effectiveRole = user.rol || await resolveUserRole(userId, 'USER');
+
+  return {
+    ...user,
+    rol: effectiveRole,
+    profile: profiles[0] || null,
+    roles,
+  };
 }
 
 async function changePassword(userId, currentPassword, newPassword) {
@@ -159,7 +337,12 @@ async function changePassword(userId, currentPassword, newPassword) {
     throw error;
   }
 
-  const user = await User.findByPk(userId);
+  const users = await query(
+    'SELECT id, password FROM users WHERE id = ? LIMIT 1',
+    [userId]
+  );
+
+  const user = users[0];
 
   if (!user) {
     const error = new Error('Usuario no encontrado');
@@ -175,10 +358,10 @@ async function changePassword(userId, currentPassword, newPassword) {
     throw error;
   }
 
-  user.password = hashPassword(newPassword);
-  user.update_at = new Date();
-
-  await user.save();
+  await query(
+    'UPDATE users SET password = ?, update_at = ? WHERE id = ?',
+    [hashPassword(newPassword), new Date(), userId]
+  );
 
   return {
     message: 'Contraseña actualizada correctamente',

@@ -1,13 +1,12 @@
 require('dotenv').config();
 const app = require('./app');
-const sequelize = require('./config/database');
-require('./models');
+const { testConnection } = require('./config/database');
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-    await sequelize.authenticate();
+    await testConnection();
     console.log('Conectado a MySQL');
 
     app.listen(PORT, () => {
