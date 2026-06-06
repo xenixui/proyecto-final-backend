@@ -1,423 +1,280 @@
 require('dotenv').config();
 
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const sequelize = require('../src/config/database');
-const { Brand, WatchModel } = require('../src/models');
+const axios = require('axios');
+const mysql = require('mysql2/promise');
 
-const API_BASE_URL = 'https://api.thewatchapi.com/v1';
-const API_TOKEN = process.env.THEWATCHAPI_TOKEN;
-const PROGRESS_FILE = path.join(__dirname, 'importWatchesProgress.json');
-const REFERENCES_PROGRESS_FILE = path.join(__dirname, 'importReferencesProgress.json');
-const BATCH_SIZE = 15;
-const DELAY_BETWEEN_REQUESTS = 500;
-let lastRequestTime = 0;
 
-function loadProgress() {
-  if (!fs.existsSync(PROGRESS_FILE)) {
-    return {
-      completedBrands: [],
-      failedBrands: [],
-    };
+// La idea importante es no gastar llamadas de API para datos ya conocidos:
+// una vez una referencia queda guardada en importReferencesProgress.json,
+// el script puede reimportarla a la BD todas las veces que haga falta.
+const API_URL = 'https://api.thewatchapi.com/v1';
+const PROGRESS_FILE = path.join(__dirname, 'importReferencesProgress.json');
+const NEW_REFERENCES_LIMIT = 10;
+
+function fixEncoding(value) {
+  if (typeof value !== 'string' || !/[ÃÂ]/.test(value)) {
+    return value;
   }
 
-  const progress = JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf8'));
-
-  return {
-    completedBrands: Array.isArray(progress.completedBrands) ? progress.completedBrands : [],
-    failedBrands: Array.isArray(progress.failedBrands) ? progress.failedBrands : [],
-  };
+  return Buffer.from(value, 'latin1').toString('utf8');
 }
 
+// Normaliza strings recibidos desde BD/API/JSON para evitar espacios sobrantes
+// y corregir errores de codificacion antes de comparar o insertar.
+const normalize = (value) => fixEncoding(String(value || '').trim());
+
+// Clave logica de una referencia.
+// En el ER no hay una constraint unica, pero para el importador consideramos
+// que una referencia pertenece a una marca y no debe duplicarse dentro de ella.
+const refKey = (brand, reference) => `${normalize(brand).toLowerCase()}::${normalize(reference).toLowerCase()}`;
+
+// Carga el progreso local. Si todavia no existe, devuelve una estructura vacia.
+// completedModels: referencias reales ya encontradas y listas para importar.
+// failedModels: marcas/modelos que dieron error al consultar la API.
+function readProgress() {
+  const empty = {
+    completedModels: [],
+    failedModels: [],
+    stats: { startedAt: new Date().toISOString() },
+  };
+
+  if (!fs.existsSync(PROGRESS_FILE)) {
+    return empty;
+  }
+
+  return { ...empty, ...JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf8')) };
+}
+
+// Guarda el progreso y recalcula estadisticas simples para seguimiento.
 function saveProgress(progress) {
+  progress.stats.lastUpdateAt = new Date().toISOString();
+  progress.stats.totalSuccess = progress.completedModels.length;
+  progress.stats.totalFailed = progress.failedModels.length;
+  progress.stats.totalProcessed = progress.stats.totalSuccess + progress.stats.totalFailed;
   fs.writeFileSync(PROGRESS_FILE, `${JSON.stringify(progress, null, 2)}\n`);
 }
 
-function markBrandCompleted(progress, brandName) {
-  progress.completedBrands = Array.from(new Set([...progress.completedBrands, brandName])).sort();
-  progress.failedBrands = progress.failedBrands.filter((name) => name !== brandName);
-  saveProgress(progress);
+// Crea la conexion MySQL usando las variables del .env.
+// ssl queda habilitado porque la conexion actual lo necesita para el entorno usado.
+async function connectDb() {
+  return mysql.createConnection({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    ssl: { rejectUnauthorized: false },
+  });
 }
 
-function markBrandFailed(progress, brandName) {
-  if (!progress.completedBrands.includes(brandName)) {
-    progress.failedBrands = Array.from(new Set([...progress.failedBrands, brandName])).sort();
-    saveProgress(progress);
-  }
-}
-
-function requireApiToken() {
-  if (!API_TOKEN) {
-    throw new Error('Falta THEWATCHAPI_TOKEN en el archivo .env');
-  }
-}
-
-async function requestTheWatchApi(path, params = {}) {
-  const response = await axios.get(`${API_BASE_URL}${path}`, {
-    params: {
-      api_token: API_TOKEN,
-      ...params,
-    },
+// Wrapper de TheWatchAPI.
+// Siempre envia api_token y devuelve response.data.data como array.
+async function apiGet(endpoint, params) {
+  const response = await axios.get(`${API_URL}${endpoint}`, {
+    params: { api_token: process.env.THEWATCHAPI_TOKEN, ...params },
     timeout: 30000,
   });
 
   return Array.isArray(response.data?.data) ? response.data.data : [];
 }
 
-async function findOrCreateBrand(name) {
-  const cleanName = String(name || '').trim();
+// Obtiene las marcas conocidas combinando:
+// - marcas ya existentes en MySQL
+// - marcas presentes en el JSON de referencias completadas
+// - marcas que fallaron previamente
+//
+// Asi el script puede seguir intentando importar aunque no llame a /brand/list.
+async function getBrandNames(connection, progress) {
+  const [rows] = await connection.query('SELECT name FROM brands ORDER BY id ASC');
+  const names = [
+    ...rows.map((row) => row.name),
+    ...progress.completedModels.map((model) => model.brandName),
+    ...progress.failedModels.map((model) => model.brandName),
+  ];
 
-  if (!cleanName) {
-    return { brand: null, created: false };
-  }
-
-  const [brand, created] = await Brand.findOrCreate({
-    where: { name: cleanName },
-    defaults: {
-      name: cleanName,
-      country: 'Unknown',
-      logo_url: null,
-    },
-  });
-
-  return { brand, created };
+  return [...new Set(names.map(normalize).filter(Boolean))];
 }
 
-async function findOrCreateWatchModel(name, brandId) {
-  const cleanName = String(name || '').trim();
+// Intenta guardar en el JSON una referencia devuelta por TheWatchAPI.
+// Devuelve false si faltan datos o si esa marca+referencia ya estaba guardada.
+function addToProgress(progress, watch) {
+  const brandName = normalize(watch.brand);
+  const name = normalize(watch.model);
+  const reference = normalize(watch.reference_number);
 
-  if (!cleanName || !brandId) {
-    return { model: null, created: false };
+  if (!brandName || !name || !reference) {
+    return false;
   }
 
-  const [model, created] = await WatchModel.findOrCreate({
-    where: {
-      name: cleanName,
-      fk_brands_id: brandId,
-    },
-    defaults: {
-      name: cleanName,
-      reference: 'N/A',
-      gender: 'UNISEX',
-      movement_type: 'AUTOMATIC',
-      fk_brands_id: brandId,
-    },
-  });
+  const existing = new Set(progress.completedModels.map((model) => refKey(model.brandName, model.reference)));
 
-  return { model, created };
+  if (existing.has(refKey(brandName, reference))) {
+    return false;
+  }
+
+  progress.completedModels.push({ name, brandName, reference, found: true });
+  return true;
 }
 
-async function importModelsForBrand(brand) {
-  const modelNames = await requestTheWatchApi('/model/list', {
-    brand: brand.name,
-  });
-
-  let insertedModels = 0;
-  let existingModels = 0;
-
-  for (const modelName of modelNames) {
-    const { created } = await findOrCreateWatchModel(modelName, brand.id);
-
-    if (created) {
-      insertedModels += 1;
-    } else {
-      existingModels += 1;
-    }
-  }
-
-  return {
-    found: modelNames.length,
-    inserted: insertedModels,
-    existing: existingModels,
+// Registra un fallo de API para una marca.
+// Esto sirve para saber que la proxima ejecucion debe volver a intentarla.
+function rememberFailure(progress, brandName, error) {
+  const failed = {
+    brandName,
+    name: '',
+    error: error.message,
+    attemptedAt: new Date().toISOString(),
   };
+
+  progress.failedModels = [
+    ...progress.failedModels.filter((item) => normalize(item.brandName) !== brandName),
+    failed,
+  ];
 }
 
-// ========== FASE 2: Importación de Referencias ==========
-
-function loadReferencesProgress() {
-  if (!fs.existsSync(REFERENCES_PROGRESS_FILE)) {
-    return {
-      completedModels: [],
-      failedModels: [],
-      stats: {
-        startedAt: new Date().toISOString(),
-        lastUpdateAt: new Date().toISOString(),
-        totalProcessed: 0,
-        totalSuccess: 0,
-        totalFailed: 0,
-      },
-    };
+// Si la API devuelve 402, se asume limite de cuota y se detiene esta fase.
+async function collectTenReferences(progress, connection) {
+  if (!process.env.THEWATCHAPI_TOKEN) {
+    throw new Error('Falta THEWATCHAPI_TOKEN en el archivo .env');
   }
 
-  return JSON.parse(fs.readFileSync(REFERENCES_PROGRESS_FILE, 'utf8'));
-}
+  const knownRefs = new Set(progress.completedModels.map((model) => refKey(model.brandName, model.reference)));
+  const brandNames = await getBrandNames(connection, progress);
+  let added = 0;
 
-function saveReferencesProgress(progress) {
-  progress.stats.lastUpdateAt = new Date().toISOString();
-  fs.writeFileSync(REFERENCES_PROGRESS_FILE, JSON.stringify(progress, null, 2));
-}
-
-async function delayRequest() {
-  const now = Date.now();
-  const elapsed = now - lastRequestTime;
-  if (elapsed < DELAY_BETWEEN_REQUESTS) {
-    await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_REQUESTS - elapsed));
-  }
-  lastRequestTime = Date.now();
-}
-
-async function searchReferenceForModel(modelName, brandName) {
-  try {
-    await delayRequest();
-    
-    const results = await requestTheWatchApi('/model/search', {
-      model: modelName,
-      brand: brandName,
-    });
-
-    if (Array.isArray(results) && results.length > 0) {
-      const reference = results[0]?.reference || 'N/A';
-      return { reference, found: reference !== 'N/A' };
-    }
-
-    return { reference: 'N/A', found: false };
-  } catch (error) {
-    throw new Error(`Error buscando referencia: ${error.message}`);
-  }
-}
-
-async function importReferences() {
-  requireApiToken();
-  await sequelize.authenticate();
-
-  const refProgress = loadReferencesProgress();
-
-  // Obtener IDs de modelos ya procesados
-  const processedIds = new Set([
-    ...refProgress.completedModels.map((m) => m.id),
-    ...refProgress.failedModels.map((m) => m.id),
-  ]);
-
-  // Buscar modelos con reference = 'N/A' que no hayan sido procesados
-  const modelsToProcess = await WatchModel.findAll({
-    where: {
-      reference: 'N/A',
-    },
-    include: [
-      {
-        association: 'brand',
-        attributes: ['name'],
-      },
-    ],
-    limit: BATCH_SIZE,
-    order: [['id', 'ASC']],
-  });
-
-  // Filtrar modelos ya procesados
-  const pendingModels = modelsToProcess.filter((m) => !processedIds.has(m.id));
-
-  if (pendingModels.length === 0) {
-    console.log('\n✓ No hay modelos pendientes de procesar');
-    console.log(`  Modelos completados: ${refProgress.completedModels.length}`);
-    console.log(`  Modelos con error: ${refProgress.failedModels.length}`);
-    if (refProgress.stats.totalSuccess + refProgress.stats.totalFailed > 0) {
-      const rate = (
-        (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
-        100
-      ).toFixed(2);
-      console.log(`  Tasa de éxito: ${rate}%\n`);
-    }
-    return;
-  }
-
-  let successCount = 0;
-  let failCount = 0;
-
-  console.log(`\n📊 Procesando ${pendingModels.length} modelos...`);
-  console.log(`   Completados: ${refProgress.completedModels.length}`);
-  console.log(`   Con error: ${refProgress.failedModels.length}\n`);
-
-  for (const model of pendingModels) {
-    const brandName = model.brand?.name || 'Unknown';
+  for (const brandName of brandNames) {
+    if (added >= NEW_REFERENCES_LIMIT) break;
 
     try {
-      const { reference, found } = await searchReferenceForModel(model.name, brandName);
+      const references = await apiGet('/reference/list', { brand: brandName });
 
-      // Actualizar el modelo en la BD
-      await model.update({ reference });
+      for (const reference of references) {
+        if (added >= NEW_REFERENCES_LIMIT) break;
+        if (knownRefs.has(refKey(brandName, reference))) continue;
 
-      // Guardar progreso
-      refProgress.completedModels.push({
-        id: model.id,
-        name: model.name,
-        brandName,
-        reference,
-        found,
-      });
+        const watches = await apiGet('/model/search', {
+          search: reference,
+          search_attributes: 'reference_number',
+          brand: brandName,
+          reference_number: reference,
+        });
 
-      successCount += 1;
-      refProgress.stats.totalSuccess += 1;
+        for (const watch of watches) {
+          if (added >= NEW_REFERENCES_LIMIT) break;
 
-      const status = found ? '✓' : '⚠';
-      console.log(`${status} [${model.id}] ${brandName} - ${model.name}: "${reference}"`);
+          if (addToProgress(progress, watch)) {
+            added += 1;
+            knownRefs.add(refKey(watch.brand, watch.reference_number));
+            console.log(`JSON + ${watch.brand} | ${watch.model} | ${watch.reference_number}`);
+          }
+        }
+
+        saveProgress(progress);
+      }
     } catch (error) {
-      failCount += 1;
-      refProgress.stats.totalFailed += 1;
+      rememberFailure(progress, brandName, error);
+      saveProgress(progress);
+      console.error(`API error ${brandName}: ${error.message}`);
 
-      refProgress.failedModels.push({
-        id: model.id,
-        name: model.name,
-        brandName,
-        error: error.message,
-        attemptedAt: new Date().toISOString(),
-      });
-
-      console.error(`✗ [${model.id}] ${brandName} - ${model.name}: ${error.message}`);
+      if (error.response?.status === 402) {
+        console.error('Limite de uso de TheWatchAPI alcanzado.');
+        break;
+      }
     }
-
-    refProgress.stats.totalProcessed += 1;
   }
 
-  saveReferencesProgress(refProgress);
-
-  // Resumen final
-  console.log(`\n📈 Resumen de esta ejecución:`);
-  console.log(`   Éxitos: ${successCount}`);
-  console.log(`   Errores: ${failCount}`);
-  console.log(`   Total procesado (acumulado): ${refProgress.stats.totalProcessed}`);
-  if (refProgress.stats.totalSuccess + refProgress.stats.totalFailed > 0) {
-    const rate = (
-      (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
-      100
-    ).toFixed(2);
-    console.log(`   Tasa de éxito: ${rate}%\n`);
-  }
+  console.log(`Referencias nuevas en JSON: ${added}`);
 }
 
-async function importWatches() {
-  requireApiToken();
-  await sequelize.authenticate();
+// Busca una marca en BD o la crea si no existe.
+// El ER exige country NOT NULL, por eso se usa Unknown cuando la API no lo aporta.
+async function findOrCreateBrand(connection, brandName) {
+  const [rows] = await connection.query('SELECT id FROM brands WHERE name = ?', [brandName]);
 
-  const progress = loadProgress();
-  let pendingBrandNames = progress.failedBrands;
-  let totalBrandNames = progress.completedBrands.length + progress.failedBrands.length;
-
-  if (pendingBrandNames.length === 0) {
-    const brandNames = await requestTheWatchApi('/brand/list');
-    totalBrandNames = brandNames.length;
-    pendingBrandNames = brandNames.filter(
-      (brandName) => !progress.completedBrands.includes(brandName)
-    );
+  if (rows.length) {
+    return rows[0].id;
   }
 
-  let insertedBrands = 0;
-  let existingBrands = 0;
-  let insertedModels = 0;
-  let existingModels = 0;
-  let failedBrands = 0;
+  const [result] = await connection.query(
+    'INSERT INTO brands (name, country, logo_url) VALUES (?, ?, ?)',
+    [brandName, 'Unknown', null]
+  );
 
-  console.log(`Marcas conocidas: ${totalBrandNames}`);
-  console.log(`Marcas ya completadas: ${progress.completedBrands.length}`);
-  console.log(`Marcas pendientes en esta ejecucion: ${pendingBrandNames.length}`);
+  return result.insertId;
+}
 
-  for (const brandName of pendingBrandNames) {
-    const { brand, created } = await findOrCreateBrand(brandName);
+// Usa marca + referencia como clave logica:
+// - si existe, actualiza nombre/gender/movement_type
+// - si no existe, inserta una fila nueva en models
+async function importJsonToDb(progress, connection) {
+  let created = 0;
+  let updated = 0;
+  let skipped = 0;
 
-    if (!brand) {
+  for (const model of progress.completedModels) {
+    const brandName = normalize(model.brandName);
+    const name = normalize(model.name);
+    const reference = normalize(model.reference);
+
+    if (!brandName || !name || !reference || reference === 'N/A') {
+      skipped += 1;
       continue;
     }
 
-    if (created) {
-      insertedBrands += 1;
-    } else {
-      existingBrands += 1;
-    }
+    const brandId = await findOrCreateBrand(connection, brandName);
+    const [rows] = await connection.query(
+      'SELECT id FROM models WHERE fk_brands_id = ? AND reference = ?',
+      [brandId, reference]
+    );
 
-    try {
-      const result = await importModelsForBrand(brand);
-      insertedModels += result.inserted;
-      existingModels += result.existing;
-
-      console.log(
-        `${brand.name}: ${result.inserted} modelos insertados, ${result.existing} ya existentes`
+    if (rows.length) {
+      await connection.query(
+        'UPDATE models SET name = ?, gender = ?, movement_type = ? WHERE id = ?',
+        [name, 'UNISEX', 'AUTOMATIC', rows[0].id]
       );
-
-      markBrandCompleted(progress, brand.name);
-    } catch (error) {
-      failedBrands += 1;
-      markBrandFailed(progress, brand.name);
-      console.error(`Error importando modelos de ${brand.name}: ${error.message}`);
+      updated += 1;
+    } else {
+      await connection.query(
+        'INSERT INTO models (name, reference, gender, movement_type, fk_brands_id) VALUES (?, ?, ?, ?, ?)',
+        [name, reference, 'UNISEX', 'AUTOMATIC', brandId]
+      );
+      created += 1;
     }
   }
 
-  console.log('Importacion finalizada');
-  console.log(`Marcas insertadas: ${insertedBrands}`);
-  console.log(`Marcas existentes: ${existingBrands}`);
-  console.log(`Modelos insertados: ${insertedModels}`);
-  console.log(`Modelos existentes: ${existingModels}`);
-  console.log(`Marcas con error: ${failedBrands}`);
+  console.log(`BD creados: ${created}`);
+  console.log(`BD actualizados: ${updated}`);
+  console.log(`BD omitidos: ${skipped}`);
 }
 
-async function showStatus() {
-  await sequelize.authenticate();
-
-  const progress = loadProgress();
-  const refProgress = loadReferencesProgress();
-  const totalBrands = await Brand.count();
-  const totalModels = await WatchModel.count();
-  const modelsWithNA = await WatchModel.count({
-    where: { reference: 'N/A' },
-  });
-  const modelsWithRef = totalModels - modelsWithNA;
-
-  console.log('\n📊 Estado de Importación');
-  console.log('='.repeat(60));
-  console.log('🏭 FASE 1: Importación de Marcas y Modelos');
-  console.log('-'.repeat(60));
-  console.log(`Marcas completadas: ${progress.completedBrands.length}`);
-  console.log(`Marcas con error: ${progress.failedBrands.length}`);
-  console.log(`Marcas en BD: ${totalBrands}`);
-  console.log(`Modelos en BD: ${totalModels}`);
-  
-  console.log('\n🔍 FASE 2: Completación de Referencias');
-  console.log('-'.repeat(60));
-  console.log(`Modelos con referencia: ${modelsWithRef}`);
-  console.log(`Modelos sin referencia (N/A): ${modelsWithNA}`);
-  console.log(`Modelos completados: ${refProgress.completedModels.length}`);
-  console.log(`Modelos con error: ${refProgress.failedModels.length}`);
-  if (refProgress.stats.totalSuccess + refProgress.stats.totalFailed > 0) {
-    const rate = (
-      (refProgress.stats.totalSuccess / (refProgress.stats.totalSuccess + refProgress.stats.totalFailed)) *
-      100
-    ).toFixed(2);
-    console.log(`Tasa de éxito: ${rate}%`);
-  }
-
-  const progressPercentage = ((modelsWithRef / totalModels) * 100).toFixed(2);
-  console.log(`\n📈 Progreso total: ${progressPercentage}%`);
-  console.log('='.repeat(60) + '\n');
+// Muestra un resumen simple para comprobar rapidamente si hay referencias reales
+// y si quedan filas antiguas con reference = 'N/A'.
+async function printSummary(connection) {
+  const [rows] = await connection.query(
+    `SELECT COUNT(*) total,
+            SUM(reference = 'N/A') pendingReferences,
+            SUM(reference <> 'N/A') realReferences
+     FROM models`
+  );
+  console.log('Resumen BD:', rows[0]);
 }
 
-async function main() {
-  const args = process.argv.slice(2);
-  const command = args[0];
+async function run() {
+  const progress = readProgress();
+  const connection = await connectDb();
 
   try {
-    if (command === 'status') {
-      await showStatus();
-    } else if (command === 'refs') {
-      await importReferences();
-    } else {
-      // Sin argumentos o comando desconocido = ejecutar FASE 1
-      await importWatches();
-    }
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exitCode = 1;
+    await collectTenReferences(progress, connection);
+    await importJsonToDb(progress, connection);
+    await printSummary(connection);
   } finally {
-    await sequelize.close();
+    await connection.end();
   }
 }
 
-main();
+run().catch((error) => {
+  console.error(`Error en importacion: ${error.message}`);
+  process.exitCode = 1;
+});
