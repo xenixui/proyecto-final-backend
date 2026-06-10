@@ -1,5 +1,5 @@
 
-### Registro de usuario
+### Registro de usuari
 POST `/api/auth/register`
 **Body:**
 ```json
