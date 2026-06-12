@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./routes/api/auth.routes');
 
 const app = express();
 
@@ -16,7 +16,10 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
+
+app.use('/api', require('./routes/api.routes'));
+
+//app.use('/api/auth', authRoutes);//
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Ruta no encontrada' });

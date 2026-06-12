@@ -1,0 +1,9 @@
+@host = http://localhost:3000
+
+#Artículos
+
+## Recuperar todos los artículos
+
+###
+GET {{{host}}}/api/articles
+Content-Type: application/json
