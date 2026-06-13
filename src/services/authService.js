@@ -47,22 +47,30 @@ async function resolveUserRole(userId, fallbackRole = 'USER') {
 }
 
 async function loginUser(email, password) {
-  if (!email || !password) {
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+  if (!normalizedEmail || typeof password !== 'string' || !password) {
     const error = new Error('Email y contraseña son obligatorios');
     error.status = 400;
     throw error;
   }
 
-  const user = await userModel.getUserByEmail(email);
+  const user = await userModel.getUserByEmail(normalizedEmail);
 
-  if (!user || !verifyPassword(password, user.password)) {
-    const error = new Error('Credenciales incorrectas');
-    error.status = 401;
+  if (!user) {
+    const error = new Error('Usuario no encontrado');
+    error.status = 404;
+    throw error;
+  }
+
+  if (!verifyPassword(password, user.password)) {
+    const error = new Error('Contraseña incorrecta');
+    error.status = 400;
     throw error;
   }
 
   if (user.status !== 'ACTIVE') {
-    const error = new Error('Usuario no activo');
+    const error = new Error('Usuario inactivo');
     error.status = 403;
     throw error;
   }
@@ -84,7 +92,7 @@ async function loginUser(email, password) {
 
   return {
     token,
-    user: publicUser({ ...user, rol: effectiveRole }),
+    user: publicUser({ ...user, rol: effectiveRole, last_login: now }),
   };
 }
 

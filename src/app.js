@@ -9,11 +9,11 @@ app.use(express.json());
 
 app.use('/api', apiRoutes);
 
-app.use((res) => {
+app.use((_req, res) => {
     res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
-app.use((error,  res) => {
+app.use((error, _req, res, _next) => {
     const status = error.status || 500;
     res.status(status).json({
         message: error.message || 'Error interno del servidor',
