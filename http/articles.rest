@@ -1,0 +1,24 @@
+@baseUrl = http://localhost:3000
+
+
+### Solo articulos publicados
+GET {{baseUrl}}/api/articles/search
+
+### Pora categoryId
+GET {{baseUrl}}/api/articles/search?categoryId=1
+
+### Filtro por nombre de categoría
+GET {{baseUrl}}/api/articles/search?category=Deportivo
+
+### Filtro por rango de precio
+GET {{baseUrl}}/api/articles/search?minPrice=100&maxPrice=5000
+
+### Filtro por ciudad y país
+GET {{baseUrl}}/api/articles/search?city=Madrid&country=España
+
+### Filtro por código postal
+GET {{baseUrl}}/api/articles/search?postalCode=28001
+
+### Búsqueda combinada
+GET {{baseUrl}}/api/articles/search?categoryId=1&minPrice=500&maxPrice=3000&city=Madrid&country=España
+
