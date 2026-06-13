@@ -1,5 +1,5 @@
 const { query } = require('../config/database');
-const userModel = require('../user.model');
+const userModel = require('../models/user.model');
 const { hashPassword, verifyPassword } = require('../utils/password');
 const { signToken } = require('../utils/jwt');
 
