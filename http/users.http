@@ -14,14 +14,7 @@ Content-Type: application/json
 
 {
   "email": "{{email}}",
-  "password": "{{password}}",
-  "name": "Test",
-  "surname": "User",
-  "phone": "600000000",
-  "country": "España",
-  "city": "Madrid",
-  "postal_code": "28001",
-  "biography": "Usuario de prueba"
+  "password": "{{password}}"
 }
 
 ### Crear Cuenta — Email ya existe (409)
