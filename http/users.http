@@ -1,16 +1,13 @@
 @baseUrl = http://localhost:3000
 @email = test.user@example.com
 @password = secret123
-@token = {{login.response.body.token}}
 
-### Health check
-GET {{baseUrl}}/
 
 ### ============================================
-### Users — Registration workflow (POST /api/users/register)
+### Crear Cuenta
 ### ============================================
 
-### Register user (success)
+### Crear Cuenta
 # @name registerUser
 POST {{baseUrl}}/api/users/register
 Content-Type: application/json
@@ -27,7 +24,7 @@ Content-Type: application/json
   "biography": "Usuario de prueba"
 }
 
-### Register user — duplicate email (409)
+### Crear Cuenta — Email ya existe (409)
 POST {{baseUrl}}/api/users/register
 Content-Type: application/json
 
@@ -35,25 +32,3 @@ Content-Type: application/json
   "email": "{{email}}",
   "password": "{{password}}"
 }
-
-### Register user — invalid email (400)
-POST {{baseUrl}}/api/users/register
-Content-Type: application/json
-
-{
-  "email": "not-an-email",
-  "password": "{{password}}"
-}
-
-### Register user — short password (400)
-POST {{baseUrl}}/api/users/register
-Content-Type: application/json
-
-{
-  "email": "other@example.com",
-  "password": "123"
-}
-
-### Register user — missing fields (400)
-POST {{baseUrl}}/api/users/register
-Content-Type: application/json

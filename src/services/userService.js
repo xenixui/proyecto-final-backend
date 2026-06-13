@@ -23,6 +23,7 @@ async function registerUser(data) {
         country: data.country,
         city: data.city,
         postal_code: data.postal_code,
+        biography: data.biography,
     });
 
     const token = signToken({

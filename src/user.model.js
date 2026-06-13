@@ -1,7 +1,7 @@
 const { query, withTransaction } = require('./config/database');
 
 async function getUserByEmail(email) {
-    const users = await query(
+    const result = await query(
         `SELECT id, email, password, status, created_at, update_at, last_login
          FROM users
          WHERE email = ?
@@ -9,20 +9,20 @@ async function getUserByEmail(email) {
         [email],
     );
 
-    return users[0] || null;
+    return result[0] || null;
 }
 
 async function _getDefaultRole(connection) {
-    const [roles] = await connection.execute(
+    const [result] = await connection.execute(
         'SELECT id, rol FROM roles WHERE rol = ? LIMIT 1',
         ['USER'],
     );
 
-    if (!roles.length) {
+    if (!result.length) {
         throw new Error('Rol USER no encontrado');
     }
 
-    return roles[0];
+    return result[0];
 }
 
 async function createUser(data) {
