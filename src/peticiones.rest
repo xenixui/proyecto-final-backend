@@ -1,9 +1,18 @@
-@host = http://localhost:3000
+@host = http://localhost:3000/api
 
-#Artículos
-
-## Recuperar todos los artículos
-
+# Auth
+## Iniciar sesión
 ###
-GET {{{host}}}/api/articles
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@atiempo.com",
+    "password": "hashed_password_123"
+}
+
+# Artículos
+## Recuperar todos los artículos
+###
+GET {{host}}/articles
 Content-Type: application/json
