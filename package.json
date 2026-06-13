@@ -1,35 +1,39 @@
 {
-  "name": "proyecto-final-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "dev": "npx nodemon src/server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/xenixui/proyecto-final-backend.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/xenixui/proyecto-final-backend/issues"
-  },
-  "homepage": "https://github.com/xenixui/proyecto-final-backend#readme",
-  "dependencies": {
-    "axios": "^1.16.1",
-    "bcrypt": "^6.0.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.22.3",
-    "nodemailer": "^8.0.10"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
-  }
+    "name": "proyecto-final-backend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
+        "lint": "biome lint",
+        "format": "biome check --write",
+        "lf": "npm run format && npm run lint"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/xenixui/proyecto-final-backend.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/xenixui/proyecto-final-backend/issues"
+    },
+    "homepage": "https://github.com/xenixui/proyecto-final-backend#readme",
+    "dependencies": {
+        "axios": "^1.16.1",
+        "bcrypt": "^6.0.0",
+        "cors": "^2.8.6",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "mysql2": "^3.22.3",
+        "nodemailer": "^8.0.10"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.4.16",
+        "@types/express": "^5.0.6",
+        "nodemon": "^3.1.14"
+    }
 }
