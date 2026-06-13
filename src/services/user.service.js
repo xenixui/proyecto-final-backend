@@ -1,4 +1,4 @@
-const userModel = require('../user.model');
+const userModel = require('../models/user.model');
 const { hashPassword } = require('../utils/password');
 const { signToken } = require('../utils/jwt');
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,13 +17,6 @@ async function registerUser(data) {
     const user = await userModel.createUser({
         email,
         hashedPassword: hashPassword(data.password),
-        name: data.name,
-        surname: data.surname,
-        phone: data.phone,
-        country: data.country,
-        city: data.city,
-        postal_code: data.postal_code,
-        biography: data.biography,
     });
 
     const token = signToken({
