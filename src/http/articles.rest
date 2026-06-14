@@ -1,0 +1,22 @@
+@host = http://localhost:3000/api
+
+
+## Recuperar todos los artículos
+###
+GET {{host}}/articles?page=1&limit=10
+Content-Type: application/json
+
+## Recuperar artículo por ID
+###
+GET {{host}}/articles/30001
+Content-Type: application/json
+
+##Buscar artículos
+###
+GET {{host}}/articles/search/rolex air
+Content-Type: application/json
+
+## Filtrar artículos
+###
+GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
+Content-Type: application/json
