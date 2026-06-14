@@ -2,11 +2,7 @@ const messageService = require('../services/messageService');
 
 async function getChatMessages(req, res, next) {
   try {
-    const chatId = Number(req.params.id);
-
-    if (!Number.isInteger(chatId) || chatId <= 0) {
-      return res.status(400).json({ message: 'Id de chat inválido' });
-    }
+    const chatId = req.params.id;
 
     const result = await messageService.getChatMessagesAndMarkRead(chatId, req.user.id);
 
