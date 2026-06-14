@@ -10,16 +10,15 @@ const VALID_STATUSES = [
 ];
 
 async function searchArticles(queryParams) {
-    const filters = _normalizeFilters(queryParams);
+    const filters = _validateFilters(queryParams);
     const articles = await articlesModel.searchArticles(filters);
 
     return {
-        count: articles.length,
-        articles,
+        articles
     };
 }
 
-function _normalizeFilters(queryParams) {
+function _validateFilters(queryParams) {
     const filters = {};
 
     if (queryParams.status !== undefined && queryParams.status !== '') {
@@ -33,26 +32,16 @@ function _normalizeFilters(queryParams) {
         }
 
         filters.status = status;
-    } else {
-        filters.status = 'PUBLISHED';
     }
 
-    if (queryParams.categoryId !== undefined && queryParams.categoryId !== '') {
-        const categoryId = Number(queryParams.categoryId);
+    if (queryParams.styleId !== undefined && queryParams.styleId !== '') {
+        const styleId = Number(queryParams.styleId);
 
-        if (!Number.isInteger(categoryId) || categoryId <= 0) {
-            throw _error('categoryId debe ser un entero positivo', 400);
-        }
-
-        filters.categoryId = categoryId;
+        filters.styleId = styleId;
     }
 
     if (queryParams.category !== undefined && queryParams.category !== '') {
         const category = String(queryParams.category).trim();
-
-        if (!category) {
-            throw _error('category no puede estar vacío', 400);
-        }
 
         filters.category = category;
     }
@@ -60,37 +49,17 @@ function _normalizeFilters(queryParams) {
     if (queryParams.minPrice !== undefined && queryParams.minPrice !== '') {
         const minPrice = Number(queryParams.minPrice);
 
-        if (Number.isNaN(minPrice) || minPrice < 0) {
-            throw _error('minPrice debe ser un número positivo', 400);
-        }
-
         filters.minPrice = minPrice;
     }
 
     if (queryParams.maxPrice !== undefined && queryParams.maxPrice !== '') {
         const maxPrice = Number(queryParams.maxPrice);
 
-        if (Number.isNaN(maxPrice) || maxPrice < 0) {
-            throw _error('maxPrice debe ser un número positivo', 400);
-        }
-
         filters.maxPrice = maxPrice;
-    }
-
-    if (
-        filters.minPrice !== undefined &&
-        filters.maxPrice !== undefined &&
-        filters.minPrice > filters.maxPrice
-    ) {
-        throw _error('minPrice no puede ser mayor que maxPrice', 400);
     }
 
     if (queryParams.city !== undefined && queryParams.city !== '') {
         const city = String(queryParams.city).trim();
-
-        if (!city) {
-            throw _error('city no puede estar vacío', 400);
-        }
 
         filters.city = city;
     }
@@ -98,19 +67,11 @@ function _normalizeFilters(queryParams) {
     if (queryParams.country !== undefined && queryParams.country !== '') {
         const country = String(queryParams.country).trim();
 
-        if (!country) {
-            throw _error('country no puede estar vacío', 400);
-        }
-
         filters.country = country;
     }
 
     if (queryParams.postalCode !== undefined && queryParams.postalCode !== '') {
         const postalCode = String(queryParams.postalCode).trim();
-
-        if (!postalCode) {
-            throw _error('postalCode no puede estar vacío', 400);
-        }
 
         filters.postalCode = postalCode;
     }

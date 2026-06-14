@@ -9,7 +9,7 @@ async function searchArticles(filters) {
         params.push(filters.status);
     }
 
-    if (filters.categoryId) {
+    if (filters.styleId) {
         conditions.push('a.fk_styles_id = ?');
         params.push(filters.categoryId);
     }
@@ -25,24 +25,24 @@ async function searchArticles(filters) {
     }
 
     if (filters.city) {
-        conditions.push('LOWER(p.city) = LOWER(?)');
+        conditions.push('p.city = ?');
         params.push(filters.city);
     }
 
     if (filters.country) {
-        conditions.push('LOWER(p.country) = LOWER(?)');
+        conditions.push('p.country = ?');
         params.push(filters.country);
     }
 
     if (filters.postalCode) {
-        conditions.push('LOWER(p.postal_code) = LOWER(?)');
+        conditions.push('p.postal_code = ?');
         params.push(filters.postalCode);
     }
 
     const whereClause =
         conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const sql = `
+    const queryString = `
         SELECT
             a.id,
             a.title,
@@ -58,8 +58,8 @@ async function searchArticles(filters) {
             a.shipping_available,
             a.published_at,
             a.fk_users_id AS seller_id,
-            s.id AS category_id,
-            s.name AS category,
+            s.id AS style_id,
+            s.name AS style_name,
             p.city AS seller_city,
             p.country AS seller_country,
             p.postal_code AS seller_postal_code
@@ -70,7 +70,7 @@ async function searchArticles(filters) {
         ORDER BY a.published_at DESC, a.id DESC
     `;
 
-    return query(sql, params);
+    return query(queryString, params);
 }
 
 module.exports = {
