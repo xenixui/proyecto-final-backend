@@ -1,32 +1,23 @@
 const express = require('express');
 const cors = require('cors');
-const authRoutes = require('./routes/api/auth.routes');
+const apiRoutes = require('./routes/api.routes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'API Marketplace funcionando',
-    endpoints: {
-      auth: '/api/auth',
-    },
-  });
+app.use('/api', apiRoutes);
+
+app.use((res) => {
+    res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
-app.use('/api', require('./routes/api.routes'));
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
-});
-
-app.use((error, req, res, next) => {
-  const status = error.status || 500;
-  res.status(status).json({
-    message: error.message || 'Error interno del servidor',
-  });
+app.use((error,  res) => {
+    const status = error.status || 500;
+    res.status(status).json({
+        message: error.message || 'Error interno del servidor',
+    });
 });
 
 module.exports = app;
