@@ -1,6 +1,6 @@
 const ArticleModel = require('../models/articles.model');
 
-const getAll = async (req, res) => {
+async function getAll(req, res) {
     try {
         const result = await ArticleModel.getAll();
         return res.json(result);
@@ -8,7 +8,7 @@ const getAll = async (req, res) => {
         return res.status(500).json({
             message: 'Error al recuperar los artículos',
             error: error.message
-        })
+        });
     }
 }
 
