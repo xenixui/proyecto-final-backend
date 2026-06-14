@@ -2,7 +2,10 @@ const ArticleModel = require('../models/articles.model');
 
 async function getAll(req, res) {
     try {
-        const result = await ArticleModel.getAll();
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        
+        const result = await ArticleModel.getAll(page, limit);
         return res.json(result);
     } catch (error) {
         return res.status(500).json({

@@ -3,7 +3,7 @@
 
 ## Recuperar todos los artículos
 ###
-GET {{host}}/articles
+GET {{host}}/articles?page=1&limit=10
 Content-Type: application/json
 
 ##Buscar artículos
