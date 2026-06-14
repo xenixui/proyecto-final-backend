@@ -47,15 +47,7 @@ async function resolveUserRole(userId, fallbackRole = 'USER') {
 }
 
 async function loginUser(email, password) {
-  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-
-  if (!normalizedEmail || typeof password !== 'string' || !password) {
-    const error = new Error('Email y contraseña son obligatorios');
-    error.status = 400;
-    throw error;
-  }
-
-  const user = await userModel.getUserByEmail(normalizedEmail);
+  const user = await userModel.getUserByEmail(email);
 
   if (!user) {
     const error = new Error('Usuario no encontrado');
