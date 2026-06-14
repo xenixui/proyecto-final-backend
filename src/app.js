@@ -1,27 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes/api.routes');
-const authRoutes = require('./routes/authRoutes');
-const chatRoutes = require('./routes/chatRoutes');
+const chatRoutes = require('./routes/chat.routes');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({
-    message: 'API Marketplace funcionando',
-    endpoints: {
-      api: '/api',
-      auth: '/api/auth',
-      chats: '/api/chats',
-    },
-  });
-});
-
 app.use('/api', apiRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 
 app.use((req, res) => {
