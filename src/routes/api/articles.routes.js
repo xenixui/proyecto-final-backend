@@ -1,7 +1,8 @@
-const {getAll}  = require('../../controllers/articles.controller');
+const {getAll, search}  = require('../../controllers/articles.controller');
 const router = require('express').Router();
 
-//RuRecuperar todos los artículos
+//Recuperar todos los artículos
 router.get('/', getAll); 
+router.get('/search/:term', search);
 
 module.exports = router; 

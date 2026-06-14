@@ -5,3 +5,8 @@
 ###
 GET {{host}}/articles
 Content-Type: application/json
+
+##Buscar artículos
+###
+GET {{host}}/articles/search/clásico
+Content-Type: application/json
