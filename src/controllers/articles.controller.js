@@ -63,13 +63,20 @@ async function search(req, res) {
 async function filter(req, res) {
     try {
         const filters = {
-            status: req.query.status,
-            styleId: req.query.styleId,
             minPrice: req.query.minPrice,
             maxPrice: req.query.maxPrice,
-            city: req.query.city,
-            country: req.query.country,
-            postalCode: req.query.postalCode
+            brandId: req.query.brandId,
+            modelId: req.query.modelId,
+            styleId: req.query.styleId,
+            gender: req.query.gender,
+            movementType: req.query.movementType,
+            yearOfManufacture: req.query.yearOfManufacture,
+            condition: req.query.condition,
+            originalBox: req.query.originalBox === 'true' ? 1 : undefined,
+            originalPapers: req.query.originalPapers === 'true' ? 1 : undefined,
+            shippingAvailable: req.query.shippingAvailable === 'true' ? 1 
+                : req.query.shippingAvailable === 'false' ? 0 
+                : undefined,
         };
 
         const result = await ArticleModel.filter(filters);

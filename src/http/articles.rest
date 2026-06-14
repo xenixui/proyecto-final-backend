@@ -13,10 +13,10 @@ Content-Type: application/json
 
 ##Buscar artículos
 ###
-GET {{host}}/articles/search/rolex
+GET {{host}}/articles/search/rolex air
 Content-Type: application/json
 
 ## Filtrar artículos
 ###
-GET {{host}}/articles/filter?minPrice=100&maxPrice=2000&city=Madrid
+GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
 Content-Type: application/json

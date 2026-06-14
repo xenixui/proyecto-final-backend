@@ -50,33 +50,65 @@ async function filter(filters) {
     const conditions = [];
     const params = [];
 
-    if (filters.status) {
-        conditions.push('a.status = ?');
-        params.push(filters.status);
-    }
-    if (filters.styleId) {
-        conditions.push('a.fk_styles_id = ?');
-        params.push(filters.styleId); 
-    }
+    // Precio mínimo
     if (filters.minPrice !== undefined) {
         conditions.push('a.price >= ?');
         params.push(filters.minPrice);
     }
+    // Precio máximo
     if (filters.maxPrice !== undefined) {
         conditions.push('a.price <= ?');
         params.push(filters.maxPrice);
     }
-    if (filters.city) {
-        conditions.push('p.city = ?');
-        params.push(filters.city);
+    // Marca
+    if (filters.brandId) {
+        conditions.push('b.id = ?');
+        params.push(filters.brandId);
     }
-    if (filters.country) {
-        conditions.push('p.country = ?');
-        params.push(filters.country);
+    // Modelo
+    if (filters.modelId) {
+        conditions.push('m.id = ?');
+        params.push(filters.modelId);
     }
-    if (filters.postalCode) {
-        conditions.push('p.postal_code = ?');
-        params.push(filters.postalCode);
+    // Estilo
+    if (filters.styleId) {
+        conditions.push('a.fk_styles_id = ?');
+        params.push(filters.styleId);
+    }
+    // Género
+    if (filters.gender) {
+        conditions.push('m.gender = ?');
+        params.push(filters.gender);
+    }
+    // Tipo de movimiento
+    if (filters.movementType) {
+        conditions.push('m.movement_type = ?');
+        params.push(filters.movementType);
+    }
+    // Año de fabricación
+    if (filters.yearOfManufacture) {
+        conditions.push('a.year_of_manufacture = ?');
+        params.push(filters.yearOfManufacture);
+    }
+    // Estado de conservación
+    if (filters.condition) {
+        conditions.push('a.condition = ?');
+        params.push(filters.condition);
+    }
+    // Caja original
+    if (filters.originalBox !== undefined) {
+        conditions.push('a.original_box = ?');
+        params.push(filters.originalBox);
+    }
+    // Papeles originales
+    if (filters.originalPapers !== undefined) {
+        conditions.push('a.original_papers = ?');
+        params.push(filters.originalPapers);
+    }
+    // Envío disponible
+    if (filters.shippingAvailable !== undefined) {
+        conditions.push('a.shipping_available = ?');
+        params.push(filters.shippingAvailable);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -89,20 +121,26 @@ async function filter(filters) {
             a.price,
             a.condition,
             a.year_of_manufacture,
-            a.case_material,
-            a.bracelet_material,
             a.original_box,
             a.original_papers,
             a.status,
             a.shipping_available,
             a.published_at,
             a.fk_users_id AS seller_id,
+            b.id AS brand_id,
+            b.name AS brand_name,
+            m.id AS model_id,
+            m.name AS model_name,
+            m.gender,
+            m.movement_type,
             s.id AS style_id,
             s.name AS style_name,
             p.city AS seller_city,
             p.country AS seller_country,
             p.postal_code AS seller_postal_code
         FROM articles a
+        INNER JOIN models m ON m.id = a.fk_models_id
+        INNER JOIN brands b ON b.id = m.fk_brands_id
         INNER JOIN styles s ON s.id = a.fk_styles_id
         LEFT JOIN profiles p ON p.fk_usuarios_id = a.fk_users_id
         ${whereClause}
@@ -111,8 +149,6 @@ async function filter(filters) {
 
     return db.query(queryString, params);
 }
-
-
 
 module.exports = {
     getAll,
