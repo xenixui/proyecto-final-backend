@@ -1,6 +1,6 @@
-const authService = require('../services/authService');
+const authService = require('../services/auth.service');
 
-async function login(req, res, next) {
+async function login(req, res) {
   try {
     const { email, password } = req.body;
 
@@ -8,7 +8,7 @@ async function login(req, res, next) {
 
     return res.json(result);
   } catch (error) {
-    next(error);
+    return res.status(error.status).json(error.message);
   }
 }
 
