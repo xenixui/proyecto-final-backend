@@ -20,6 +20,16 @@ async function getAll(page = 1, limit = 10) {
     };
 }
 
+async function getById(article_id) {
+    const result = await db.query(
+        `SELECT * FROM articles WHERE id = ?`,
+        [article_id]);
+
+    if (result.length===0) return 0;
+
+    return result[0];
+}
+
 async function search(term) {
     const result = await db.query(
     `SELECT * 
@@ -27,16 +37,17 @@ async function search(term) {
         INNER JOIN models ON articles.fk_models_id = models.id
         INNER JOIN brands ON models.fk_brands_id = brands.id
         WHERE brands.name LIKE ?
-        AND models.name LIKE ?
-        AND models.reference LIKE ?
-        AND articles.description LIKE ?
+        OR models.name LIKE ?
+        OR models.reference LIKE ?
+        OR articles.description LIKE ?
         ORDER BY articles.published_at DESC`,
     [`%${term}%`, `%${term}%`, `%${term}%`, `%${term}%`]
     );
-    return result;
+    return result[0];
 }
 
 module.exports = {
     getAll,
+    getById,
     search
 }

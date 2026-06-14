@@ -6,7 +6,12 @@
 GET {{host}}/articles?page=1&limit=10
 Content-Type: application/json
 
+## Recuperar artículo por ID
+###
+GET {{host}}/articles/30001
+Content-Type: application/json
+
 ##Buscar artículos
 ###
-GET {{host}}/articles/search/clásico
+GET {{host}}/articles/search/rolex
 Content-Type: application/json

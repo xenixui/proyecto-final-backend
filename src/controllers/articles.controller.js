@@ -15,6 +15,25 @@ async function getAll(req, res) {
     }
 }
 
+async function getById(req, res) {
+    try {
+        
+        const result = await ArticleModel.getById(req.params.article_id)
+        if(!result) {
+            return res.status(404).json({
+                message: 'No existe artículo con este ID',
+            });
+        }
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar al artículo',
+            error: error.message
+        });
+    }
+}
+
+
 async function search(req, res) {
     try {
         const { term } = req.params;
@@ -43,5 +62,7 @@ async function search(req, res) {
 }
 
 module.exports = {
-    getAll, search
+    getAll, 
+    getById,
+    search
 }
