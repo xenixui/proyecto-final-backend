@@ -15,3 +15,8 @@ Content-Type: application/json
 ###
 GET {{host}}/articles/search/rolex
 Content-Type: application/json
+
+## Filtrar artículos
+###
+GET {{host}}/articles/filter?minPrice=100&maxPrice=2000&city=Madrid
+Content-Type: application/json

@@ -33,7 +33,6 @@ async function getById(req, res) {
     }
 }
 
-
 async function search(req, res) {
     try {
         const { term } = req.params;
@@ -61,8 +60,31 @@ async function search(req, res) {
     }
 }
 
+async function filter(req, res) {
+    try {
+        const filters = {
+            status: req.query.status,
+            styleId: req.query.styleId,
+            minPrice: req.query.minPrice,
+            maxPrice: req.query.maxPrice,
+            city: req.query.city,
+            country: req.query.country,
+            postalCode: req.query.postalCode
+        };
+
+        const result = await ArticleModel.filter(filters);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al filtrar los artículos',
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     getAll, 
     getById,
-    search
+    search,
+    filter
 }
