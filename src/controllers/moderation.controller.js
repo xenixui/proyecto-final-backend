@@ -109,7 +109,6 @@ async function resolveReport(req, res, next) {
 async function retireArticle(req, res, next) {
   try {
     const { id } = req.params;
-    const moderatorId = req.user.id;
 
     const result = await withTransaction(async (connection) => {
       const [articles] = await connection.execute(
@@ -144,7 +143,7 @@ async function retireArticle(req, res, next) {
         reportId: null,
       });
 
-      return { articleId: article.id, status: 'RETIRED', moderatorId };
+      return { articleId: article.id, status: 'RETIRED' };
     });
 
     return res.json({

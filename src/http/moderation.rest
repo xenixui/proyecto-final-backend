@@ -18,7 +18,7 @@ Authorization: {{token}}
 
 ## Listar reportes en revisión
 ###
-GET {{host}}/moderacion/reportes?status=UNDER REVIEW
+GET {{host}}/moderacion/reportes?status=UNDER%20REVIEW
 Authorization: {{token}}
 
 ## Ver detalle de un reporte
