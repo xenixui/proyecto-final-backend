@@ -1,4 +1,5 @@
 const userService = require('../services/user.service');
+const userModel = require('../models/user.model');
 
 async function register(req, res) {
     try {
@@ -9,6 +10,16 @@ async function register(req, res) {
     }
 }
 
+async function getMyPosts(req, res, next) {
+    try {
+        const posts = await userModel.getPostsByUserId(req.user.id);
+        return res.status(200).json({data: posts});
+    } catch(error) {
+        next(error);
+    }
+}
+
 module.exports = {
     register,
+    getMyPosts
 };

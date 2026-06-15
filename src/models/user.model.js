@@ -60,7 +60,39 @@ async function createUser(data) {
     });
 }
 
+async function getPostsByUserId(userId) {
+    const rows = await query(
+        `
+        SELECT
+        a.id,
+        a.title,  
+        a.price,
+        a.condition,
+        a.status,
+        a.year_of_manufacture,
+        a.original_box,
+        a.original_papers,
+        a.shipping_available,
+        a.published_at,
+        b.name  AS brand_name,
+        m.name  AS model_name,
+        m.reference AS model_reference,
+        img.image_url AS cover_image
+        FROM articles a
+        INNER JOIN models  m   ON a.fk_models_id = m.id
+        INNER JOIN brands  b   ON m.fk_brands_id = b.id
+        LEFT JOIN articles_images img
+               ON img.fk_articles_id = a.id AND img.is_cover = 1
+        WHERE a.fk_users_id = ?
+          AND a.status NOT IN ('DRAFT', 'RETIRED')
+        ORDER BY a.published_at DESC`,
+        [userId]
+    );
+  return rows;
+}
+
 module.exports = {
     getUserByEmail,
     createUser,
+    getPostsByUserId
 };

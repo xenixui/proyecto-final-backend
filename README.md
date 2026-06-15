@@ -61,6 +61,11 @@ POST `/api/auth/logout`
 **Headers:**
 `Authorization: Bearer <token>`
 
+### Obtener listado de ventas de un usuario
+GET `/api/users/my-posts`
+**Headers:**
+`Authorization: Bearer <token>`
+
 **Descripción:**
 Finaliza la sesión en el backend. El cliente debe eliminar el token localmente (por ejemplo, del localStorage o cookies). No es necesario hacer nada más en el backend, ya que el token es stateless.
 
