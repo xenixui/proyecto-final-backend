@@ -150,9 +150,14 @@ async function filter(filters) {
     return db.query(queryString, params);
 }
 
+async function retire(id) {
+    await db.query(`UPDATE articles SET status = 'RETIRED' WHERE id = ?`, [id]);
+}
+
 module.exports = {
     getAll,
     getById,
     search,
-    filter
+    filter,
+    retire,
 }

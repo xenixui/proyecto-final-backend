@@ -1,0 +1,43 @@
+@host = http://localhost:3000/api
+@token = <JWT_TOKEN_MODERADOR>
+
+
+## Listar reportes (paginado)
+###
+GET {{host}}/moderacion/reportes?page=1&limit=10
+Content-Type: application/json
+Authorization: ******
+
+## Detalle de un reporte
+###
+GET {{host}}/moderacion/reportes/1
+Content-Type: application/json
+Authorization: ******
+
+## Retirar artículo por moderación
+###
+PATCH {{host}}/moderacion/articulos/1/retirar
+Content-Type: application/json
+Authorization: ******
+
+## Resolver reporte como válido (artículo retirado)
+###
+PATCH {{host}}/moderacion/reportes/1/resolver
+Content-Type: application/json
+Authorization: ******
+
+{
+    "resolution": "RETIRED",
+    "moderator_note": "Artículo retirado por incumplimiento de normas."
+}
+
+## Resolver reporte como no válido (reporte cerrado)
+###
+PATCH {{host}}/moderacion/reportes/1/resolver
+Content-Type: application/json
+Authorization: ******
+
+{
+    "resolution": "APPROVED",
+    "moderator_note": "Reporte revisado, el artículo cumple las normas."
+}
