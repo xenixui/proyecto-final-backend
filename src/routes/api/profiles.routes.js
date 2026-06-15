@@ -1,6 +1,6 @@
 const express = require('express');
 const profileController = require('../../controllers/profile.controller');
-const authMiddleware = require('../../middlewares/authMiddleware');
+const authMiddleware = require('../../middlewares/auth.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const { getProfileByUserSchema } = require('../../schemas/profile.schema');
 
