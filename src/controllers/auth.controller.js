@@ -1,14 +1,5 @@
 const authService = require('../services/authService');
 
-async function register(req, res, next) {
-  try {
-    const result = await authService.registerUser(req.body);
-    return res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
 async function login(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -78,7 +69,6 @@ async function resetPassword(req, res, next) {
 }
 
 module.exports = {
-  register,
   login,
   me,
   logout,

@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+
+
+### ============================================
+### Crear Cuenta
+### ============================================
+
+### Crear Cuenta
+# @name registerUser
+POST {{baseUrl}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Crear Cuenta — Email ya existe (409)
+POST {{baseUrl}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}

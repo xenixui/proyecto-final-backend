@@ -4,78 +4,222 @@
       "id": 1,
       "name": "A. Lange & Söhne Datograph",
       "brandName": "A. Lange & Söhne",
-      "reference": "N/A",
-      "found": false
+      "reference": "410.025",
+      "found": true
     },
     {
       "id": 2,
       "name": "A. Lange & Söhne Lange 1",
       "brandName": "A. Lange & Söhne",
-      "reference": "N/A",
-      "found": false
+      "reference": "192.029",
+      "found": true
     },
     {
       "id": 3,
       "name": "A. Lange & Söhne Odysseus",
       "brandName": "A. Lange & Söhne",
-      "reference": "N/A",
-      "found": false
+      "reference": "363.068",
+      "found": true
     },
     {
       "id": 4,
       "name": "A. Lange & Söhne Saxonia",
       "brandName": "A. Lange & Söhne",
-      "reference": "N/A",
-      "found": false
+      "reference": "201.027",
+      "found": true
     },
     {
       "id": 5,
       "name": "A. Lange & Söhne Zeitwerk",
       "brandName": "A. Lange & Söhne",
-      "reference": "N/A",
-      "found": false
+      "reference": "140.029",
+      "found": true
     },
     {
       "id": 6,
       "name": "Audemars Piguet Code 11.59",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "26393NB.OO.A002KB.01",
+      "found": true
     },
     {
       "id": 9,
       "name": "Audemars Piguet Royal Oak Double Balance Wheel Openworked",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "15407ST.OO.1220ST.01",
+      "found": true
     },
     {
       "id": 10,
       "name": "Audemars Piguet Royal Oak Dual Time",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "25730ST",
+      "found": true
     },
     {
       "id": 12,
       "name": "Audemars Piguet Royal Oak Lady",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "15451ST.ZZ.1256ST.03",
+      "found": true
     },
     {
       "id": 13,
       "name": "Audemars Piguet Royal Oak Offshore",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "15600TI.OO.A343CA.01",
+      "found": true
     },
     {
       "id": 15,
       "name": "Audemars Piguet Royal Oak Offshore Chronograph Volcano",
       "brandName": "Audemars Piguet",
-      "reference": "N/A",
-      "found": false
+      "reference": "26170ST.OO.D101CR.01",
+      "found": true
+    },
+    {
+      "id": 17,
+      "name": "Audemars Piguet Royal Oak Offshore Lady",
+      "brandName": "Audemars Piguet",
+      "reference": "26231ST.ZZ.D027CA.01",
+      "found": true
+    },
+    {
+      "id": 24,
+      "name": "Blancpain Villeret Ultra-Slim",
+      "brandName": "Blancpain",
+      "reference": "6651-1127-55B",
+      "found": true
+    },
+    {
+      "id": 27,
+      "name": "Rolex Submariner",
+      "brandName": "Rolex",
+      "reference": "116610",
+      "found": true
+    },
+    {
+      "id": 28,
+      "name": "Omega Seamaster",
+      "brandName": "Omega",
+      "reference": "212.30.36.20.01.002",
+      "found": true
+    },
+    {
+      "id": 29,
+      "name": "Breitling Navitimer",
+      "brandName": "Breitling",
+      "reference": "A13024",
+      "found": true
+    },
+    {
+      "id": 30,
+      "name": "TAG Heuer Carrera",
+      "brandName": "TAG Heuer",
+      "reference": "CV2A1A.BA0738",
+      "found": true
+    },
+    {
+      "id": 31,
+      "name": "Seiko SKX007",
+      "brandName": "Seiko",
+      "reference": "SKX007K2",
+      "found": true
+    },
+    {
+      "id": 32,
+      "name": "Citizen Promaster",
+      "brandName": "Citizen",
+      "reference": "BN0150-28E",
+      "found": true
+    },
+    {
+      "id": 33,
+      "name": "IWC Pilot",
+      "brandName": "IWC",
+      "reference": "IW3717-02",
+      "found": true
+    },
+    {
+      "id": 34,
+      "name": "Hamilton Khaki",
+      "brandName": "Hamilton",
+      "reference": "H64425411",
+      "found": true
+    },
+    {
+      "id": 35,
+      "name": "Tissot PRX",
+      "brandName": "Tissot",
+      "reference": "T137.407.11.351.00",
+      "found": true
+    },
+    {
+      "id": 36,
+      "name": "Longines Conquest",
+      "brandName": "Longines",
+      "reference": "L2.785.4.76.3",
+      "found": true
+    },
+    {
+      "name": "Rolex Oyster Perpetual 34",
+      "brandName": "Rolex",
+      "reference": "1002",
+      "found": true
+    },
+    {
+      "name": "Rolex Explorer",
+      "brandName": "Rolex",
+      "reference": "1016",
+      "found": true
+    },
+    {
+      "name": "Rolex Submariner (No Date)",
+      "brandName": "Rolex",
+      "reference": "114060",
+      "found": true
+    },
+    {
+      "name": "Rolex Air King",
+      "brandName": "Rolex",
+      "reference": "114200",
+      "found": true
+    },
+    {
+      "name": "Rolex Explorer",
+      "brandName": "Rolex",
+      "reference": "114270",
+      "found": true
+    },
+    {
+      "name": "Rolex Oyster Perpetual 39",
+      "brandName": "Rolex",
+      "reference": "114300",
+      "found": true
+    },
+    {
+      "name": "Rolex Oyster Perpetual Date",
+      "brandName": "Rolex",
+      "reference": "115200",
+      "found": true
+    },
+    {
+      "name": "Rolex Oyster Perpetual Date",
+      "brandName": "Rolex",
+      "reference": "115234",
+      "found": true
+    },
+    {
+      "name": "Rolex Oyster Perpetual 36",
+      "brandName": "Rolex",
+      "reference": "116000",
+      "found": true
+    },
+    {
+      "name": "Rolex Datejust 36",
+      "brandName": "Rolex",
+      "reference": "116200",
+      "found": true
     }
   ],
   "failedModels": [
@@ -84,35 +228,104 @@
       "name": "Audemars Piguet Royal Oak",
       "brandName": "Audemars Piguet",
       "error": "Error buscando referencia: Request failed with status code 400",
-      "attemptedAt": "2026-05-31T18:16:53.773Z"
+      "attemptedAt": "2026-06-03T20:50:26.001Z"
     },
     {
       "id": 8,
       "name": "Audemars Piguet Royal Oak Chronograph",
       "brandName": "Audemars Piguet",
       "error": "Error buscando referencia: Request failed with status code 400",
-      "attemptedAt": "2026-05-31T18:16:54.247Z"
+      "attemptedAt": "2026-06-03T20:50:26.161Z"
     },
     {
       "id": 11,
       "name": "Audemars Piguet Royal Oak Jumbo",
       "brandName": "Audemars Piguet",
       "error": "Error buscando referencia: Request failed with status code 400",
-      "attemptedAt": "2026-05-31T18:16:55.781Z"
+      "attemptedAt": "2026-06-03T20:50:26.315Z"
     },
     {
       "id": 14,
       "name": "Audemars Piguet Royal Oak Offshore Chronograph",
       "brandName": "Audemars Piguet",
       "error": "Error buscando referencia: Request failed with status code 400",
-      "attemptedAt": "2026-05-31T18:16:57.326Z"
+      "attemptedAt": "2026-06-03T20:50:26.470Z"
+    },
+    {
+      "id": 16,
+      "name": "Audemars Piguet Royal Oak Offshore Diver",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:26.626Z"
+    },
+    {
+      "id": 18,
+      "name": "Audemars Piguet Royal Oak Perpetual Calendar",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:26.784Z"
+    },
+    {
+      "id": 19,
+      "name": "Audemars Piguet Royal Oak Selfwinding",
+      "brandName": "Audemars Piguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:26.943Z"
+    },
+    {
+      "id": 20,
+      "name": "Blancpain Fifty Fathoms",
+      "brandName": "Blancpain",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:27.095Z"
+    },
+    {
+      "id": 21,
+      "name": "Blancpain Fifty Fathoms Bathyscaphe",
+      "brandName": "Blancpain",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:27.249Z"
+    },
+    {
+      "id": 22,
+      "name": "Blancpain Villeret",
+      "brandName": "Blancpain",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:27.404Z"
+    },
+    {
+      "id": 23,
+      "name": "Blancpain Villeret Quantième Complet",
+      "brandName": "Blancpain",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:27.554Z"
+    },
+    {
+      "id": 25,
+      "name": "Breguet Classique",
+      "brandName": "Breguet",
+      "error": "Error buscando referencia: Request failed with status code 400",
+      "attemptedAt": "2026-06-03T20:50:27.707Z"
+    },
+    {
+      "id": 26,
+      "name": "Breguet Marine",
+      "brandName": "Breguet",
+      "error": "Error buscando referencia: Request failed with status code 402",
+      "attemptedAt": "2026-06-03T20:50:27.864Z"
+    },
+    {
+      "brandName": "Rolex",
+      "name": "",
+      "error": "Request failed with status code 402",
+      "attemptedAt": "2026-06-03T20:56:57.294Z"
     }
   ],
   "stats": {
-    "startedAt": "2026-05-31T18:16:50.509Z",
-    "lastUpdateAt": "2026-05-31T18:16:57.841Z",
-    "totalProcessed": 15,
-    "totalSuccess": 11,
-    "totalFailed": 4
+    "startedAt": "2026-06-01T16:27:06.199Z",
+    "lastUpdateAt": "2026-06-05T15:53:24.778Z",
+    "totalProcessed": 47,
+    "totalSuccess": 33,
+    "totalFailed": 14
   }
 }
