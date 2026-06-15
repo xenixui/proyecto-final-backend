@@ -1,0 +1,59 @@
+@host = http://localhost:3000/api
+@token = ******
+
+
+### ============================================
+### Moderación — Reportes
+### ============================================
+
+## Listar todos los reportes
+###
+GET {{host}}/moderacion/reportes
+Authorization: {{token}}
+
+## Listar reportes pendientes
+###
+GET {{host}}/moderacion/reportes?status=PENDING
+Authorization: {{token}}
+
+## Listar reportes en revisión
+###
+GET {{host}}/moderacion/reportes?status=UNDER REVIEW
+Authorization: {{token}}
+
+## Ver detalle de un reporte
+###
+GET {{host}}/moderacion/reportes/1
+Authorization: {{token}}
+
+## Resolver reporte como VÁLIDO (retirar artículo)
+###
+PATCH {{host}}/moderacion/reportes/1/resolver
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "decision": "RETIRED",
+  "moderator_note": "Artículo retirado por contenido engañoso."
+}
+
+## Resolver reporte como NO VÁLIDO (cerrar sin acción)
+###
+PATCH {{host}}/moderacion/reportes/1/resolver
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "decision": "APPROVED",
+  "moderator_note": "Reporte revisado. No se detecta infracción."
+}
+
+
+### ============================================
+### Moderación — Artículos
+### ============================================
+
+## Retirar un artículo directamente
+###
+PATCH {{host}}/moderacion/articulos/30001/retirar
+Authorization: {{token}}
