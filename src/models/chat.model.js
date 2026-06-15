@@ -1,4 +1,5 @@
 const db = require('../config/database');
+
 const findChat = async (fk_buyer_id, fk_articles_id) => {
     const result = await db.query(
         `SELECT * FROM chats 
@@ -9,7 +10,7 @@ const findChat = async (fk_buyer_id, fk_articles_id) => {
     return result[0]
 }
 
-const findAllByUser = async (userId) => {
+const findAllByUser = async (fk_buyer_id) => {
     const result = await db.query(
         `SELECT chats.id,
             chats.created_at,
@@ -20,7 +21,7 @@ const findAllByUser = async (userId) => {
         INNER JOIN articles ON chats.fk_articles_id = articles.id
         INNER JOIN profiles ON chats.fk_buyer_id = profiles.fk_usuarios_id
         WHERE chats.fk_buyer_id = ?`,
-        [userId]
+        [fk_buyer_id]
     );
     if (result.length === 0) return null
     return result;
