@@ -7,4 +7,4 @@ router.use('/articles', require('./api/articles.routes'));
 router.use('/profiles', require('./api/profiles.routes'));
 router.use('/users', require('./api/users.routes'));
 
-module.exports = router; 
+module.exports = router;

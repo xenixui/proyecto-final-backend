@@ -5,8 +5,7 @@ const getProfileByUserSchema = yup.object({
         .number()
         .typeError('El id de usuario debe ser un número válido')
         .required('El id de usuario es obligatorio')
-        .integer('El id de usuario debe ser un número entero')
-        
+        .integer('El id de usuario debe ser un número entero'),
 });
 
 module.exports = {

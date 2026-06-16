@@ -1,10 +1,9 @@
 const { query } = require('../config/database');
 
 async function getProfileByUserId(userId) {
-    const users = await query(
-        'SELECT id FROM users WHERE id = ? LIMIT 1',
-        [userId],
-    );
+    const users = await query('SELECT id FROM users WHERE id = ? LIMIT 1', [
+        userId,
+    ]);
 
     if (!users[0]) {
         const error = new Error('Usuario no encontrado');
