@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+
+@password = secret123
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwMDQsImVtYWlsIjoidGVzdC51c2VyQGV4YW1wbGUuY29tIiwicm9sIjoidXNlciIsImlhdCI6MTc4MTYyMTYzMCwiZXhwIjoxNzgxNzA4MDMwfQ.Qpq2jlKtWt6LPp1PYPMVoppGRQgqw69nyBJ2tC7fRJc
+
+### Login para obtener token
+
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+
+### ============================================
+### Reports
+### ============================================
+
+# Crear un report
+POST {{baseUrl}}/api/reports
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "reason": "scam_attempt",
+  "comments": "El vendedor me ha pedido pagar por fuera de la plataforma con un link raro.",
+  "fk_articles_id": 1
+}
