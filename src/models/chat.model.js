@@ -1,6 +1,6 @@
 const db = require('../config/database');
 
-const findChat = async (fk_buyer_id, fk_articles_id) => {
+async function findChatByBuyerAndArticle (fk_buyer_id, fk_articles_id) {
     const result = await db.query(
         `SELECT * FROM chats 
         WHERE fk_buyer_id = ? AND fk_articles_id = ?`,
@@ -10,7 +10,7 @@ const findChat = async (fk_buyer_id, fk_articles_id) => {
     return result[0]
 }
 
-const findAllByUser = async (fk_buyer_id) => {
+async function findAllByUser (fk_buyer_id) {
     const result = await db.query(
         `SELECT chats.id,
             chats.created_at,
@@ -27,7 +27,7 @@ const findAllByUser = async (fk_buyer_id) => {
     return result;
 }
 
-const insertChat = async ({ fk_buyer_id, fk_articles_id }) => {
+async function insertChat ({ fk_buyer_id, fk_articles_id }) {
     const result = await db.query(
         `INSERT INTO chats (created_at, update_at, fk_buyer_id, fk_articles_id) VALUES
         (NOW(), NOW(), ?, ?)`,
@@ -38,7 +38,7 @@ const insertChat = async ({ fk_buyer_id, fk_articles_id }) => {
 
 
 module.exports = {
-    findChat,
+    findChatByBuyerAndArticle,
     findAllByUser,
     insertChat
 

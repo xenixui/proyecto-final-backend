@@ -1,12 +1,12 @@
-const ChatModel = require('../models/chat.model');
+const chatModel = require('../models/chat.model');
 
-const getAllChats = async (fk_buyer_id) => {
-    const chats = await ChatModel.findAllByUser(fk_buyer_id)
+async function getAllChats (fk_buyer_id) {
+    const chats = await chatModel.findAllByUser(fk_buyer_id)
     return chats;
 }
 
-const createChat = async (fk_buyer_id, fk_articles_id) => {
-    const chatExist = await ChatModel.findChat(fk_buyer_id, fk_articles_id);
+async function createChat (fk_buyer_id, fk_articles_id) {
+    const chatExist = await chatModel.findChatByBuyerAndArticle(fk_buyer_id, fk_articles_id);
     console.log( chatExist);
     if (chatExist) {
         return {
@@ -15,7 +15,7 @@ const createChat = async (fk_buyer_id, fk_articles_id) => {
         }
     }
 
-    const nuevoChat = await ChatModel.insertChat({
+    const nuevoChat = await chatModel.insertChat({
         fk_buyer_id,
         fk_articles_id
     })
