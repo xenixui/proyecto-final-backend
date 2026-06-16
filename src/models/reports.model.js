@@ -50,14 +50,14 @@ async function getHistory(page = 1, limit = 10) {
          FROM reports r
          INNER JOIN articles a ON a.id = r.fk_articles_id
          INNER JOIN users u ON u.id = r.fk_users_id
-         WHERE r.status = 'RESOLVED'
+         WHERE r.status IN ('RESOLVED', 'REJECTED')
          ORDER BY r.resolved_at DESC
          LIMIT ? OFFSET ?`,
         [limit, offset],
     );
 
     const total = await db.query(
-        `SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'`,
+        `SELECT COUNT(*) AS total FROM reports WHERE status IN ('RESOLVED', 'REJECTED')`,
     );
 
     return {
@@ -111,7 +111,7 @@ async function reject(id, { moderatorId, moderatorNote }) {
          SET status = 'REJECTED',
              resolved_at = ?,
              fk_moderator_id = ?,
-             resolution = 'REJECTED',
+             resolution = NULL,
              moderator_note = ?
          WHERE id = ?`,
         [now, moderatorId, moderatorNote || null, id],

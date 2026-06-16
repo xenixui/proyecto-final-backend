@@ -35,10 +35,6 @@ async function getReportById(id) {
 }
 
 async function resolveReport(id, moderatorId, { resolution, moderatorNote }) {
-    if (!['APPROVED', 'RETIRED'].includes(resolution)) {
-        throw _error('La resolución debe ser APPROVED o RETIRED', 400);
-    }
-
     const report = await reportsModel.getById(id);
     if (!report) throw _error('Reporte no encontrado', 404);
     if (report.resolved_at) throw _error('El reporte ya ha sido resuelto', 409);
