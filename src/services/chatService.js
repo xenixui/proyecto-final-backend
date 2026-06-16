@@ -7,7 +7,6 @@ async function getAllChats (fk_buyer_id) {
 
 async function createChat (fk_buyer_id, fk_articles_id) {
     const chatExist = await chatModel.findChatByBuyerAndArticle(fk_buyer_id, fk_articles_id);
-    console.log( chatExist);
     if (chatExist) {
         return {
             id: chatExist.id,
