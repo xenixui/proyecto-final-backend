@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+@wrongPassword = wrong-secret
+@token = {{login.response.body.token}}
+
+
+### ============================================
+### Iniciar Sesion
+### ============================================
+
+### Iniciar Sesion
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Iniciar Sesion - Credenciales obligatorias (400)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### Iniciar Sesion - Usuario no encontrado (404)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "missing.user@example.com",
+  "password": "{{password}}"
+}
+
+### Iniciar Sesion - Password incorrecta (400)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{wrongPassword}}"
+}
