@@ -1,0 +1,17 @@
+@host = http://localhost:3000/api
+
+
+## Recuperar todas las marcas (paginación por defecto)
+###
+GET {{host}}/brands
+Content-Type: application/json
+
+## Recuperar marcas con paginación explícita
+###
+GET {{host}}/brands?page=1&limit=10
+Content-Type: application/json
+
+## Buscar marcas por nombre
+###
+GET {{host}}/brands/search/rolex
+Content-Type: application/json

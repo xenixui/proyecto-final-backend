@@ -5,6 +5,7 @@ const usersRoutes = require('./api/users.route');
 
 router.use('/auth', require('./api/auth.routes'));
 router.use('/articles', require('./api/articles.routes'));
-router.use("/users", usersRoutes);
+router.use('/brands', require('./api/brands.routes'));
+router.use('/users', usersRoutes);
 
-module.exports = router; 
+module.exports = router;
