@@ -2,9 +2,15 @@
 @token = <JWT_TOKEN_MODERADOR>
 
 
-## Listar reportes (paginado)
+## Listar reportes activos (paginado)
 ###
 GET {{host}}/moderacion/reportes?page=1&limit=10
+Content-Type: application/json
+Authorization: ******
+
+## Histórico de reportes resueltos (paginado)
+###
+GET {{host}}/moderacion/reportes/historial?page=1&limit=10
 Content-Type: application/json
 Authorization: ******
 
@@ -40,4 +46,14 @@ Authorization: ******
 {
     "resolution": "APPROVED",
     "moderator_note": "Reporte revisado, el artículo cumple las normas."
+}
+
+## Rechazar un reporte
+###
+PATCH {{host}}/moderacion/reportes/1/rechazar
+Content-Type: application/json
+Authorization: ******
+
+{
+    "moderator_note": "Reporte no válido, no se encontró infracción."
 }

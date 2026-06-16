@@ -6,7 +6,7 @@ async function getAll(page = 1, limit = 10) {
     const offset = (page - 1) * limit;
 
     const data = await db.query(
-        `SELECT r.id, r.reason, r.status, r.created_at, r.resolved_at,
+        `SELECT r.id, r.reason, r.comments, r.status, r.created_at, r.resolved_at,
                 r.resolution, r.moderator_note,
                 r.fk_articles_id AS article_id,
                 r.fk_users_id AS reporter_id,
@@ -33,9 +33,45 @@ async function getAll(page = 1, limit = 10) {
     };
 }
 
+async function getHistory(page = 1, limit = 10) {
+    page = Math.max(1, parseInt(page, 10) || 1);
+    limit = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
+    const offset = (page - 1) * limit;
+
+    const data = await db.query(
+        `SELECT r.id, r.reason, r.comments, r.status, r.created_at, r.resolved_at,
+                r.resolution, r.moderator_note,
+                r.fk_articles_id AS article_id,
+                r.fk_users_id AS reporter_id,
+                r.fk_moderator_id AS moderator_id,
+                a.title AS article_title,
+                a.fk_users_id AS seller_id,
+                u.email AS reporter_email
+         FROM reports r
+         INNER JOIN articles a ON a.id = r.fk_articles_id
+         INNER JOIN users u ON u.id = r.fk_users_id
+         WHERE r.status = 'RESOLVED'
+         ORDER BY r.resolved_at DESC
+         LIMIT ? OFFSET ?`,
+        [limit, offset],
+    );
+
+    const total = await db.query(
+        `SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'`,
+    );
+
+    return {
+        page,
+        per_page: limit,
+        total: total[0].total,
+        total_pages: Math.ceil(total[0].total / limit),
+        data,
+    };
+}
+
 async function getById(id) {
     const result = await db.query(
-        `SELECT r.id, r.reason, r.status, r.created_at, r.resolved_at,
+        `SELECT r.id, r.reason, r.comments, r.status, r.created_at, r.resolved_at,
                 r.resolution, r.moderator_note,
                 r.fk_articles_id AS article_id,
                 r.fk_users_id AS reporter_id,
@@ -68,4 +104,18 @@ async function resolve(id, { moderatorId, resolution, moderatorNote }) {
     );
 }
 
-module.exports = { getAll, getById, resolve };
+async function reject(id, { moderatorId, moderatorNote }) {
+    const now = new Date();
+    await db.query(
+        `UPDATE reports
+         SET status = 'REJECTED',
+             resolved_at = ?,
+             fk_moderator_id = ?,
+             resolution = 'REJECTED',
+             moderator_note = ?
+         WHERE id = ?`,
+        [now, moderatorId, moderatorNote || null, id],
+    );
+}
+
+module.exports = { getAll, getHistory, getById, resolve, reject };
