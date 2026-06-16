@@ -1,16 +1,39 @@
 const yup = require('yup');
 
-const loginUserSchema = yup.object({
-    email: yup
-        .string()
-        .required('Email es obligatorio')
-        .trim()
-        .lowercase(),
-    password: yup
-        .string()
-        .required('La contraseña es obligatoria'),
+const emailSchema = yup
+  .string()
+  .trim()
+  .lowercase()
+  .email('El formato del email no es válido')
+  .required('El email es obligatorio');
+
+const passwordSchema = yup
+  .string()
+  .required('La contraseña es obligatoria')
+  .min(6, 'La contraseña debe tener al menos 6 caracteres');
+
+const loginSchema = yup.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+
+const changePasswordSchema = yup.object({
+  currentPassword: yup.string().required('La contraseña actual es obligatoria'),
+  newPassword: passwordSchema,
+});
+
+const forgotPasswordSchema = yup.object({
+  email: emailSchema,
+});
+
+const resetPasswordSchema = yup.object({
+  token: yup.string().required('El token es obligatorio'),
+  newPassword: passwordSchema,
 });
 
 module.exports = {
-    loginUserSchema,
+  loginSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 };

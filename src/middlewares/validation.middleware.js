@@ -8,6 +8,8 @@ function validateSchema(schema, source = "body") {
 
       if (source === "query") {
         req.validatedQuery = validated;
+      } else if (source === "params") {
+        req.params = validated;
       } else if (source === "body") {
         req.body = validated;
       } else if (source === "params") {
