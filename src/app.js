@@ -15,7 +15,7 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
-app.use((error, req, res, next) => {
+app.use((error, _req, res) => {
   const status = error.status || 500;
   res.status(status).json({
     message: error.message || 'Error interno del servidor',
