@@ -3,7 +3,7 @@
 
 @password = secret123
 
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwMDQsImVtYWlsIjoidGVzdC51c2VyQGV4YW1wbGUuY29tIiwicm9sIjoidXNlciIsImlhdCI6MTc4MTYyMTYzMCwiZXhwIjoxNzgxNzA4MDMwfQ.Qpq2jlKtWt6LPp1PYPMVoppGRQgqw69nyBJ2tC7fRJc
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwMDQsImVtYWlsIjoidGVzdC51c2VyQGV4YW1wbGUuY29tIiwicm9sIjoidXNlciIsImlhdCI6MTc4MTY5MTQwNywiZXhwIjoxNzgxNzc3ODA3fQ.quGSbhzBz0Klk0MQu-k6BeR8J6LSoUmhu9NXfxfq80c
 
 ### Login para obtener token
 
@@ -26,7 +26,19 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "reason": "scam_attempt",
-  "comments": "El vendedor me ha pedido pagar por fuera de la plataforma con un link raro.",
-  "fk_articles_id": 1
+  "reason": "fake_item",
+  "comments": "Sospecho que este reloj es falso",
+  "fk_articles_id": 60001
+}
+
+###
+# Creación de un reporte sin reason
+POST {{baseUrl}}/api/reports
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  
+  "comments": "Sospecho que este reloj es falso",
+  "fk_articles_id": 90001
 }
