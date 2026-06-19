@@ -14,11 +14,8 @@ app.use(express.json());
 app.use('/api', apiRoutes);
 app.use('/api/chats', chatRoutes);
 
-app.use('/api/auth', authRoutes);
-app.use("/api/profile", profileRoutes);
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+    res.status(404).json({ message: 'Ruta no encontrada' });
+app.use((_req, res) => {
 });
 
 app.use((error, _req, res) => {
