@@ -7,5 +7,6 @@ router.use('/articles', require('./api/articles.routes'));
 router.use('/brands', require('./api/brands.routes'));
 router.use('/profiles', require('./api/profiles.routes'));
 router.use('/users', require('./api/users.routes'));
+router.use('/chats', require('./api/chat.routes'));
 
 module.exports = router;
