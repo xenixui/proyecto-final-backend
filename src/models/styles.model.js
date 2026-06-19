@@ -15,6 +15,13 @@ async function getById(id) {
   return result[0] || null;
 }
 
+async function searchByName(term) {
+  return db.query(
+    'SELECT id, name, description FROM styles WHERE name LIKE ? ORDER BY name ASC',
+    [`%${term}%`],
+  );
+}
+
 async function create({ name, description }) {
   const result = await db.query(
     'INSERT INTO styles (name, description) VALUES (?, ?)',
@@ -41,6 +48,7 @@ async function remove(id) {
 module.exports = {
   getAll,
   getById,
+  searchByName,
   create,
   update,
   remove,

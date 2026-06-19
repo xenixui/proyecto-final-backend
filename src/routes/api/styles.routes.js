@@ -5,6 +5,7 @@ const checkRole = require('../../middlewares/rol.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const {
     styleIdParamSchema,
+    styleSearchParamSchema,
     createStyleSchema,
     updateStyleSchema,
 } = require('../../schemas/style.schema');
@@ -12,6 +13,13 @@ const {
 const router = express.Router();
 
 router.get('/', authMiddleware, stylesController.getAll);
+
+router.get(
+    '/search/:term',
+    authMiddleware,
+    validateSchema(styleSearchParamSchema, 'params'),
+    stylesController.searchByName,
+);
 
 router.get(
     '/:id',

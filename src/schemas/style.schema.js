@@ -9,6 +9,15 @@ const styleIdParamSchema = yup.object({
         .positive('El id del estilo debe ser un número positivo'),
 });
 
+const styleSearchParamSchema = yup.object({
+    term: yup
+        .string()
+        .required('El término de búsqueda es obligatorio')
+        .trim()
+        .min(1, 'El término de búsqueda es obligatorio')
+        .max(50, 'El término de búsqueda no puede superar los 50 caracteres'),
+});
+
 const createStyleSchema = yup.object({
     name: yup
         .string()
@@ -27,6 +36,7 @@ const updateStyleSchema = createStyleSchema;
 
 module.exports = {
     styleIdParamSchema,
+    styleSearchParamSchema,
     createStyleSchema,
     updateStyleSchema,
 };

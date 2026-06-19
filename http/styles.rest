@@ -46,6 +46,26 @@ GET {{baseUrl}}/api/styles
 
 
 ### ============================================
+### Buscar estilos por nombre
+### ============================================
+
+### Buscar estilos por nombre (200)
+GET {{baseUrl}}/api/styles/search/dep
+Authorization: Bearer {{token}}
+
+### Buscar estilos — Sin token (401)
+GET {{baseUrl}}/api/styles/search/dep
+
+### Buscar estilos — Término vacío (400)
+GET {{baseUrl}}/api/styles/search/%20
+Authorization: Bearer {{token}}
+
+### Buscar estilos — Sin resultados (404)
+GET {{baseUrl}}/api/styles/search/zzzzzz
+Authorization: Bearer {{token}}
+
+
+### ============================================
 ### Obtener estilo por id
 ### ============================================
 

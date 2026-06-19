@@ -31,6 +31,20 @@ async function getById(req, res) {
     }
 }
 
+async function searchByName(req, res) {
+    try {
+        const { term } = req.params;
+        const result = await styleModel.searchByName(term);
+
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al buscar estilos',
+            error: error.message,
+        });
+    }
+}
+
 async function create(req, res) {
     try {
         const result = await styleModel.create(req.body);
@@ -96,6 +110,7 @@ async function remove(req, res) {
 module.exports = {
     getAll,
     getById,
+    searchByName,
     create,
     update,
     remove,
