@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes/api.routes');
 const chatRoutes = require('./routes/chat.routes');
+const authRoutes = require('./routes/api/auth.routes');
+const profileRoutes = require('./routes/api/profiles.routes');
 
 
 const app = express();
