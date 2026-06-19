@@ -93,14 +93,13 @@ async function filter(req, res) {
 async function create(req, res) {
     try {
 
-        const userId = req.user.id;
-        
-        const articleId = await ArticleModel.create(req.body, userId);
-        const newArticle = await ArticleModel.getById(articleId);
-        
-        return res.status(200).json({
-            message: 'Artículo creado correctamente',
-            article: newArticle,
+        const article = await ArticleModel.create(
+            req.body,
+            req.user.id,
+        );
+
+        return res.status(201).json({
+            article,
         });
 
     } catch(error) {

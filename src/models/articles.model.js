@@ -183,18 +183,34 @@ async function create(data, userId) {
 
         const articleId = insertArticleResult.insertId;
 
-        for (let i = 0; i < data.images.length; i++) {
-            const image = data.images[i];
-            const isCover = image.is_cover || i === 0;
-
-            await connection.execute(
-                `INSERT INTO articles_images (image_url, is_cover, fk_articles_id)
-                 VALUES (?, ?, ?)`,
-                [image.image_url, isCover ? 1 : 0, articleId],
+        if (data.images.length > 0) {
+        
+            const values = data.images.map((image, i) => {
+                const isCover = image.is_cover || i === 0;
+            
+                return [
+                    image.image_url,
+                    isCover ? 1 : 0,
+                    articleId,
+                ];
+            });
+        
+            await connection.query(
+                `INSERT INTO articles_images
+                    (image_url, is_cover, fk_articles_id)
+                    VALUES ?`,
+                [values],
             );
         }
 
-        return articleId;
+        const [rows] = await connection.execute(
+            `SELECT *
+             FROM articles
+             WHERE id = ?`,
+            [articleId],
+        );
+
+        return rows[0];
     });
 }
 
