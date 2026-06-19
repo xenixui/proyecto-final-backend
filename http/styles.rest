@@ -1,0 +1,166 @@
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+@adminEmail = admin@example.com
+@adminPassword = admin-secret
+@styleId = 1
+@token = {{login.response.body.token}}
+@adminToken = {{adminLogin.response.body.token}}
+
+
+### ============================================
+### Autenticación
+### ============================================
+
+### Iniciar sesión como usuario regular
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Iniciar sesión como administrador
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+
+### ============================================
+### Listar estilos
+### ============================================
+
+### Listar estilos (200)
+GET {{baseUrl}}/api/styles
+Authorization: Bearer {{token}}
+
+### Listar estilos — Sin token (401)
+GET {{baseUrl}}/api/styles
+
+
+### ============================================
+### Obtener estilo por id
+### ============================================
+
+### Obtener estilo por id (200)
+GET {{baseUrl}}/api/styles/{{styleId}}
+Authorization: Bearer {{token}}
+
+### Obtener estilo — Sin token (401)
+GET {{baseUrl}}/api/styles/{{styleId}}
+
+### Obtener estilo — id no numérico (400)
+GET {{baseUrl}}/api/styles/not-a-number
+Authorization: Bearer {{token}}
+
+### Obtener estilo — No encontrado (404)
+GET {{baseUrl}}/api/styles/999999
+Authorization: Bearer {{token}}
+
+
+### ============================================
+### Crear estilo (admin)
+### ============================================
+
+### Crear estilo como admin (201)
+# @name createStyle
+POST {{baseUrl}}/api/styles
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Deportivo",
+  "description": "Relojes deportivos y cronógrafos"
+}
+
+### Crear estilo — Usuario regular (403)
+POST {{baseUrl}}/api/styles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Clásico",
+  "description": "Estilo clásico"
+}
+
+### Crear estilo — Sin token (401)
+POST {{baseUrl}}/api/styles
+Content-Type: application/json
+
+{
+  "name": "Clásico",
+  "description": "Estilo clásico"
+}
+
+### Crear estilo — Validación nombre vacío (400)
+POST {{baseUrl}}/api/styles
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "Descripción válida"
+}
+
+
+### ============================================
+### Actualizar estilo (admin)
+### ============================================
+
+### Actualizar estilo como admin (200)
+PUT {{baseUrl}}/api/styles/{{styleId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Deportivo actualizado",
+  "description": "Descripción actualizada"
+}
+
+### Actualizar estilo — Usuario regular (403)
+PUT {{baseUrl}}/api/styles/{{styleId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Intento no autorizado",
+  "description": "Sin permisos"
+}
+
+### Actualizar estilo — No encontrado (404)
+PUT {{baseUrl}}/api/styles/999999
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Inexistente",
+  "description": "No debería existir"
+}
+
+
+### ============================================
+### Eliminar estilo (admin)
+### ============================================
+
+### Eliminar estilo como admin (200)
+DELETE {{baseUrl}}/api/styles/{{createStyle.response.body.id}}
+Authorization: Bearer {{adminToken}}
+
+### Eliminar estilo — Usuario regular (403)
+DELETE {{baseUrl}}/api/styles/{{styleId}}
+Authorization: Bearer {{token}}
+
+### Eliminar estilo — No encontrado (404)
+DELETE {{baseUrl}}/api/styles/999999
+Authorization: Bearer {{adminToken}}
+
+### Eliminar estilo — En uso por artículos (409)
+DELETE {{baseUrl}}/api/styles/{{styleId}}
+Authorization: Bearer {{adminToken}}
