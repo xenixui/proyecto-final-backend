@@ -87,11 +87,35 @@ async function filter(req, res) {
             error: error.message
         });
     }
+
+}
+
+async function create(req, res) {
+    try {
+
+        const userId = req.user.id;
+        
+        const articleId = await ArticleModel.create(req.body, userId);
+        const newArticle = await ArticleModel.getById(articleId);
+        
+        return res.status(200).json({
+            message: 'Artículo creado correctamente',
+            article: newArticle,
+        });
+
+    } catch(error) {
+        
+        return res.status(500).json({
+            message: 'Error al crear el anuncio',
+            error: error.message
+        });
+    }
 }
 
 module.exports = {
     getAll, 
     getById,
     search,
-    filter
+    filter,
+    create
 }

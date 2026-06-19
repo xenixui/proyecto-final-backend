@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { withTransaction } = db;
 
 async function getAll(page = 1, limit = 10) {
     page = parseInt(page);
@@ -150,9 +151,57 @@ async function filter(filters) {
     return db.query(queryString, params);
 }
 
+async function create(data, userId) {
+    return withTransaction(async (connection) => {
+        const status = data.publish === false ? 'DRAFT' : 'PUBLISHED';
+        const publishedAt = status === 'PUBLISHED' ? new Date() : null;
+
+        const [insertArticleResult] = await connection.execute(
+            `INSERT INTO articles
+                (title, description, price, \`condition\`, year_of_manufacture,
+                 case_material, bracelet_material, original_box, original_papers,
+                 status, shipping_available, published_at, fk_users_id, fk_styles_id, fk_models_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                data.title,
+                data.description ?? null,
+                data.price,
+                data.condition,
+                data.year_of_manufacture,
+                data.case_material ?? null,
+                data.bracelet_material ?? null,
+                data.original_box ? 1 : 0,
+                data.original_papers ? 1 : 0,
+                status,
+                data.shipping_available ? 1 : 0,
+                publishedAt,
+                userId,
+                data.fk_styles_id,
+                data.fk_models_id,
+            ],
+        );
+
+        const articleId = insertArticleResult.insertId;
+
+        for (let i = 0; i < data.images.length; i++) {
+            const image = data.images[i];
+            const isCover = image.is_cover || i === 0;
+
+            await connection.execute(
+                `INSERT INTO articles_images (image_url, is_cover, fk_articles_id)
+                 VALUES (?, ?, ?)`,
+                [image.image_url, isCover ? 1 : 0, articleId],
+            );
+        }
+
+        return articleId;
+    });
+}
+
 module.exports = {
     getAll,
     getById,
     search,
-    filter
+    filter,
+    create,
 }
