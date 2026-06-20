@@ -86,6 +86,7 @@ async function getFavoritesByUser(fk_users_id) {
     return result
 }
 
+// Dar de alta
 async function createUserByAdmin(data) {
     const result = await db.query(
         `INSERT INTO users (email, password, status, created_at, update_at) VALUES 
@@ -117,6 +118,26 @@ async function createUserByAdmin(data) {
     }
 }
 
+// Dar de baja
+async function deactivateUser(userId) {
+    const result = await db.query(
+        `UPDATE users SET status = 'DELETED' WHERE id = ?`,
+        [userId]
+    );
+    return result;
+}
+
+
+// Bloquear
+
+async function blockUser(userId) {
+    const result = await db.query(
+        `UPDATE users SET status = 'BLOCKED' WHERE id = ?`,
+        [userId]
+    )
+    return result
+}
+
 
 module.exports = {
     getAllProfiles,
@@ -126,5 +147,7 @@ module.exports = {
     getReviewsByUser,
     getReportsByUser,
     getFavoritesByUser,
-    createUserByAdmin
+    createUserByAdmin,
+    deactivateUser,
+    blockUser
 }

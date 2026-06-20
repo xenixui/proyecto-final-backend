@@ -60,6 +60,7 @@ async function getProfileDetailById(req, res) {
     }
 }
 
+// Dar de alta
 async function createUser(req, res) {
     try {
         const result = await profileService.createUserAsAdmin((req.body))
@@ -78,10 +79,56 @@ async function createUser(req, res) {
     }
 }
 
+// dar de baja
+async function deleteUser(req,res) {
+    try {
+        const { id } = req.params
+
+        const result = await profileModel.deactivateUser(id)
+        if(result.affectedRows === 0) {
+            return res.status(404).json({
+            message: 'No se encontró ningún usuario con ese ID para dar de baja'
+        });
+        }
+        
+        res.json({
+            message: 'Usuario dado de baja correctamente'
+        })
+        
+        }catch (error) {
+        return res.status(500).json({
+            message: 'Error al dar de baja al usuario'
+        });
+    }
+}
+
+// bloquear
+
+async function blockedUser (req, res) {
+    try {
+        const { id } = req.params
+        const result = await profileModel.blockUser(id)
+        if(result.affectedRows === 0) {
+            return res.status(404).json({
+                message: 'No se encontró ningún usuario con ese ID para bloquear'
+            })
+        }
+        res.json({
+            message: 'Usuario bloqueado correctamente'
+        })
+
+    } catch(error) {
+        return res.status(500).json({
+            message: 'Error al bloquear al usuario'
+        });
+    }
+}
 
 module.exports = {
     getProfileByUser,
     getProfiles,
     getProfileDetailById,
-    createUser
+    createUser,
+    deleteUser,
+    blockedUser
 };

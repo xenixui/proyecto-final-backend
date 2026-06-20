@@ -29,18 +29,25 @@ router.get(
     profileController.getProfileDetailById
 )
 
-router.post('/',
+router.post(
+    '/',
     authMiddleware,
     validateSchema(registerUserByAdminSchema),
     profileController.createUser);
 
 
+router.delete(
+    '/:id',
+    authMiddleware,
+    profileController.deleteUser
 
-// Dar de baja
-//router.delete('/profiles/:id');
+);
 
-// Bloquear perfil
-//router.patch('/profiles/:id/block');
+router.patch(
+    '/:id/block',
+    authMiddleware,
+    profileController.blockedUser
+);
 
 // Gestionar roles
 //router.patch('/profiles/:id/role');
