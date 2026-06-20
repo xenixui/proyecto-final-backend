@@ -1,0 +1,91 @@
+const yup = require('yup');
+
+const createArticleSchema = yup.object({
+    title: yup
+        .string()
+        .trim()
+        .required('El título es obligatorio')
+        .max(100, 'El título no puede superar los 100 caracteres'),
+
+    description: yup
+        .string()
+        .trim()
+        .nullable()
+        .notRequired(),
+
+    price: yup
+        .number()
+        .typeError('El precio debe ser un número válido')
+        .required('El precio es obligatorio')
+        .positive('El precio debe ser mayor que 0'),
+
+    condition: yup
+        .string()
+        .oneOf(
+            ['NEW', 'VERY_GOOD', 'GOOD', 'USED'],
+            'El estado de conservación no es válido',
+        )
+        .required('El estado de conservación es obligatorio'),
+
+    year_of_manufacture: yup
+        .number()
+        .typeError('El año de fabricación debe ser un número válido')
+        .integer('El año de fabricación debe ser un número entero')
+        .required('El año de fabricación es obligatorio')
+        .min(1900, 'El año de fabricación no es válido')
+        .max(new Date().getFullYear(), 'El año de fabricación no puede ser futuro'),
+
+    case_material: yup.string().trim().nullable().notRequired(),
+
+    bracelet_material: yup.string().trim().nullable().notRequired(),
+
+    original_box: yup
+        .boolean()
+        .typeError('original_box debe ser true o false')
+        .required('Debes indicar si conserva la caja original'),
+
+    original_papers: yup
+        .boolean()
+        .typeError('original_papers debe ser true o false')
+        .required('Debes indicar si conserva los papeles originales'),
+
+    shipping_available: yup
+        .boolean()
+        .typeError('shipping_available debe ser true o false')
+        .required('Debes indicar si el envío está disponible'),
+
+    fk_styles_id: yup
+        .number()
+        .typeError('El estilo seleccionado no es válido')
+        .integer()
+        .required('El estilo es obligatorio'),
+
+    fk_models_id: yup
+        .number()
+        .typeError('El modelo seleccionado no es válido')
+        .integer()
+        .required('El modelo es obligatorio'),
+
+    // Si el usuario quiere guardarlo como borrador en vez de publicarlo directamente
+    publish: yup.boolean().default(true).notRequired(),
+
+    // Array de URLs de imágenes ya subidas (la primera se marca como portada)
+    images: yup
+        .array()
+        .of(
+            yup.object({
+                image_url: yup
+                    .string()
+                    .trim()
+                    .url('La URL de la imagen no es válida')
+                    .required('La URL de la imagen es obligatoria'),
+                is_cover: yup.boolean().default(false).notRequired(),
+            }),
+        )
+        .min(1, 'Debes incluir al menos una imagen')
+        .required('Las imágenes son obligatorias'),
+});
+
+module.exports = {
+    createArticleSchema,
+};
