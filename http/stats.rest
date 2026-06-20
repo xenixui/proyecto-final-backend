@@ -78,3 +78,19 @@ GET {{baseUrl}}/api/stats/usuarios-activos
 ### Usuarios activos (403 - usuario normal)
 GET {{baseUrl}}/api/stats/usuarios-activos
 Authorization: Bearer {{userToken}}
+
+
+### ============================================
+### Reportes gestionados
+### ============================================
+
+### Reportes gestionados (200 - admin)
+GET {{baseUrl}}/api/stats/reportes-gestionados
+Authorization: Bearer {{adminToken}}
+
+### Reportes gestionados (401 - sin token)
+GET {{baseUrl}}/api/stats/reportes-gestionados
+
+### Reportes gestionados (403 - usuario normal)
+GET {{baseUrl}}/api/stats/reportes-gestionados
+Authorization: Bearer {{userToken}}
