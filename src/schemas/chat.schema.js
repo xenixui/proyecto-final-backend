@@ -9,6 +9,18 @@ const chatParamsSchema = yup.object({
     .required('Id de chat inválido'),
 });
 
+
+ const createChatSchema = yup.object({
+  fk_articles_id: yup
+    .number()
+    .typeError('fk_articles_id debe ser un número')
+    .integer('fk_articles_id debe ser un número entero')
+    .positive('fk_articles_id debe ser un número positivo')
+    .required('fk_articles_id es obligatorio')
+ })
+
 module.exports = {
   chatParamsSchema,
+  createChatSchema
 };
+
