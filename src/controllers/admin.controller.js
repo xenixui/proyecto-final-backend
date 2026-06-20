@@ -1,8 +1,8 @@
-const AdminModel = require('../models/admin.models');
+const profileModel = require('../models/profiles.model');
 
 async function getProfiles(req, res) {
     try {
-        const result = await AdminModel.getAllProfiles();
+        const result = await profileModel.getAllProfiles();
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
