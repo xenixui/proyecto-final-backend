@@ -34,7 +34,11 @@ async function register(req, res) {
             },
         });
     } catch (error) {
-        return res.status(error.status).json(error.message);
+
+        return res.status(500).json({
+            message: error.message,
+            stack: error.stack
+        });
     }
 }
 
