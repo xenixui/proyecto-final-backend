@@ -1,4 +1,8 @@
 @host = http://localhost:3000/api
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+
 
 
 ## Recuperar todos los artículos
@@ -20,3 +24,33 @@ Content-Type: application/json
 ###
 GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
 Content-Type: application/json
+
+### Crear anuncio
+POST {{host}}/articles
+Authorization: Bearer `token`
+Content-Type: application/json
+
+{
+  "title": "Rolex Submariner Date",
+  "description": "Rolex Submariner en muy buen estado. Revisión reciente.",
+  "price": 11500,
+  "condition": "VERY_GOOD",
+  "year_of_manufacture": 2021,
+  "case_material": "Acero inoxidable",
+  "bracelet_material": "Acero inoxidable",
+  "original_box": true,
+  "original_papers": true,
+  "shipping_available": true,
+  "fk_styles_id": 1,
+  "fk_models_id": 1,
+  "publish": true,
+  "images": [
+    {
+      "image_url": "https://media.rolex.com/image/upload/q_auto/f_auto/t_v7-cover-majesty-landscape/c_limit,w_1920/v1/a677b2c664f6/catalogue/2026/upright-c/m126610lv-0002",
+      "is_cover": true
+    },
+    {
+      "image_url": "https://www.watchclub.com/upload/watches/originali/watch-club-rolex-submariner-date-126610lv-starbucksrolexwarranty-ref-126610lv-year-2021-15235-wb.png19.jpg"
+    }
+  ]
+}
