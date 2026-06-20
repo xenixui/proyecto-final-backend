@@ -1,0 +1,80 @@
+@baseUrl = http://localhost:3000
+@adminEmail = admin@example.com
+@adminPassword = secret123
+@userEmail = test.user@example.com
+@userPassword = secret123
+@adminToken = {{loginAdmin.response.body.token}}
+@userToken = {{loginUser.response.body.token}}
+
+
+### ============================================
+### Login
+### ============================================
+
+### Login administrador
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Login usuario normal
+# @name loginUser
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+
+### ============================================
+### Artículos publicados
+### ============================================
+
+### Artículos publicados (200 - admin)
+GET {{baseUrl}}/api/stats/articulos-publicados
+Authorization: Bearer {{adminToken}}
+
+### Artículos publicados (401 - sin token)
+GET {{baseUrl}}/api/stats/articulos-publicados
+
+### Artículos publicados (403 - usuario normal)
+GET {{baseUrl}}/api/stats/articulos-publicados
+Authorization: Bearer {{userToken}}
+
+
+### ============================================
+### Artículos vendidos
+### ============================================
+
+### Artículos vendidos (200 - admin)
+GET {{baseUrl}}/api/stats/articulos-vendidos
+Authorization: Bearer {{adminToken}}
+
+### Artículos vendidos (401 - sin token)
+GET {{baseUrl}}/api/stats/articulos-vendidos
+
+### Artículos vendidos (403 - usuario normal)
+GET {{baseUrl}}/api/stats/articulos-vendidos
+Authorization: Bearer {{userToken}}
+
+
+### ============================================
+### Usuarios activos
+### ============================================
+
+### Usuarios activos (200 - admin)
+GET {{baseUrl}}/api/stats/usuarios-activos
+Authorization: Bearer {{adminToken}}
+
+### Usuarios activos (401 - sin token)
+GET {{baseUrl}}/api/stats/usuarios-activos
+
+### Usuarios activos (403 - usuario normal)
+GET {{baseUrl}}/api/stats/usuarios-activos
+Authorization: Bearer {{userToken}}
