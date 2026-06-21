@@ -18,6 +18,9 @@ router.get(
     profileController.getProfileByUser,
 );
 
+
+// TODO: a parti de aquí, añadir a todas las rutas el requireRole('ADMINISTRATOR')
+
 router.get(
     '/',
     authMiddleware,
@@ -49,6 +52,14 @@ router.patch(
     profileController.blockedUser
 );
 
-// Gestionar roles
-//router.patch('/profiles/:id/role');
+router.post(
+    '/:id/roles',
+    authMiddleware,
+    profileController.assignedRole
+);
+
+router.delete(
+    '/:id/roles/:roleId', authMiddleware, profileController.removedRole
+)
+
 module.exports = router;

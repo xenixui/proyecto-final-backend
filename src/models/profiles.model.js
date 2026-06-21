@@ -139,6 +139,35 @@ async function blockUser(userId) {
 }
 
 
+// Asignar role
+async function assignRole(userId, rolName) {
+    const roleResult = await db.query(
+        `SELECT id FROM roles WHERE rol = ? LIMIT 1`,
+        [rolName]
+    )
+
+    if(roleResult.length === 0) return null
+
+    const roleId = roleResult[0].id
+
+    const result = await db.query(
+        `INSERT INTO users_roles (fk_users_id, fk_roles_id, assigned_at)
+        VALUES (?, ?, NOW())`,
+        [userId, roleId]
+    )
+    return result
+}
+// Quitar rol 
+
+async function removeRole (userId, rolId) {
+    const result = await db.query (
+        `DELETE FROM users_roles WHERE fk_users_id = ?
+        AND fk_roles_id = ?`,
+        [userId, rolId]
+    )
+    return result
+}
+
 module.exports = {
     getAllProfiles,
     getUserBasicData,
@@ -149,5 +178,7 @@ module.exports = {
     getFavoritesByUser,
     createUserByAdmin,
     deactivateUser,
-    blockUser
+    blockUser,
+    assignRole,
+    removeRole
 }

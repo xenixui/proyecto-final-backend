@@ -76,3 +76,18 @@ Authorization: Bearer {{token}}
 
 PATCH {{baseUrl}}/api/profiles/150001/block
 Authorization: Bearer {{token}}
+
+### GESTIÓN DE ROLES
+
+POST {{baseUrl}}/api/profiles/180003/roles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "rol": "moderator"
+}
+
+# Quitar rol
+###
+DELETE {{baseUrl}}/api/profiles/180003/roles/2
+Authorization:  Bearer {{token}}

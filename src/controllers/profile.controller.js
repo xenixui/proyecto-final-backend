@@ -1,10 +1,14 @@
-const { query } = require('../config/database');
+const {
+    query
+} = require('../config/database');
 const profileModel = require('../models/profiles.model');
 const profileService = require('../services/profile.service')
 
 async function getProfileByUser(req, res) {
     try {
-        const { userId } = req.params;
+        const {
+            userId
+        } = req.params;
 
         const users = await query('SELECT id FROM users WHERE id = ? LIMIT 1', [
             userId,
@@ -64,6 +68,7 @@ async function getProfileDetailById(req, res) {
 async function createUser(req, res) {
     try {
         const result = await profileService.createUserAsAdmin((req.body))
+
         if (!result) {
             return res.status(404).json({
                 message: 'Error al procesar la solicitud del usuario'
@@ -72,7 +77,7 @@ async function createUser(req, res) {
         return res.status(201).json(result);
     } catch (error) {
         console.error("ERROR EN CONTROLADOR DE ADMIN:", error);
-         console.error('Error en createUser:', error) 
+        console.error('Error en createUser:', error)
         res.status(500).json({
             message: 'Error al crear o recuperar el usuario'
         })
@@ -80,22 +85,25 @@ async function createUser(req, res) {
 }
 
 // dar de baja
-async function deleteUser(req,res) {
+async function deleteUser(req, res) {
     try {
-        const { id } = req.params
+        const {
+            id
+        } = req.params
 
         const result = await profileModel.deactivateUser(id)
-        if(result.affectedRows === 0) {
+
+        if (result.affectedRows === 0) {
             return res.status(404).json({
-            message: 'No se encontró ningún usuario con ese ID para dar de baja'
-        });
+                message: 'No se encontró ningún usuario con ese ID para dar de baja'
+            });
         }
-        
+
         res.json({
             message: 'Usuario dado de baja correctamente'
         })
-        
-        }catch (error) {
+
+    } catch (error) {
         return res.status(500).json({
             message: 'Error al dar de baja al usuario'
         });
@@ -104,11 +112,14 @@ async function deleteUser(req,res) {
 
 // bloquear
 
-async function blockedUser (req, res) {
+async function blockedUser(req, res) {
     try {
-        const { id } = req.params
+        const {
+            id
+        } = req.params
         const result = await profileModel.blockUser(id)
-        if(result.affectedRows === 0) {
+
+        if (result.affectedRows === 0) {
             return res.status(404).json({
                 message: 'No se encontró ningún usuario con ese ID para bloquear'
             })
@@ -117,12 +128,70 @@ async function blockedUser (req, res) {
             message: 'Usuario bloqueado correctamente'
         })
 
-    } catch(error) {
+    } catch (error) {
         return res.status(500).json({
             message: 'Error al bloquear al usuario'
         });
     }
 }
+
+async function assignedRole(req, res) {
+    try {
+
+        const {
+            id
+        } = req.params
+        const {
+            rol
+        } = req.body
+        const result = await profileModel.assignRole(id, rol)
+
+        if (!result) {
+            return res.status(404).json({
+                message: 'Rol no encontrado'
+            })
+        }
+
+        res.status(201).json({
+            message: 'Rol asignado correctamente'
+        })
+
+
+    } catch (error) {
+        console.error('Error en assignedRole:', error)
+        return res.status(500).json({
+            message: 'Error al asignar un rol'
+        });
+    }
+}
+
+async function removedRole(req, res) {
+    try {
+        const {
+            id,
+            roleId
+        } = req.params
+
+        const result = await profileModel.removeRole(id, roleId)
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                message: 'No se encontró esa relación de rol para ese usuario'
+            })
+        }
+
+        res.status(200).json({
+            message: 'Rol eliminado correctamente'
+        })
+
+    } catch (error) {
+        console.error('Error en removedRole:', error)
+        return res.status(500).json({
+            message: 'Error al eliminar un rol'
+        });
+    }
+}
+
 
 module.exports = {
     getProfileByUser,
@@ -130,5 +199,7 @@ module.exports = {
     getProfileDetailById,
     createUser,
     deleteUser,
-    blockedUser
+    blockedUser,
+    assignedRole,
+    removedRole
 };
