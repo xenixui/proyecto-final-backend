@@ -1,10 +1,32 @@
+@host = http://localhost:3000/api
 @baseUrl = http://localhost:3000
 @email = test.user@example.com
 @password = secret123
 
 
+
+## Recuperar todos los artículos
+###
+GET {{host}}/articles?page=1&limit=10
+Content-Type: application/json
+
+## Recuperar artículo por ID
+###
+GET {{host}}/articles/30001
+Content-Type: application/json
+
+##Buscar artículos
+###
+GET {{host}}/articles/search/rolex air
+Content-Type: application/json
+
+## Filtrar artículos
+###
+GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
+Content-Type: application/json
+
 ### Crear anuncio
-POST {{baseUrl}}/api/articles
+POST {{host}}/articles
 Authorization: Bearer `token`
 Content-Type: application/json
 
