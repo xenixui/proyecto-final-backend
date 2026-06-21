@@ -214,6 +214,15 @@ async function create(data, userId) {
     });
 }
 
+async function countByStatus(status) {
+    const result = await db.query(
+        'SELECT COUNT(*) AS total FROM articles WHERE status = ?',
+        [status],
+    );
+
+    return result[0].total;
+}
+
 async function remove(articleId) {
     return db.query(
         `UPDATE articles
@@ -229,5 +238,6 @@ module.exports = {
     search,
     filter,
     create,
+    countByStatus,
     remove,
 }
