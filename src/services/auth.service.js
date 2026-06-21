@@ -36,14 +36,22 @@ async function getRolesForUser(userId) {
     );
 }
 
+const ROLE_PRIORITY = ['ADMINISTRATOR', 'MODERATOR', 'USER'];
+
 async function resolveUserRole(userId, fallbackRole = 'USER') {
     const roles = await getRolesForUser(userId).catch(() => []);
 
-    if (roles.length && roles[0].name) {
-        return roles[0].name;
+    if (!roles.length) {
+        return fallbackRole;
     }
 
-    return fallbackRole;
+    const roleNames = roles.map((r) => r.name);
+
+    const highestRole = ROLE_PRIORITY.find((role) =>
+        roleNames.includes(role),
+    );
+
+    return highestRole || roleNames[0] || fallbackRole;
 }
 
 async function loginUser(email, password) {

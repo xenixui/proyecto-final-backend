@@ -214,10 +214,20 @@ async function create(data, userId) {
     });
 }
 
+async function remove(articleId) {
+    return db.query(
+        `UPDATE articles
+         SET status = 'DELETED'
+         WHERE id = ?`,
+        [articleId]
+    );
+}
+
 module.exports = {
     getAll,
     getById,
     search,
     filter,
     create,
+    remove,
 }

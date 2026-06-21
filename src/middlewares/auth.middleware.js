@@ -12,43 +12,25 @@ async function authMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
     const payload = verifyToken(token);
 
-    let user;
+    const users = await query(
+      `SELECT id, email, status, created_at, update_at, last_login
+       FROM users
+       WHERE id = ?
+       LIMIT 1`,
+      [payload.id]
+    );
 
-    try {
-      const users = await query(
-        `SELECT id, email, rol, status, created_at, update_at, last_login
-         FROM users
-         WHERE id = ?
-         LIMIT 1`,
-        [payload.id]
-      );
-      user = users[0];
-    } catch (error) {
-      if (!error || error.code !== 'ER_BAD_FIELD_ERROR') {
-        throw error;
-      }
-
-      const users = await query(
-        `SELECT id, email, status, created_at, update_at, last_login
-         FROM users
-         WHERE id = ?
-         LIMIT 1`,
-        [payload.id]
-      );
-
-      if (users[0]) {
-        user = {
-          ...users[0],
-          rol: 'USER',
-        };
-      }
-    }
+    const user = users[0];
 
     if (!user || user.status !== 'ACTIVE') {
       return res.status(401).json({ message: 'Usuario no autorizado' });
     }
 
-    req.user = user;
+    req.user = {
+      ...user,
+      rol: payload.rol || 'USER',
+    };
+
     next();
   } catch (error) {
     return res.status(401).json({ message: error.message || 'Token inválido' });

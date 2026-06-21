@@ -111,10 +111,56 @@ async function create(req, res) {
     }
 }
 
+async function remove(req, res) {
+    try {
+
+        const article = await ArticleModel.getById(
+            req.params.article_id
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado',
+            });
+        }
+
+        const isOwner =
+            article.fk_users_id === req.user.id;
+
+        const isModerator =
+            req.user.rol === 'MODERATOR';
+
+        const isAdmin =
+            req.user.rol === 'ADMINISTRATOR';
+
+        if (!isOwner && !isModerator && !isAdmin) {
+            return res.status(403).json({
+                message: 'No tienes permisos para eliminar este artículo',
+            });
+        }
+
+        await ArticleModel.remove(
+            req.params.article_id
+        );
+
+        return res.status(200).json({
+            message: 'Artículo eliminado correctamente',
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: 'Error al eliminar el artículo',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll, 
     getById,
     search,
     filter,
-    create
+    create,
+    remove,
 }
