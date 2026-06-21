@@ -223,6 +223,15 @@ async function countByStatus(status) {
     return result[0].total;
 }
 
+async function remove(articleId) {
+    return db.query(
+        `UPDATE articles
+         SET status = 'DELETED'
+         WHERE id = ?`,
+        [articleId]
+    );
+}
+
 module.exports = {
     getAll,
     getById,
@@ -230,4 +239,5 @@ module.exports = {
     filter,
     create,
     countByStatus,
+    remove,
 }
