@@ -214,6 +214,14 @@ async function create(data, userId) {
     });
 }
 
+async function getByUserId(userId) {
+    const result = await db.query(
+        `SELECT * FROM articles WHERE fk_users_id = ? ORDER BY published_at DESC`,
+        [userId]
+    );
+    return result;
+}
+
 async function countByStatus(status) {
     const result = await db.query(
         'SELECT COUNT(*) AS total FROM articles WHERE status = ?',
@@ -226,6 +234,7 @@ async function countByStatus(status) {
 module.exports = {
     getAll,
     getById,
+    getByUserId,
     search,
     filter,
     create,

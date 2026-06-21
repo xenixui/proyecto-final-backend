@@ -111,9 +111,23 @@ async function create(req, res) {
     }
 }
 
+async function getByUserId(req, res) {
+    try {
+        const { userId } = req.params;
+        const result = await ArticleModel.getByUserId(userId);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar los artículos del usuario',
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     getAll, 
     getById,
+    getByUserId,
     search,
     filter,
     create
