@@ -111,10 +111,15 @@ async function create(req, res) {
     }
 }
 
-async function getByUserId(req, res) {
+async function getByUserIdAndStatus(req, res) {
     try {
         const { userId } = req.params;
-        const result = await ArticleModel.getByUserId(userId);
+        const { status } = req.query;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const capitalizedStatus = status ? status.toUpperCase() : undefined;
+
+        const result = await ArticleModel.getByUserIdAndStatus(userId, capitalizedStatus, page, limit);
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
@@ -127,7 +132,7 @@ async function getByUserId(req, res) {
 module.exports = {
     getAll, 
     getById,
-    getByUserId,
+    getByUserIdAndStatus,
     search,
     filter,
     create

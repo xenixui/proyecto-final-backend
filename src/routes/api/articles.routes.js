@@ -1,4 +1,4 @@
-const {getAll, search, getById, getByUserId, filter, create}  = require('../../controllers/articles.controller');
+const {getAll, search, getById, getByUserIdAndStatus, filter, create}  = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const { createArticleSchema } = require('../../schemas/articles.schema');
@@ -8,7 +8,7 @@ const router = require('express').Router();
 router.get('/', getAll); 
 router.get('/filter', filter);
 router.get('/search/:term', search);
-router.get('/user/:userId', authMiddleware, getByUserId);
+router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 router.get('/:article_id', getById);
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
 

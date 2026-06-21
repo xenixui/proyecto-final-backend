@@ -214,12 +214,22 @@ async function create(data, userId) {
     });
 }
 
-async function getByUserId(userId) {
-    const result = await db.query(
-        `SELECT * FROM articles WHERE fk_users_id = ? ORDER BY published_at DESC`,
-        [userId]
-    );
-    return result;
+async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+    const offset = (page - 1) * limit;
+    const params = [userId, status];
+
+    const data = await db.query(`SELECT * FROM articles WHERE fk_users_id = ? AND status = ? ORDER BY published_at DESC LIMIT ${limit} OFFSET ${offset}`, params);
+    const total = await db.query(`SELECT COUNT(*) as total FROM articles WHERE fk_users_id = ? AND status = ?`, params);
+
+    return {
+        page,
+        per_page: limit,
+        total: total[0].total,
+        total_pages: Math.ceil(total[0].total / limit),
+        data
+    };
 }
 
 async function countByStatus(status) {
@@ -234,7 +244,7 @@ async function countByStatus(status) {
 module.exports = {
     getAll,
     getById,
-    getByUserId,
+    getByUserIdAndStatus,
     search,
     filter,
     create,
