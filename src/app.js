@@ -9,9 +9,10 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', apiRoutes);
-app.use('/api/chats', chatRoutes);
 
 app.use((req, res) => {
+    res.status(404).json({ message: 'Ruta no encontrada' });
+app.use((_req, res) => {
     res.status(404).json({ message: 'Ruta no encontrada' });
 });
 
@@ -23,4 +24,3 @@ app.use((error, _req, res) => {
 });
 
 module.exports = app;
-      
