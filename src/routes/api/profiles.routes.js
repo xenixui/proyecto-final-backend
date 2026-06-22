@@ -6,9 +6,10 @@ const {
 } = require('../../middlewares/validation.middleware');
 const {
     getProfileByUserSchema,
-    registerUserByAdminSchema
+    registerUserByAdminSchema,
+    assignRoleSchema
 } = require('../../schemas/profile.schema');
-const requireRole = require('../../middlewares/rol.middleware');
+const requireRole = require('../../middlewares/role.middleware');
 
 const router = express.Router();
 
@@ -19,30 +20,31 @@ router.get(
     profileController.getProfileByUser,
 );
 
-
-
 router.get(
     '/',
     authMiddleware,
-    requireRole('ADMINISTRATOR'),
+    requireRole('admin'),
     profileController.getProfiles);
 
 router.get(
     '/:id/detail',
     authMiddleware,
+    requireRole('admin'),
     profileController.getProfileDetailById
 )
 
 router.post(
     '/',
     authMiddleware,
-    validateSchema(registerUserByAdminSchema),
+    requireRole('admin'),
+    validateSchema(registerUserByAdminSchema, 'body'),
     profileController.createUser);
 
 
 router.delete(
     '/:id',
     authMiddleware,
+    requireRole('admin'),
     profileController.deleteUser
 
 );
@@ -50,17 +52,23 @@ router.delete(
 router.patch(
     '/:id/block',
     authMiddleware,
+    requireRole('admin'),
     profileController.blockedUser
 );
 
 router.post(
     '/:id/roles',
     authMiddleware,
+    requireRole('admin'),
+    validateSchema(assignRoleSchema, 'body'),
     profileController.assignedRole
 );
 
 router.delete(
-    '/:id/roles/:roleId', authMiddleware, profileController.removedRole
+    '/:id/roles/:roleId',
+    authMiddleware,
+    requireRole('admin'),
+    profileController.removedRole
 )
 
 module.exports = router;

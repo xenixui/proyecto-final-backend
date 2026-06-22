@@ -54,40 +54,40 @@ Authorization: Bearer {{token}}
 GET {{baseUrl}}/api/profiles/30004/detail
 Authorization: Bearer {{token}}
 
-### DAR DE BAJA
+### DAR DE ALTA
 POST {{baseUrl}}/api/profiles
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "email": "jesus.martin@gmail.com",
-  "password": "2026pass",
-  "name": "Jesus",
-  "username": "jesus8",
-  "rol": "user"
+  "email": "sara.martin@gmail.com",
+  "password": "2026password",
+  "name": "Sara",
+  "username": "Sara9",
+  "rol": "moderator"
 }
 
 ### DAR DE BAJA
 
-DELETE {{baseUrl}}/api/profiles/120001
+DELETE {{baseUrl}}/api/profiles/180003
 Authorization: Bearer {{token}}
 
 ### BLOQUEAR
 
-PATCH {{baseUrl}}/api/profiles/150001/block
+PATCH {{baseUrl}}/api/profiles/180001/block
 Authorization: Bearer {{token}}
 
 ### GESTIÓN DE ROLES
 
-POST {{baseUrl}}/api/profiles/180003/roles
+POST {{baseUrl}}/api/profiles/180002/roles
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "rol": "moderator"
+  "rol": "admin"
 }
 
-# Quitar rol
-###
-DELETE {{baseUrl}}/api/profiles/180003/roles/2
+### QUITAR ROL
+
+DELETE {{baseUrl}}/api/profiles/210001/roles/2
 Authorization:  Bearer {{token}}

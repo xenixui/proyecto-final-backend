@@ -59,8 +59,7 @@ async function getProfileDetailById(req, res) {
         
     } catch (error) {
         return res.status(500).json({
-            message: 'Error al recuperar el usuario',
-            error: error.message
+            message: 'Error al recuperar el usuario'
         })
     }
 }
@@ -78,8 +77,7 @@ async function createUser(req, res) {
         return res.status(201).json(result);
     } catch (error) {
         res.status(500).json({
-            message: 'Error al crear o recuperar el usuario',
-            error: error.message
+            message: 'Error al crear o recuperar el usuario'
         })
     }
 }
@@ -105,8 +103,7 @@ async function deleteUser(req, res) {
 
     } catch (error) {
         return res.status(500).json({
-            message: 'Error al dar de baja al usuario',
-            error: error.message
+            message: 'Error al dar de baja al usuario'
         });
     }
 }
@@ -126,11 +123,11 @@ async function blockedUser(req, res) {
             })
         }
         res.json({
-            message: 'Usuario bloqueado correctamente',
-            error: error.message
+            message: 'Usuario bloqueado correctamente'
         })
 
     } catch (error) {
+      
         return res.status(500).json({
             message: 'Error al bloquear al usuario'
         });
@@ -161,8 +158,7 @@ async function assignedRole(req, res) {
 
     } catch (error) {
         return res.status(500).json({
-            message: 'Error al asignar un rol',
-            error: error.message
+            message: 'Error al asignar un rol'
         });
     }
 }
@@ -188,8 +184,7 @@ async function removedRole(req, res) {
 
     } catch (error) {
         return res.status(500).json({
-            message: 'Error al eliminar un rol',
-            error: error.message
+            message: 'Error al eliminar un rol'
         });
     }
 }

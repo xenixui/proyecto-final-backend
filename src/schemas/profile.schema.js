@@ -33,7 +33,17 @@ const registerUserByAdminSchema = yup.object({
 });
 
 
+const assignRoleSchema = yup.object({
+    rol: yup
+        .string()
+        .typeError('El rol debe ser un texto')
+        .required('El rol es obligatorio')
+        .oneOf(['user', 'moderator', 'admin'], 'El rol no es válido')
+})
+
+
 module.exports = {
     getProfileByUserSchema,
-    registerUserByAdminSchema
+    registerUserByAdminSchema,
+    assignRoleSchema
 };
