@@ -1,7 +1,7 @@
 const express = require('express');
 const stylesController = require('../../controllers/styles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
-const checkRole = require('../../middlewares/rol.middleware');
+const requireRole = require('../../middlewares/role.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const {
     styleIdParamSchema,
@@ -31,7 +31,7 @@ router.get(
 router.post(
     '/',
     authMiddleware,
-    checkRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR'),
     validateSchema(createStyleSchema),
     stylesController.create,
 );
@@ -39,7 +39,7 @@ router.post(
 router.put(
     '/:id',
     authMiddleware,
-    checkRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR'),
     validateSchema(styleIdParamSchema, 'params'),
     validateSchema(updateStyleSchema),
     stylesController.update,
@@ -48,7 +48,7 @@ router.put(
 router.delete(
     '/:id',
     authMiddleware,
-    checkRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR'),
     validateSchema(styleIdParamSchema, 'params'),
     stylesController.remove,
 );

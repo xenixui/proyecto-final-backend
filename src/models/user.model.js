@@ -60,7 +60,16 @@ async function createUser(data) {
     });
 }
 
+async function countActive() {
+    const result = await query(
+        "SELECT COUNT(*) AS total FROM users WHERE status = 'ACTIVE'",
+    );
+
+    return result[0].total;
+}
+
 module.exports = {
     getUserByEmail,
     createUser,
+    countActive,
 };
