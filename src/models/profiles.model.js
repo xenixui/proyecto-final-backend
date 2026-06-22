@@ -12,6 +12,19 @@ async function getAllProfiles(rol) {
     );
     return result;
 }
+
+async function getByUserId(userId) {
+    const result = await db.query(
+        `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
+         FROM profiles
+         WHERE fk_usuarios_id = ?
+         LIMIT 1`,
+        [userId],
+    );
+
+    return result[0] || null;
+}
+
 async function getUserBasicData(userId) {
     const result = await db.query(
         `SELECT u.created_at, 
@@ -170,6 +183,7 @@ async function removeRole (userId, rolId) {
 
 module.exports = {
     getAllProfiles,
+    getByUserId,
     getUserBasicData,
     getPurchasesByUser,
     getSalesByUser,
@@ -182,20 +196,4 @@ module.exports = {
     assignRole,
     removeRole
 }
-const db = require('../config/database');
 
-async function getByUserId(userId) {
-    const result = await db.query(
-        `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
-         FROM profiles
-         WHERE fk_usuarios_id = ?
-         LIMIT 1`,
-        [userId],
-    );
-
-    return result[0] || null;
-}
-
-module.exports = {
-    getByUserId,
-};

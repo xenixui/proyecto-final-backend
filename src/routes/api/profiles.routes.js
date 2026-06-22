@@ -8,6 +8,7 @@ const {
     getProfileByUserSchema,
     registerUserByAdminSchema
 } = require('../../schemas/profile.schema');
+const requireRole = require('../../middlewares/rol.middleware');
 
 const router = express.Router();
 
@@ -19,11 +20,11 @@ router.get(
 );
 
 
-// TODO: a parti de aquí, añadir a todas las rutas el requireRole('ADMINISTRATOR')
 
 router.get(
     '/',
     authMiddleware,
+    requireRole('ADMINISTRATOR'),
     profileController.getProfiles);
 
 router.get(
