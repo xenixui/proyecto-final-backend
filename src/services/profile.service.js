@@ -3,16 +3,56 @@
 
 const { query } = require('../config/database');
 
+// ─── Ver perfil ───────────────────────────────────────────────
+async function getProfileByUser(userId) {
+    const [row] = await query(
+        `SELECT
+           u.id,
+           u.email,
+           u.status,
+           u.created_at,
+           u.last_login,
+           p.username,
+           p.name,
+           p.surname,
+           p.photo_url,
+           p.phone,
+           p.country,
+           p.city,
+           p.postal_code,
+           p.biography,
+           p.rating
+         FROM users u
+         JOIN profiles p ON p.fk_usuarios_id = u.id
+         WHERE u.id = ?`,
+        [userId],
+    );
+
+    if (!row) throw { status: 404, message: 'Usuario no encontrado' };
+    return row;
+}
+
 // ─── Editar perfil ────────────────────────────────────────────
 async function updateProfile(userId, data) {
     const { username, name, surname, photo_url, phone, country, city, postal_code, biography } = data;
 
-    // Comprueba que el username no esté ya en uso por otro usuario
-    const [existing] = await query(
-        'SELECT id FROM profiles WHERE username = ? AND fk_usuarios_id != ?',
+    // Comprueba que el perfil exista antes de intentar actualizarlo
+    const [{ total: profileExists }] = await query(
+        'SELECT COUNT(*) AS total FROM profiles WHERE fk_usuarios_id = ?',
+        [userId],
+    );
+    if (profileExists === 0) {
+        throw { status: 404, message: 'Perfil no encontrado' };
+    }
+
+    // Comprueba si YA existe ese username en algún otro usuario (excluyéndome a mí mismo)
+    // Usamos COUNT en vez de traer una fila: así sabemos cuántas coincidencias hay
+    // y no dependemos de qué fila concreta devuelva la BD primero.
+    const [{ total: usernameTaken }] = await query(
+        'SELECT COUNT(*) AS total FROM profiles WHERE username = ? AND fk_usuarios_id != ?',
         [username, userId],
     );
-    if (existing) throw { status: 409, message: 'El username ya está en uso' };
+    if (usernameTaken > 0) throw { status: 409, message: 'El username ya está en uso' };
 
     await query(
         `UPDATE profiles
@@ -100,7 +140,7 @@ async function getMySales(userId) {
            p.username    AS buyer_username
          FROM articles a
          JOIN models m         ON m.id = a.fk_models_id
-         JOIN brands b         ON b.id = m.fk_brands_id
+         JOIN brands b        ON b.id = m.fk_brands_id
          LEFT JOIN articles_images ai
            ON ai.fk_articles_id = a.id AND ai.is_cover = 1
          LEFT JOIN chats c     ON c.fk_articles_id = a.id
@@ -114,8 +154,7 @@ async function getMySales(userId) {
 
 // ─── Mis chats ────────────────────────────────────────────────
 // Cubre los dos roles: comprador (fk_buyer_id) o vendedor (dueño del articles)
-// Última versión: subquery en FROM (no en ON) porque TiDB no soporta
-// subqueries dentro de ON.
+// Subquery en FROM (no en ON) porque TiDB no soporta subqueries dentro de ON.
 async function getMyChats(userId) {
     return await query(
         `SELECT
@@ -158,7 +197,7 @@ async function getMyChats(userId) {
 }
 
 module.exports = {
-    getProfile,
+    getProfileByUser,
     updateProfile,
     getMyArticles,
     getMyPurchases,

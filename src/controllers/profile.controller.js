@@ -30,53 +30,64 @@ async function getProfileByUser(req, res) {
 }
 
 // PUT /api/profile  →  actualiza los datos editables del perfil
-const updateProfile = async (req, res, next) => {
-  try {
-    const data = await profileService.updateProfile(req.user.id, req.body);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
+async function updateProfile(req, res, next) {
+    try {
+        const data = await profileService.updateProfile(req.user.id, req.body);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
 
 // ─── Artículos y pedidos ──────────────────────────────────────
 
 // GET /api/profile/articles  →  relojes que el usuario tiene publicados
-const getMyArticles = async (req, res, next) => {
-  try {
-    const data = await profileService.getMyArticles(req.user.id);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
+async function getMyArticles(req, res, next) {
+    try {
+        const data = await profileService.getMyArticles(req.user.id);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
 
 // GET /api/profile/orders/purchases  →  artículos que el usuario ha comprado (status SOLD)
-const getMyPurchases = async (req, res, next) => {
-  try {
-    const data = await profileService.getMyPurchases(req.user.id);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
+async function getMyPurchases(req, res, next) {
+    try {
+        const data = await profileService.getMyPurchases(req.user.id);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
 
 // GET /api/profile/orders/sales  →  artículos del usuario que han sido vendidos
-const getMySales = async (req, res, next) => {
-  try {
-    const data = await profileService.getMySales(req.user.id);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
+async function getMySales(req, res, next) {
+    try {
+        const data = await profileService.getMySales(req.user.id);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
 
 // ─── Chats ────────────────────────────────────────────────────
 
 // GET /api/profile/chats  →  todas las conversaciones del usuario (como comprador o vendedor)
-const getMyChats = async (req, res, next) => {
-  try {
-    const data = await profileService.getMyChats(req.user.id);
-    res.json({ success: true, data });
-  } catch (err) { next(err); }
-};
+async function getMyChats(req, res, next) {
+    try {
+        const data = await profileService.getMyChats(req.user.id);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
 
 module.exports = {
+    getProfileByUser,
     updateProfile,
     getMyArticles,
     getMyPurchases,
     getMySales,
-    getMyChats
+    getMyChats,
 };
