@@ -13,13 +13,26 @@ async function getChatMessages(req, res, next) {
   }
 }
 
+async function sendMessage(req, res, next) {
+  try {
+    const chatId = req.params.id;
+    const { message } = req.body;
+
+    const result = await messageService.createChatMessage(chatId, req.user.id, message);
+
+    return res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getUserChats(req, res) {
   try {
     const { id: userId } = req.user
     const chats = await chatService.getAllChats(userId);
     res.json(chats)
 
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       message: 'Error al consultar la BBDD'
     })
@@ -39,7 +52,7 @@ async function createChat(req, res) {
     }
     res.json(nuevoChat)
 
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       message: 'Error al crear o recuperar el chat'
     })
@@ -48,6 +61,7 @@ async function createChat(req, res) {
 
 module.exports = {
   getChatMessages,
+  sendMessage,
   getUserChats,
   createChat
 };

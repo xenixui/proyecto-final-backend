@@ -41,3 +41,16 @@ Authorization: Bearer {{token}}
 {
     "fk_articles_id": 90001
 }
+
+### Ver mensajes de un chat
+GET {{baseUrl}}/api/chats/1/mensajes
+Authorization: Bearer {{token}}
+
+### Enviar mensaje a un chat
+POST {{baseUrl}}/api/chats/1/mensajes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "message": "Hola, me interesa este reloj. ¿Sigue disponible?"
+}

@@ -10,20 +10,24 @@ async function findChatByBuyerAndArticle (fk_buyer_id, fk_articles_id) {
     return result[0]
 }
 
-async function findAllByUser (fk_buyer_id) {
+async function findAllByUser (userId) {
     const result = await db.query(
-        `SELECT chats.id,
+        `SELECT
+            chats.id,
             chats.created_at,
             articles.title AS article_title,
             articles.price AS article_price,
-            profiles.username AS buyer_name
+            IF(chats.fk_buyer_id = ?, seller_profile.username, buyer_profile.username) AS contact_name,
+            buyer_profile.username AS buyer_name
         FROM chats 
         INNER JOIN articles ON chats.fk_articles_id = articles.id
-        INNER JOIN profiles ON chats.fk_buyer_id = profiles.fk_usuarios_id
-        WHERE chats.fk_buyer_id = ?`,
-        [fk_buyer_id]
+        INNER JOIN profiles buyer_profile ON chats.fk_buyer_id = buyer_profile.fk_usuarios_id
+        INNER JOIN profiles seller_profile ON articles.fk_users_id = seller_profile.fk_usuarios_id
+        WHERE chats.fk_buyer_id = ? OR articles.fk_users_id = ?
+        ORDER BY chats.update_at DESC, chats.created_at DESC`,
+        [userId, userId, userId]
     );
-    if (result.length === 0) return null
+
     return result;
 }
 
