@@ -118,4 +118,29 @@ async function reject(id, { moderatorId, moderatorNote }) {
     );
 }
 
-module.exports = { getAll, getHistory, getById, resolve, reject };
+async function countGestionados() {
+    const result = await db.query(
+        "SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'",
+    );
+
+    return result[0].total;
+}
+
+async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
+    const result = await db.query(
+        `INSERT INTO reports (reason, comments, status, fk_articles_id, fk_users_id) VALUES
+    (?, ?, 'PENDING', ?, ?)`,
+        [reason, comments, fk_articles_id, fk_users_id],
+    );
+    return result;
+}
+
+module.exports = {
+    getAll,
+    getHistory,
+    getById,
+    resolve,
+    reject,
+    insertReport,
+    countGestionados,
+};

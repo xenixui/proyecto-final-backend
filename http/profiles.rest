@@ -1,0 +1,99 @@
+@host = http://localhost:3000/api
+
+##Recuperar todos los perfiles
+###
+GET {{host}}/admin/profiles
+Content-Type: application/json
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+@userId = 1
+@token = {{login.response.body.token}}
+
+
+### ============================================
+### Obtener perfil de usuario
+### ============================================
+
+### Iniciar sesión (obtener token)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Obtener perfil por userId (200)
+GET {{baseUrl}}/api/profiles/{{userId}}
+Authorization: Bearer {{token}}
+
+### Obtener perfil — Sin token (401)
+GET {{baseUrl}}/api/profiles/{{userId}}
+
+### Obtener perfil — userId no numérico (400)
+GET {{baseUrl}}/api/profiles/not-a-number
+Authorization: Bearer {{token}}
+
+### Obtener perfil — Usuario no encontrado (404)
+GET {{baseUrl}}/api/profiles/999999
+Authorization: Bearer {{token}}
+
+
+### ============================================
+###  GESTIÓN DE PERFILES DESDE DASHBOARD ADMIN
+### ============================================
+
+### VER LISTADO 
+GET {{baseUrl}}/api/profiles
+Authorization: Bearer {{token}}
+
+### VER LISTADO FILTRANDO POR ROL
+
+GET {{baseUrl}}/api/profiles/?rol=user
+Authorization: Bearer {{token}}
+
+### VER DATOS PERFIL
+
+GET {{baseUrl}}/api/profiles/30004/detail
+Authorization: Bearer {{token}}
+
+### DAR DE ALTA
+POST {{baseUrl}}/api/profiles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "sara.martin@gmail.com",
+  "password": "2026password",
+  "name": "Sara",
+  "username": "Sara9",
+  "rol": "moderator"
+}
+
+### DAR DE BAJA
+
+DELETE {{baseUrl}}/api/profiles/180003
+Authorization: Bearer {{token}}
+
+### BLOQUEAR
+
+PATCH {{baseUrl}}/api/profiles/180001/block
+Authorization: Bearer {{token}}
+
+### GESTIÓN DE ROLES
+
+POST {{baseUrl}}/api/profiles/180002/roles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "rol": "admin"
+}
+
+### QUITAR ROL
+
+DELETE {{baseUrl}}/api/profiles/210001/roles/2
+Authorization:  Bearer {{token}}
+

@@ -5,6 +5,10 @@ const { registerUserSchema } = require('../../schemas/user.schema');
 
 const router = express.Router();
 
-router.post('/register', validateSchema(registerUserSchema), userController.register);
+router.post(
+    '/register',
+    validateSchema(registerUserSchema),
+    userController.register,
+);
 
 module.exports = router;

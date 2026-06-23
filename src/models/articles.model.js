@@ -1,10 +1,11 @@
 const db = require('../config/database');
+const { withTransaction } = db;
 
 async function getAll(page = 1, limit = 10) {
     page = parseInt(page);
     limit = parseInt(limit);
     const offset = (page - 1) * limit;
-    
+
     const data = await db.query(
         `SELECT * FROM articles ORDER BY published_at DESC LIMIT ${limit} OFFSET ${offset}`
     );
@@ -32,7 +33,7 @@ async function getById(article_id) {
 
 async function search(term) {
     const result = await db.query(
-    `SELECT * 
+    `SELECT *
         FROM articles
         INNER JOIN models ON articles.fk_models_id = models.id
         INNER JOIN brands ON models.fk_brands_id = brands.id
@@ -50,12 +51,12 @@ async function filter(filters) {
     const conditions = [];
     const params = [];
 
-    // Precio mínimo
+    // Precio minimo
     if (filters.minPrice !== undefined) {
         conditions.push('a.price >= ?');
         params.push(filters.minPrice);
     }
-    // Precio máximo
+    // Precio maximo
     if (filters.maxPrice !== undefined) {
         conditions.push('a.price <= ?');
         params.push(filters.maxPrice);
@@ -75,7 +76,7 @@ async function filter(filters) {
         conditions.push('a.fk_styles_id = ?');
         params.push(filters.styleId);
     }
-    // Género
+    // Genero
     if (filters.gender) {
         conditions.push('m.gender = ?');
         params.push(filters.gender);
@@ -85,12 +86,12 @@ async function filter(filters) {
         conditions.push('m.movement_type = ?');
         params.push(filters.movementType);
     }
-    // Año de fabricación
+    // Anio de fabricacion
     if (filters.yearOfManufacture) {
         conditions.push('a.year_of_manufacture = ?');
         params.push(filters.yearOfManufacture);
     }
-    // Estado de conservación
+    // Estado de conservacion
     if (filters.condition) {
         conditions.push('a.condition = ?');
         params.push(filters.condition);
@@ -105,7 +106,7 @@ async function filter(filters) {
         conditions.push('a.original_papers = ?');
         params.push(filters.originalPapers);
     }
-    // Envío disponible
+    // Envio disponible
     if (filters.shippingAvailable !== undefined) {
         conditions.push('a.shipping_available = ?');
         params.push(filters.shippingAvailable);
@@ -154,10 +155,106 @@ async function retire(id) {
     await db.query(`UPDATE articles SET status = 'RETIRED' WHERE id = ?`, [id]);
 }
 
+async function create(data, userId) {
+    return withTransaction(async (connection) => {
+        const status = data.publish === false ? 'DRAFT' : 'PUBLISHED';
+        const publishedAt = status === 'PUBLISHED' ? new Date() : null;
+
+        const [insertArticleResult] = await connection.execute(
+            `INSERT INTO articles
+                (title, description, price, ` + '`condition`' + `, year_of_manufacture,
+                 case_material, bracelet_material, original_box, original_papers,
+                 status, shipping_available, published_at, fk_users_id, fk_styles_id, fk_models_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                data.title,
+                data.description ?? null,
+                data.price,
+                data.condition,
+                data.year_of_manufacture,
+                data.case_material ?? null,
+                data.bracelet_material ?? null,
+                data.original_box ? 1 : 0,
+                data.original_papers ? 1 : 0,
+                status,
+                data.shipping_available ? 1 : 0,
+                publishedAt,
+                userId,
+                data.fk_styles_id,
+                data.fk_models_id,
+            ],
+        );
+
+        const articleId = insertArticleResult.insertId;
+
+        if (data.images.length > 0) {
+            const values = data.images.map((image, i) => {
+                const isCover = image.is_cover || i === 0;
+
+                return [
+                    image.image_url,
+                    isCover ? 1 : 0,
+                    articleId,
+                ];
+            });
+
+            await connection.query(
+                `INSERT INTO articles_images
+                    (image_url, is_cover, fk_articles_id)
+                    VALUES ?`,
+                [values],
+            );
+        }
+
+        const [rows] = await connection.execute(
+            `SELECT *
+             FROM articles
+             WHERE id = ?`,
+            [articleId],
+        );
+
+        return rows[0];
+    });
+}
+
+async function countByStatus(status) {
+    const result = await db.query(
+        'SELECT COUNT(*) AS total FROM articles WHERE status = ?',
+        [status],
+    );
+
+    return result[0].total;
+}
+
+async function remove(articleId) {
+    return db.query(
+        `DELETE FROM articles
+         WHERE id = ?`,
+        [articleId]
+    );
+}
+
+async function getByIdAndUserId(articleId, userId) {
+    const result = await db.query(
+        `SELECT *
+         FROM articles
+         WHERE id = ?
+         AND fk_users_id = ?`,
+        [articleId, userId]
+    );
+
+    return result[0] || null;
+}
+
 module.exports = {
     getAll,
     getById,
     search,
     filter,
     retire,
+    create,
+    countByStatus,
+    remove,
+    getByIdAndUserId,
 }
+

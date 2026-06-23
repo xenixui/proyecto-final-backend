@@ -15,8 +15,13 @@ function requireRole(...allowedRoles) {
                 [userId],
             );
 
-            const userRoles = roles.map((r) => r.rol);
-            const hasRole = allowedRoles.some((role) => userRoles.includes(role));
+            const normalize = (role) => String(role).toUpperCase();
+            const userRoles = roles.map((r) => normalize(r.rol));
+            const requestedRoles = allowedRoles.map(normalize);
+            const tokenRole = req.user.rol ? normalize(req.user.rol) : null;
+            const hasRole =
+                requestedRoles.some((role) => userRoles.includes(role)) ||
+                (tokenRole && requestedRoles.includes(tokenRole));
 
             if (!hasRole) {
                 return res.status(403).json({ message: 'Acceso denegado' });
@@ -31,4 +36,5 @@ function requireRole(...allowedRoles) {
     };
 }
 
-module.exports = { requireRole };
+module.exports = requireRole;
+module.exports.requireRole = requireRole;
