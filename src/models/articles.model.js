@@ -34,7 +34,7 @@ async function getById(article_id) {
 
 async function search(term) {
     const result = await db.query(
-        `SELECT * 
+        `SELECT *
         FROM articles
         INNER JOIN models ON articles.fk_models_id = models.id
         INNER JOIN brands ON models.fk_brands_id = brands.id
@@ -52,12 +52,12 @@ async function filter(filters) {
     const conditions = [];
     const params = [];
 
-    // Precio mínimo
+    // Precio minimo
     if (filters.minPrice !== undefined) {
         conditions.push('a.price >= ?');
         params.push(filters.minPrice);
     }
-    // Precio máximo
+    // Precio maximo
     if (filters.maxPrice !== undefined) {
         conditions.push('a.price <= ?');
         params.push(filters.maxPrice);
@@ -77,7 +77,7 @@ async function filter(filters) {
         conditions.push('a.fk_styles_id = ?');
         params.push(filters.styleId);
     }
-    // Género
+    // Genero
     if (filters.gender) {
         conditions.push('m.gender = ?');
         params.push(filters.gender);
@@ -87,12 +87,12 @@ async function filter(filters) {
         conditions.push('m.movement_type = ?');
         params.push(filters.movementType);
     }
-    // Año de fabricación
+    // Anio de fabricacion
     if (filters.yearOfManufacture) {
         conditions.push('a.year_of_manufacture = ?');
         params.push(filters.yearOfManufacture);
     }
-    // Estado de conservación
+    // Estado de conservacion
     if (filters.condition) {
         conditions.push('a.condition = ?');
         params.push(filters.condition);
@@ -107,7 +107,7 @@ async function filter(filters) {
         conditions.push('a.original_papers = ?');
         params.push(filters.originalPapers);
     }
-    // Envío disponible
+    // Envio disponible
     if (filters.shippingAvailable !== undefined) {
         conditions.push('a.shipping_available = ?');
         params.push(filters.shippingAvailable);
@@ -153,6 +153,10 @@ async function filter(filters) {
     return db.query(queryString, params);
 }
 
+async function retire(id) {
+    await db.query(`UPDATE articles SET status = 'RETIRED' WHERE id = ?`, [id]);
+}
+
 async function create(data, userId) {
     return withTransaction(async (connection) => {
         const status = data.publish === false ? 'DRAFT' : 'PUBLISHED';
@@ -160,7 +164,9 @@ async function create(data, userId) {
 
         const [insertArticleResult] = await connection.execute(
             `INSERT INTO articles
-                (title, description, price, \`condition\`, year_of_manufacture,
+                (title, description, price, ` +
+                '`condition`' +
+                `, year_of_manufacture,
                  case_material, bracelet_material, original_box, original_papers,
                  status, shipping_available, published_at, fk_users_id, fk_styles_id, fk_models_id)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -275,6 +281,7 @@ module.exports = {
     getByUserIdAndStatus,
     search,
     filter,
+    retire,
     create,
     countByStatus,
     remove,
