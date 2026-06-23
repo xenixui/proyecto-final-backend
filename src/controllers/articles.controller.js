@@ -158,6 +158,34 @@ async function remove(req, res) {
     }
 }
 
+async function update(req, res) {
+    try {
+
+        const article =
+            await ArticleModel.updateByUserId(
+                req.params.article_id,
+                req.user.id,
+                req.body
+            );
+
+        if (!article) {
+            return res.status(403).json({
+                message: 'Acceso denegado',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al actualizar el artículo',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll,
     getById,
@@ -166,4 +194,5 @@ module.exports = {
     filter,
     create,
     remove,
-};
+    update,
+}

@@ -275,6 +275,49 @@ async function getByIdAndUserId(articleId, userId) {
     return result[0] || null;
 }
 
+async function updateByUserId(articleId, userId, data) {
+
+    const result = await db.query(
+        `UPDATE articles
+         SET title = ?,
+             description = ?,
+             price = ?,
+             \`condition\` = ?,
+             year_of_manufacture = ?,
+             case_material = ?,
+             bracelet_material = ?,
+             original_box = ?,
+             original_papers = ?,
+             shipping_available = ?,
+             fk_styles_id = ?,
+             fk_models_id = ?
+         WHERE id = ?
+         AND fk_users_id = ?`,
+        [
+            data.title,
+            data.description,
+            data.price,
+            data.condition,
+            data.year_of_manufacture,
+            data.case_material,
+            data.bracelet_material,
+            data.original_box ? 1 : 0,
+            data.original_papers ? 1 : 0,
+            data.shipping_available ? 1 : 0,
+            data.fk_styles_id,
+            data.fk_models_id,
+            articleId,
+            userId,
+        ]
+    );
+
+    if (result.affectedRows === 0) {
+        return null;
+    }
+
+    return getById(articleId);
+}
+
 module.exports = {
     getAll,
     getById,
@@ -286,4 +329,5 @@ module.exports = {
     countByStatus,
     remove,
     getByIdAndUserId,
-};
+    updateByUserId
+}
