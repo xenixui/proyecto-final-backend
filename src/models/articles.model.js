@@ -2,12 +2,13 @@ const db = require('../config/database');
 const { withTransaction } = db;
 
 async function getAll(page = 1, limit = 10) {
-    page = parseInt(page);
-    limit = parseInt(limit);
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
     const offset = (page - 1) * limit;
-    
+
     const data = await db.query(
-        `SELECT * FROM articles ORDER BY published_at DESC LIMIT ${limit} OFFSET ${offset}`
+        `SELECT * FROM articles ORDER BY published_at DESC LIMIT ? OFFSET ?`,
+        [limit, offset],
     );
 
     const total = await db.query(`SELECT COUNT(*) as total FROM articles`);
@@ -17,23 +18,23 @@ async function getAll(page = 1, limit = 10) {
         per_page: limit,
         total: total[0].total,
         total_pages: Math.ceil(total[0].total / limit),
-        data
+        data,
     };
 }
 
 async function getById(article_id) {
-    const result = await db.query(
-        `SELECT * FROM articles WHERE id = ?`,
-        [article_id]);
+    const result = await db.query(`SELECT * FROM articles WHERE id = ?`, [
+        article_id,
+    ]);
 
-    if (result.length===0) return 0;
+    if (result.length === 0) return 0;
 
     return result[0];
 }
 
 async function search(term) {
     const result = await db.query(
-    `SELECT * 
+        `SELECT * 
         FROM articles
         INNER JOIN models ON articles.fk_models_id = models.id
         INNER JOIN brands ON models.fk_brands_id = brands.id
@@ -42,7 +43,7 @@ async function search(term) {
         OR models.reference LIKE ?
         OR articles.description LIKE ?
         ORDER BY articles.published_at DESC`,
-    [`%${term}%`, `%${term}%`, `%${term}%`, `%${term}%`]
+        [`%${term}%`, `%${term}%`, `%${term}%`, `%${term}%`],
     );
     return result;
 }
@@ -112,7 +113,8 @@ async function filter(filters) {
         params.push(filters.shippingAvailable);
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause =
+        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const queryString = `
         SELECT
@@ -184,17 +186,12 @@ async function create(data, userId) {
         const articleId = insertArticleResult.insertId;
 
         if (data.images.length > 0) {
-        
             const values = data.images.map((image, i) => {
                 const isCover = image.is_cover || i === 0;
-            
-                return [
-                    image.image_url,
-                    isCover ? 1 : 0,
-                    articleId,
-                ];
+
+                return [image.image_url, isCover ? 1 : 0, articleId];
             });
-        
+
             await connection.query(
                 `INSERT INTO articles_images
                     (image_url, is_cover, fk_articles_id)
@@ -218,7 +215,7 @@ async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
     page = parseInt(page, 10);
     limit = parseInt(limit, 10);
     const offset = (page - 1) * limit;
-    
+
     let queryStr = `SELECT * FROM articles WHERE fk_users_id = ?`;
     let countQueryStr = `SELECT COUNT(*) as total FROM articles WHERE fk_users_id = ?`;
     const params = [userId];
@@ -229,9 +226,9 @@ async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
         params.push(status);
     }
 
-    queryStr += ` ORDER BY published_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    queryStr += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
 
-    const data = await db.query(queryStr, params);
+    const data = await db.query(queryStr, [...params, limit, offset]);
     const total = await db.query(countQueryStr, params);
 
     return {
@@ -239,7 +236,7 @@ async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
         per_page: limit,
         total: total[0].total,
         total_pages: Math.ceil(total[0].total / limit),
-        data
+        data,
     };
 }
 
@@ -257,7 +254,7 @@ async function remove(articleId) {
         `UPDATE articles
          SET status = 'DELETED'
          WHERE id = ?`,
-        [articleId]
+        [articleId],
     );
 }
 
@@ -270,4 +267,4 @@ module.exports = {
     create,
     countByStatus,
     remove,
-}
+};
