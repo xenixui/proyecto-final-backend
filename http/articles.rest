@@ -58,3 +58,23 @@ Content-Type: application/json
 ### Eliminar anuncio
 DELETE {{host}}/articles/id
 Authorization: Bearer `token`
+
+### Editar anuncio
+PUT {{host}}/articles/9
+Authorization: Bearer `token`
+Content-Type: application/json
+
+{
+  "title": "Audemars Piguet Royal Oak Offshore",
+  "description": "Audemars Piguet Royal Oak Offshore en buen estado. Revisión reciente aceptable.",
+  "price": 68000,
+  "condition": "VERY_GOOD",
+  "year_of_manufacture": 2026,
+  "case_material": "Acero inoxidable",
+  "bracelet_material": "Acero inoxidable",
+  "original_box": true,
+  "original_papers": false,
+  "shipping_available": true,
+  "fk_styles_id": 1,
+  "fk_models_id": 1
+}
