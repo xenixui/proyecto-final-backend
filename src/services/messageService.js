@@ -25,6 +25,15 @@ async function getChatById(chatId, connection) {
   return rows[0] || null;
 }
 
+function assertCanAccessChat(chat, userId) {
+  const isParticipant = Number(chat.fk_buyer_id) === Number(userId)
+    || Number(chat.seller_id) === Number(userId);
+
+  if (!isParticipant) {
+    throw createForbiddenError('No tienes permisos para acceder a este chat');
+  }
+}
+
 async function getChatMessagesAndMarkRead(chatId, userId) {
   return withTransaction(async (connection) => {
     const chat = await getChatById(chatId, connection);
@@ -33,12 +42,7 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
       throw createNotFoundError('Chat no encontrado');
     }
 
-    const isParticipant = Number(chat.fk_buyer_id) === Number(userId)
-      || Number(chat.seller_id) === Number(userId);
-
-    if (!isParticipant) {
-      throw createForbiddenError('No tienes permisos para acceder a este chat');
-    }
+    assertCanAccessChat(chat, userId);
 
     await connection.execute(
       `UPDATE messages
@@ -64,6 +68,41 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
   });
 }
 
+async function createChatMessage(chatId, userId, message) {
+  return withTransaction(async (connection) => {
+    const chat = await getChatById(chatId, connection);
+
+    if (!chat) {
+      throw createNotFoundError('Chat no encontrado');
+    }
+
+    assertCanAccessChat(chat, userId);
+
+    const [insertResult] = await connection.execute(
+      `INSERT INTO messages (message, created_at, is_read, fk_chats_id, fk_sender_id)
+       VALUES (?, NOW(), 0, ?, ?)`,
+      [message, chatId, userId]
+    );
+
+    await connection.execute(
+      `UPDATE chats
+       SET update_at = NOW()
+       WHERE id = ?`,
+      [chatId]
+    );
+
+    const [messages] = await connection.execute(
+      `SELECT id, message, created_at, is_read, fk_chats_id, fk_sender_id
+       FROM messages
+       WHERE id = ?`,
+      [insertResult.insertId]
+    );
+
+    return messages[0];
+  });
+}
+
 module.exports = {
   getChatMessagesAndMarkRead,
+  createChatMessage,
 };
