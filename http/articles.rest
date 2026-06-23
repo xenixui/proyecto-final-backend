@@ -54,3 +54,7 @@ Content-Type: application/json
     }
   ]
 }
+
+### Eliminar anuncio
+DELETE {{host}}/articles/id
+Authorization: Bearer `token`
