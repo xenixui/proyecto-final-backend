@@ -6,7 +6,8 @@ const {
     filter,
     create,
     remove,
-    update
+    update,
+    markAsSold
 } = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
@@ -26,5 +27,6 @@ router.get('/:article_id', getById);
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
 router.delete('/:article_id', authMiddleware, remove);
 router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), update);
+router.patch('/:article_id/sold', authMiddleware, markAsSold);
 
 module.exports = router;

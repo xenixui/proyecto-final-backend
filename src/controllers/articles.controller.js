@@ -186,6 +186,34 @@ async function update(req, res) {
     }
 }
 
+async function markAsSold(req, res) {
+    try {
+
+        const article =
+            await ArticleModel.markAsSoldByUserId(
+                req.params.article_id,
+                req.user.id,
+            );
+
+        if (!article) {
+            return res.status(403).json({
+                message: 'Acceso denegado o artículo no disponible',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: 'Error al marcar el artículo como vendido',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll,
     getById,
@@ -195,4 +223,5 @@ module.exports = {
     create,
     remove,
     update,
+    markAsSold
 }

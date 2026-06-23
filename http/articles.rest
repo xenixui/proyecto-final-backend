@@ -48,7 +48,7 @@ Content-Type: application/json
 
 ### Crear anuncio
 POST {{host}}/articles
-Authorization: Bearer `token`
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzEsImVtYWlsIjoidXN1YXJpby1jb211bjJAZ21haWwuY29tIiwicm9sIjoiVVNFUiIsImlhdCI6MTc4MjIzNzcwMCwiZXhwIjoxNzgyMzI0MTAwfQ.2SdLXoDY8VgvzF9haS7tNFLkSNUKFZseZFW-864585I
 Content-Type: application/json
 
 {
@@ -81,7 +81,7 @@ DELETE {{host}}/articles/id
 Authorization: Bearer `token`
 
 ### Editar anuncio
-PUT {{host}}/articles/9
+PUT {{host}}/articles/id
 Authorization: Bearer `token`
 Content-Type: application/json
 
@@ -99,3 +99,7 @@ Content-Type: application/json
   "fk_styles_id": 1,
   "fk_models_id": 1
 }
+
+### Marcar como vendido
+PATCH {{host}}/articles/id/sold
+Authorization: Bearer `token`
