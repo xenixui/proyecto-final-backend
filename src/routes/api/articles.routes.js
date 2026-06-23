@@ -18,5 +18,4 @@ router.get('/:article_id', getById);
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
 router.delete('/:article_id', authMiddleware, remove);
 
-
 module.exports = router; 
