@@ -58,7 +58,6 @@ router.patch(
     profileController.blockedUser
 );
 
-
 router.post(
     '/:id/roles',
     authMiddleware,
