@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `db_tfm`.`articles` (
   `bracelet_material` VARCHAR(50) NULL,
   `original_box` TINYINT NOT NULL,
   `original_papers` TINYINT NOT NULL,
-  `status` ENUM('DRAFT', 'PUBLISHED', 'UNDER_REVIEW', 'SOLD', 'RESERVED', 'RETIRED') NOT NULL DEFAULT 'DRAFT',
+  `status` ENUM('DRAFT', 'PUBLISHED', 'UNDER_REVIEW', 'SOLD', 'RESERVED', 'RETIRED', 'DELETED') NOT NULL DEFAULT 'DRAFT',
   `shipping_available` TINYINT NOT NULL,
   `published_at` DATETIME NULL,
   `fk_users_id` INT NOT NULL,
