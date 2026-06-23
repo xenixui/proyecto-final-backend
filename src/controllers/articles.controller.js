@@ -131,31 +131,25 @@ async function getByUserIdAndStatus(req, res) {
 
 async function remove(req, res) {
     try {
-        const article = await ArticleModel.getById(req.params.article_id);
+        const isStaff =
+            req.user.rol === 'ADMINISTRATOR' || req.user.rol === 'MODERATOR';
 
-        if (!article) {
-            return res.status(404).json({
-                message: 'Artículo no encontrado',
-            });
-        }
+        if (!isStaff) {
+            const article = await ArticleModel.getByIdAndUserId(
+                req.params.article_id,
+                req.user.id,
+            );
 
-        const isOwner = article.fk_users_id === req.user.id;
-
-        const isModerator = req.user.rol === 'MODERATOR';
-
-        const isAdmin = req.user.rol === 'ADMINISTRATOR';
-
-        if (!isOwner && !isModerator && !isAdmin) {
-            return res.status(403).json({
-                message: 'No tienes permisos para eliminar este artículo',
-            });
+            if (!article) {
+                return res.status(403).json({
+                    message: 'Acceso denegado',
+                });
+            }
         }
 
         await ArticleModel.remove(req.params.article_id);
 
-        return res.status(200).json({
-            message: 'Artículo eliminado correctamente',
-        });
+        return res.sendStatus(200);
     } catch (error) {
         return res.status(500).json({
             message: 'Error al eliminar el artículo',

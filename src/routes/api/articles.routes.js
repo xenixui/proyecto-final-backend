@@ -15,8 +15,12 @@ const router = require('express').Router();
 //Recuperar todos los artículos
 router.get('/', getAll);
 router.get('/filter', filter);
+
+//Buscar artículos
 router.get('/search/:term', search);
 router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
+
+//Obtener artículo por ID
 router.get('/:article_id', getById);
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
 router.delete('/:article_id', authMiddleware, remove);

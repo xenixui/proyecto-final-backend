@@ -1,7 +1,59 @@
+const profileModel = require('../models/profiles.model');
+const {
+    hashPassword
+} = require('../utils/password');
+const userModel = require('../models/user.model');
+
+async function getProfileDetail(userId) {
+    const user = await profileModel.getUserBasicData(userId)
+
+    if (!user) return null
+
+    const purchases = await profileModel.getPurchasesByUser(userId) || [];
+    const sales = await profileModel.getSalesByUser(userId) || [];
+    const reviews = await profileModel.getReviewsByUser(userId, userId) || [];
+    const reports = await profileModel.getReportsByUser(userId) || [];
+    const favorites = await profileModel.getFavoritesByUser(userId) || [];
+
+    return {
+        user,
+        purchases,
+        sales,
+        reviews,
+        reports,
+        favorites
+    }
+
+};
+
+async function createUserAsAdmin(data) {
+    const userExist = await userModel.getUserByEmail(data.email);
+    if (userExist) {
+        const error = new Error('Ya existe un usuario con ese email');
+        error.status = 409;
+        throw error;
+    }
+
+    const newUser = await profileModel.createUserByAdmin({
+        email: data.email,
+        hashedPassword: hashPassword(data.password),
+        name: data.name,
+        username: data.username,
+        rol: data.rol
+    });
+
+    return {
+        id: newUser.id,
+        message: 'Nuevo usuario creado'
+    };
+}
+
 // src/services/profile.service.js
 // Lógica de negocio del perfil de usuario
 
-const { query } = require('../config/database');
+const {
+    query
+} = require('../config/database');
 
 // ─── Ver perfil ───────────────────────────────────────────────
 async function getProfileByUser(userId) {
@@ -28,31 +80,54 @@ async function getProfileByUser(userId) {
         [userId],
     );
 
-    if (!row) throw { status: 404, message: 'Usuario no encontrado' };
+    if (!row) throw {
+        status: 404,
+        message: 'Usuario no encontrado'
+    };
     return row;
 }
 
 // ─── Editar perfil ────────────────────────────────────────────
 async function updateProfile(userId, data) {
-    const { username, name, surname, photo_url, phone, country, city, postal_code, biography } = data;
+    const {
+        username,
+        name,
+        surname,
+        photo_url,
+        phone,
+        country,
+        city,
+        postal_code,
+        biography
+    } = data;
 
     // Comprueba que el perfil exista antes de intentar actualizarlo
-    const [{ total: profileExists }] = await query(
+    const [{
+        total: profileExists
+    }] = await query(
         'SELECT COUNT(*) AS total FROM profiles WHERE fk_usuarios_id = ?',
         [userId],
     );
     if (profileExists === 0) {
-        throw { status: 404, message: 'Perfil no encontrado' };
+        throw {
+            status: 404,
+            message: 'Perfil no encontrado'
+        };
     }
 
     // Comprueba si YA existe ese username en algún otro usuario (excluyéndome a mí mismo)
     // Usamos COUNT en vez de traer una fila: así sabemos cuántas coincidencias hay
     // y no dependemos de qué fila concreta devuelva la BD primero.
-    const [{ total: usernameTaken }] = await query(
+    const [{
+        total: usernameTaken
+    }] = await query(
         'SELECT COUNT(*) AS total FROM profiles WHERE username = ? AND fk_usuarios_id != ?',
         [username, userId],
     );
-    if (usernameTaken > 0) throw { status: 409, message: 'El username ya está en uso' };
+    if (usernameTaken > 0) throw {
+        status: 409,
+        message: 'El username ya está en uso'
+    };
 
     await query(
         `UPDATE profiles
@@ -67,7 +142,8 @@ async function updateProfile(userId, data) {
              biography    = ?
          WHERE fk_usuarios_id = ?`,
         [username, name || null, surname || null, photo_url || null,
-         phone || null, country, city, postal_code, biography || null, userId],
+            phone || null, country, city, postal_code, biography || null, userId
+        ],
     );
 
     return await getProfile(userId);
@@ -197,6 +273,8 @@ async function getMyChats(userId) {
 }
 
 module.exports = {
+    getProfileDetail,
+    createUserAsAdmin,
     getProfileByUser,
     updateProfile,
     getMyArticles,

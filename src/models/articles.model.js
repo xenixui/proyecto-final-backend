@@ -251,11 +251,22 @@ async function countByStatus(status) {
 
 async function remove(articleId) {
     return db.query(
-        `UPDATE articles
-         SET status = 'DELETED'
+        `DELETE FROM articles
          WHERE id = ?`,
         [articleId],
     );
+}
+
+async function getByIdAndUserId(articleId, userId) {
+    const result = await db.query(
+        `SELECT *
+         FROM articles
+         WHERE id = ?
+         AND fk_users_id = ?`,
+        [articleId, userId],
+    );
+
+    return result[0] || null;
 }
 
 module.exports = {
@@ -267,4 +278,5 @@ module.exports = {
     create,
     countByStatus,
     remove,
+    getByIdAndUserId,
 };
