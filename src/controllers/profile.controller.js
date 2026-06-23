@@ -37,14 +37,24 @@ async function getProfileByUser(req, res) {
 
 async function getProfiles(req, res) {
     try {
-        const result = await profileModel.getAllProfiles(req.query.rol);
+
+        const {
+            rol
+        } = req.query
+
+        const result = rol ?
+            await profileModel.getProfilesByRole(rol.toLowerCase()) :
+            await profileModel.getAllProfiles();
+
         return res.json(result);
+
     } catch (error) {
         return res.status(500).json({
             message: 'Error al recuperar los perfiles',
             error: error.message
         });
     }
+
 }
 
 async function getProfileDetailById(req, res) {
@@ -56,7 +66,7 @@ async function getProfileDetailById(req, res) {
             })
         }
         return res.json(result)
-        
+
     } catch (error) {
         return res.status(500).json({
             message: 'Error al recuperar el usuario'
@@ -127,7 +137,7 @@ async function blockedUser(req, res) {
         })
 
     } catch (error) {
-      
+
         return res.status(500).json({
             message: 'Error al bloquear al usuario'
         });

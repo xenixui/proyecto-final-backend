@@ -1,8 +1,15 @@
 const db = require('../config/database');
 
-async function getAllProfiles(rol) {
+async function getAllProfiles() {
     const result = await db.query(
-        `SELECT p.*
+        `SELECT * FROM profiles `
+    )
+    return result;
+}
+
+async function getProfilesByRole(rol) {
+    const result = await db.query(
+        `SELECT p.*, r.rol
         FROM profiles p
         INNER JOIN users u ON u.id = p.fk_usuarios_id
         INNER JOIN users_roles ur ON ur.fk_users_id = u.id
@@ -159,7 +166,7 @@ async function assignRole(userId, rolName) {
         [rolName]
     )
 
-    if(roleResult.length === 0) return null
+    if (roleResult.length === 0) return null
 
     const roleId = roleResult[0].id
 
@@ -172,8 +179,8 @@ async function assignRole(userId, rolName) {
 }
 // Quitar rol 
 
-async function removeRole (userId, rolId) {
-    const result = await db.query (
+async function removeRole(userId, rolId) {
+    const result = await db.query(
         `DELETE FROM users_roles WHERE fk_users_id = ?
         AND fk_roles_id = ?`,
         [userId, rolId]
@@ -181,8 +188,10 @@ async function removeRole (userId, rolId) {
     return result
 }
 
+
 module.exports = {
     getAllProfiles,
+    getProfilesByRole,
     getByUserId,
     getUserBasicData,
     getPurchasesByUser,
@@ -196,4 +205,3 @@ module.exports = {
     assignRole,
     removeRole
 }
-

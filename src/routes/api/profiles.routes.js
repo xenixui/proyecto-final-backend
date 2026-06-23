@@ -20,11 +20,13 @@ router.get(
     profileController.getProfileByUser,
 );
 
+
 router.get(
     '/',
     authMiddleware,
     requireRole('admin'),
-    profileController.getProfiles);
+    profileController.getProfiles
+);
 
 router.get(
     '/:id/detail',
@@ -55,6 +57,7 @@ router.patch(
     requireRole('admin'),
     profileController.blockedUser
 );
+
 
 router.post(
     '/:id/roles',

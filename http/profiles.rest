@@ -45,7 +45,12 @@ Authorization: Bearer {{token}}
 ###  GESTIÓN DE PERFILES DESDE DASHBOARD ADMIN
 ### ============================================
 
-### VER LISTADO
+### VER LISTADO 
+GET {{baseUrl}}/api/profiles
+Authorization: Bearer {{token}}
+
+### VER LISTADO FILTRANDO POR ROL
+
 GET {{baseUrl}}/api/profiles/?rol=user
 Authorization: Bearer {{token}}
 
@@ -91,3 +96,4 @@ Authorization: Bearer {{token}}
 
 DELETE {{baseUrl}}/api/profiles/210001/roles/2
 Authorization:  Bearer {{token}}
+
