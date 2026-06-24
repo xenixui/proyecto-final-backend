@@ -24,9 +24,17 @@ router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 
 //Obtener artículo por ID
 router.get('/:article_id', getById);
+
+//Crear artículo
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
+
+//Eliminar artículo
 router.delete('/:article_id', authMiddleware, remove);
+
+// Actualizar artículo
 router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), update);
+
+//Marcar artículo como vendido
 router.patch('/:article_id/sold', authMiddleware, markAsSold);
 
 module.exports = router;

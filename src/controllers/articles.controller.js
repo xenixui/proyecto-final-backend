@@ -196,8 +196,8 @@ async function markAsSold(req, res) {
             );
 
         if (!article) {
-            return res.status(403).json({
-                message: 'Acceso denegado o artículo no disponible',
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible',
             });
         }
 
