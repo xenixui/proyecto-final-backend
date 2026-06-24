@@ -116,7 +116,7 @@ async function updateProfile(userId, data) {
         'SELECT COUNT(*) AS total FROM profiles WHERE username = ? AND fk_usuarios_id != ?',
         [username, userId],
     );
-    if (usernameTaken > 1)
+    if (usernameTaken > 0)
         throw {
             status: 409,
             message: 'El username ya está en uso',
