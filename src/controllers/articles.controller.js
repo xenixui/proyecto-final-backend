@@ -1,4 +1,5 @@
 const ArticleModel = require('../models/articles.model');
+const cloudinaryService = require('../services/cloudinary.service');
 
 async function getAll(req, res) {
     try {
@@ -214,6 +215,54 @@ async function markAsSold(req, res) {
     }
 }
 
+async function uploadImages(req, res) {
+    try {
+        const articleId = req.params.article_id;
+
+        if (!req.files?.length) {
+            return res.status(400).json({
+                message: 'Debes enviar al menos una imagen',
+            });
+        }
+
+        const article = await ArticleModel.getByIdAndUserId(
+            articleId,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(403).json({
+                message: 'Acceso denegado',
+            });
+        }
+
+        const hasCover = await ArticleModel.hasCoverImage(articleId);
+
+        const uploadResults = await Promise.all(
+            req.files.map((file) =>
+                cloudinaryService.uploadImage(
+                    file.buffer,
+                    `articles/${articleId}`,
+                ),
+            ),
+        );
+
+        const images = uploadResults.map((result, index) => ({
+            image_url: result.secure_url,
+            is_cover: !hasCover && index === 0,
+        }));
+
+        const savedImages = await ArticleModel.addImages(articleId, images);
+
+        return res.status(201).json({ images: savedImages });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al subir las imágenes',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll,
     getById,
@@ -223,5 +272,6 @@ module.exports = {
     create,
     remove,
     update,
-    markAsSold
-}
+    markAsSold,
+    uploadImages,
+};

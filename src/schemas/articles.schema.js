@@ -69,7 +69,7 @@ const createArticleSchema = yup.object({
     // Si el usuario quiere guardarlo como borrador en vez de publicarlo directamente
     publish: yup.boolean().default(true).notRequired(),
 
-    // Array de URLs de imágenes ya subidas (la primera se marca como portada)
+    // Array de URLs de imágenes (opcional; las imágenes se suben después de crear el artículo)
     images: yup
         .array()
         .of(
@@ -82,8 +82,8 @@ const createArticleSchema = yup.object({
                 is_cover: yup.boolean().default(false).notRequired(),
             }),
         )
-        .min(1, 'Debes incluir al menos una imagen')
-        .required('Las imágenes son obligatorias'),
+        .default([])
+        .notRequired(),
 });
 
 const updateArticleSchema = yup.object({
