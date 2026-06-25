@@ -68,7 +68,8 @@ async function getProfileByUser(userId) {
            p.city,
            p.postal_code,
            p.biography,
-           p.rating
+           p.rating,
+           p.fk_usuarios_id
          FROM users u
          JOIN profiles p ON p.fk_usuarios_id = u.id
          WHERE u.id = ?`,
