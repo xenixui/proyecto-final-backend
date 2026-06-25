@@ -1,14 +1,12 @@
 const express = require('express');
 const profileController = require('../../controllers/profile.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
-const {
-    validateSchema
-} = require('../../middlewares/validation.middleware');
+const { validateSchema } = require('../../middlewares/validation.middleware');
 const {
     getProfileByUserSchema,
     registerUserByAdminSchema,
     assignRoleSchema,
-    updateProfileBodySchema
+    updateProfileBodySchema,
 } = require('../../schemas/profile.schema');
 const requireRole = require('../../middlewares/role.middleware');
 const {
@@ -18,67 +16,24 @@ const {
 
 const router = express.Router();
 
-router.get(
-    '/:userId',
-    authMiddleware,
-    validateSchema(getProfileByUserSchema, 'params'),
-    profileController.getProfileByUser,
-);
-
+// ─── Rutas fijas (deben ir antes de /:userId para evitar colisiones) ───
 
 router.get(
     '/',
     authMiddleware,
     requireRole('admin'),
-    profileController.getProfiles
+    profileController.getProfiles,
 );
-
-router.get(
-    '/:id/detail',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.getProfileDetailById
-)
 
 router.post(
     '/',
     authMiddleware,
     requireRole('admin'),
     validateSchema(registerUserByAdminSchema, 'body'),
-    profileController.createUser);
-
-
-router.delete(
-    '/:id',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.deleteUser
-
+    profileController.createUser,
 );
 
-router.patch(
-    '/:id/block',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.blockedUser
-);
-
-router.post(
-    '/:id/roles',
-    authMiddleware,
-    requireRole('admin'),
-    validateSchema(assignRoleSchema, 'body'),
-    profileController.assignedRole
-);
-
-router.delete(
-    '/:id/roles/:roleId',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.removedRole
-)
-
-// PUT /api/profile  →  editar mi perfil
+// PUT /api/profiles  →  editar mi perfil
 router.put(
     '/',
     authMiddleware,
@@ -96,38 +51,78 @@ router.post(
 );
 
 // DELETE /api/profiles/photo  →  eliminar foto de perfil
-router.delete(
-    '/photo',
-    authMiddleware,
-    profileController.deletePhoto,
-);
+router.delete('/photo', authMiddleware, profileController.deletePhoto);
 
 // GET /api/profile/articles -> mis artículos publicados
-router.get(
-    '/articles',
-    authMiddleware,
-    profileController.getMyArticles,
-);
+router.get('/articles', authMiddleware, profileController.getMyArticles);
 
-// GET /api/profile/orders/purchases -> mis compras
+// GET /api/profiles/orders/purchases -> mis compras
 router.get(
     '/orders/purchases',
     authMiddleware,
     profileController.getMyPurchases,
 );
 
-// GET /api/profile/orders/sales ->mis ventas
+// GET /api/profiles/orders/sales -> mis ventas
+router.get('/orders/sales', authMiddleware, profileController.getMySales);
+
+// GET /api/profiles/chats -> mis chats (comprador o vendedor)
+router.get('/chats', authMiddleware, profileController.getMyChats);
+
+// ─── Rutas admin con parámetros específicos ───────────────────────────
+
 router.get(
-    '/orders/sales',
+    '/:id/detail',
     authMiddleware,
-    profileController.getMySales,
+    requireRole('admin'),
+    profileController.getProfileDetailById,
 );
 
-// GET /api/profile/chats -> mis chats (comprador o vendedor)
-router.get(
-    '/chats',
+router.delete(
+    '/:id',
     authMiddleware,
-    profileController.getMyChats,
+    requireRole('admin'),
+    profileController.deleteUser,
+);
+
+router.patch(
+    '/:id/block',
+    authMiddleware,
+    requireRole('admin'),
+    profileController.blockedUser,
+);
+
+router.post(
+    '/:id/roles',
+    authMiddleware,
+    requireRole('admin'),
+    validateSchema(assignRoleSchema, 'body'),
+    profileController.assignedRole,
+);
+
+router.delete(
+    '/:id/roles/:roleId',
+    authMiddleware,
+    requireRole('admin'),
+    profileController.removedRole,
+);
+
+// PUT /api/profiles/:userId  →  admin edita el perfil de cualquier usuario
+router.put(
+    '/:userId',
+    authMiddleware,
+    requireRole('admin'),
+    validateSchema(getProfileByUserSchema, 'params'),
+    validateSchema(updateProfileBodySchema, 'body'),
+    profileController.updateProfileByUserId,
+);
+
+// GET /api/profiles/:userId  →  obtener perfil por userId
+router.get(
+    '/:userId',
+    authMiddleware,
+    validateSchema(getProfileByUserSchema, 'params'),
+    profileController.getProfileByUser,
 );
 
 module.exports = router;

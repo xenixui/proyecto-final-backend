@@ -174,10 +174,23 @@ async function removedRole(req, res) {
     }
 }
 
-// PUT /api/profile  →  actualiza los datos editables del perfil
+// PUT /api/profiles  →  actualiza los datos editables del perfil del usuario autenticado
 async function updateProfile(req, res, next) {
     try {
         const data = await profileService.updateProfile(req.user.id, req.body);
+        res.json(data);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// PUT /api/profiles/:userId  →  admin actualiza el perfil de cualquier usuario
+async function updateProfileByUserId(req, res, next) {
+    try {
+        const data = await profileService.updateProfile(
+            req.params.userId,
+            req.body,
+        );
         res.json(data);
     } catch (err) {
         next(err);
@@ -302,6 +315,7 @@ module.exports = {
     updateProfile,
     uploadPhoto,
     deletePhoto,
+    updateProfileByUserId,
     getMyArticles,
     getMyPurchases,
     getMySales,
