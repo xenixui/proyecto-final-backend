@@ -1,9 +1,7 @@
 const db = require('../config/database');
 
 async function getAllProfiles() {
-    const result = await db.query(
-        `SELECT * FROM profiles `
-    )
+    const result = await db.query(`SELECT * FROM profiles `);
     return result;
 }
 
@@ -15,7 +13,7 @@ async function getProfilesByRole(rol) {
         INNER JOIN users_roles ur ON ur.fk_users_id = u.id
         INNER JOIN roles r ON r.id = ur.fk_roles_id
         WHERE r.rol = ?`,
-        [rol]
+        [rol],
     );
     return result;
 }
@@ -44,10 +42,10 @@ async function getUserBasicData(userId) {
     FROM users AS u
     INNER JOIN profiles AS p ON p.fk_usuarios_id = u.id
     WHERE u.id = ?`,
-        [userId]
+        [userId],
     );
 
-    if (result.length === 0) return null
+    if (result.length === 0) return null;
     return result[0];
 }
 
@@ -56,10 +54,10 @@ async function getPurchasesByUser(fk_buyer_id) {
         `SELECT title, description, price, condition, status
         FROM articles
         WHERE fk_buyer_id = ?`,
-        [fk_buyer_id]
+        [fk_buyer_id],
     );
-    if (result.length === 0) return null
-    return result
+    if (result.length === 0) return null;
+    return result;
 }
 
 async function getSalesByUser(fk_users_id) {
@@ -67,10 +65,10 @@ async function getSalesByUser(fk_users_id) {
         `SELECT title, description, price, condition, status
         FROM articles
         WHERE fk_users_id = ?`,
-        [fk_users_id]
+        [fk_users_id],
     );
-    if (result.length === 0) return null
-    return result
+    if (result.length === 0) return null;
+    return result;
 }
 
 async function getReviewsByUser(fk_buyer_id, fk_seller_id) {
@@ -78,10 +76,10 @@ async function getReviewsByUser(fk_buyer_id, fk_seller_id) {
         `SELECT stars, comentario, created_at, fk_article_id
         FROM reviews
         WHERE fk_buyer_id = ? OR fk_seller_id = ?`,
-        [fk_buyer_id, fk_seller_id]
+        [fk_buyer_id, fk_seller_id],
     );
-    if (result.length === 0) return null
-    return result
+    if (result.length === 0) return null;
+    return result;
 }
 
 async function getReportsByUser(fk_users_id) {
@@ -89,10 +87,10 @@ async function getReportsByUser(fk_users_id) {
         `SELECT reason, comments, status, created_at, fk_articles_id
         FROM reports
         WHERE fk_users_id = ?`,
-        [fk_users_id]
+        [fk_users_id],
     );
-    if (result.length === 0) return null
-    return result
+    if (result.length === 0) return null;
+    return result;
 }
 
 async function getFavoritesByUser(fk_users_id) {
@@ -100,10 +98,10 @@ async function getFavoritesByUser(fk_users_id) {
         `SELECT created_at, fk_articles_id
         FROM favorite
         WHERE fk_users_id = ?`,
-        [fk_users_id]
+        [fk_users_id],
     );
-    if (result.length === 0) return null
-    return result
+    if (result.length === 0) return null;
+    return result;
 }
 
 // Dar de alta
@@ -111,83 +109,80 @@ async function createUserByAdmin(data) {
     const result = await db.query(
         `INSERT INTO users (email, password, status, created_at, update_at) VALUES 
         (?, ?, ?, NOW(), NOW())`,
-        [data.email, data.hashedPassword, 'ACTIVE']
-    )
-    const newUserId = result.insertId
+        [data.email, data.hashedPassword, 'ACTIVE'],
+    );
+    const newUserId = result.insertId;
 
     const roleResult = await db.query(
         `SELECT id FROM roles WHERE rol = ? LIMIT 1`,
-        [data.rol.toLowerCase()]
+        [data.rol.toLowerCase()],
     );
-    const roleId = roleResult[0].id
+    const roleId = roleResult[0].id;
 
     await db.query(
         `INSERT INTO users_roles (fk_users_id, fk_roles_id, assigned_at) 
         VALUES (?, ?, NOW())`,
-        [newUserId, roleId]
-    )
+        [newUserId, roleId],
+    );
 
     await db.query(
         `INSERT INTO profiles (username, name, country, city, postal_code, created_at, fk_usuarios_id) 
         VALUES (?, ?, ?, ?, ?, NOW(), ?)`,
-        [data.username, data.name, '', '', '', newUserId]
+        [data.username, data.name, '', '', '', newUserId],
     );
 
     return {
-        id: newUserId
-    }
+        id: newUserId,
+    };
 }
 
 // Dar de baja
 async function deactivateUser(userId) {
     const result = await db.query(
         `UPDATE users SET status = 'DELETED' WHERE id = ?`,
-        [userId]
+        [userId],
     );
     return result;
 }
-
 
 // Bloquear
 
 async function blockUser(userId) {
     const result = await db.query(
         `UPDATE users SET status = 'BLOCKED' WHERE id = ?`,
-        [userId]
-    )
-    return result
+        [userId],
+    );
+    return result;
 }
-
 
 // Asignar role
 async function assignRole(userId, rolName) {
     const roleResult = await db.query(
         `SELECT id FROM roles WHERE rol = ? LIMIT 1`,
-        [rolName]
-    )
+        [rolName],
+    );
 
-    if (roleResult.length === 0) return null
+    if (roleResult.length === 0) return null;
 
-    const roleId = roleResult[0].id
+    const roleId = roleResult[0].id;
 
     const result = await db.query(
         `INSERT INTO users_roles (fk_users_id, fk_roles_id, assigned_at)
         VALUES (?, ?, NOW())`,
-        [userId, roleId]
-    )
-    return result
+        [userId, roleId],
+    );
+    return result;
 }
-// Quitar rol 
+// Quitar rol
 
 async function removeRole(userId, rolId) {
     const result = await db.query(
         `DELETE FROM users_roles WHERE fk_users_id = ?
         AND fk_roles_id = ?`,
-        [userId, rolId]
-    )
-    return result
+        [userId, rolId],
+    );
+    return result;
 }
-
 
 module.exports = {
     getAllProfiles,
@@ -203,5 +198,5 @@ module.exports = {
     deactivateUser,
     blockUser,
     assignRole,
-    removeRole
-}
+    removeRole,
+};
