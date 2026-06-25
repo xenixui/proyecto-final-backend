@@ -2,7 +2,8 @@ const {
     query
 } = require('../config/database');
 const profileModel = require('../models/profiles.model');
-const profileService = require('../services/profile.service')
+const profileService = require('../services/profile.service');
+const cloudinaryService = require('../services/cloudinary.service');
 
 async function getProfileByUser(req, res) {
     try {
@@ -254,6 +255,37 @@ async function getMyChats(req, res, next) {
     }
 }
 
+async function uploadPhoto(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: 'Debes enviar una imagen',
+            });
+        }
+
+        const result = await cloudinaryService.uploadImage(
+            req.file.buffer,
+            `profiles/${req.user.id}`,
+        );
+
+        await query(
+            `UPDATE profiles
+             SET photo_url = ?
+             WHERE fk_usuarios_id = ?`,
+            [result.secure_url, req.user.id],
+        );
+
+        return res.status(200).json({
+            photo_url: result.secure_url,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al subir la foto de perfil',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getProfileByUser,
     getProfiles,
@@ -264,6 +296,7 @@ module.exports = {
     assignedRole,
     removedRole,
     updateProfile,
+    uploadPhoto,
     getMyArticles,
     getMyPurchases,
     getMySales,

@@ -24,6 +24,7 @@ const upload = multer({
 });
 
 const uploadArticleImages = upload.array('images', MAX_FILES);
+const uploadProfilePhoto = upload.single('photo');
 
 function handleUploadErrors(err, _req, res, next) {
     if (err instanceof multer.MulterError) {
@@ -49,5 +50,6 @@ function handleUploadErrors(err, _req, res, next) {
 
 module.exports = {
     uploadArticleImages,
+    uploadProfilePhoto,
     handleUploadErrors,
 };

@@ -11,6 +11,10 @@ const {
     updateProfileBodySchema
 } = require('../../schemas/profile.schema');
 const requireRole = require('../../middlewares/role.middleware');
+const {
+    uploadProfilePhoto,
+    handleUploadErrors,
+} = require('../../middlewares/upload.middleware');
 
 const router = express.Router();
 
@@ -80,6 +84,15 @@ router.put(
     authMiddleware,
     validateSchema(updateProfileBodySchema, 'body'),
     profileController.updateProfile,
+);
+
+// POST /api/profiles/photo  →  subir foto de perfil
+router.post(
+    '/photo',
+    authMiddleware,
+    uploadProfilePhoto,
+    handleUploadErrors,
+    profileController.uploadPhoto,
 );
 
 // GET /api/profile/articles -> mis artículos publicados
