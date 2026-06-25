@@ -95,6 +95,13 @@ router.post(
     profileController.uploadPhoto,
 );
 
+// DELETE /api/profiles/photo  →  eliminar foto de perfil
+router.delete(
+    '/photo',
+    authMiddleware,
+    profileController.deletePhoto,
+);
+
 // GET /api/profile/articles -> mis artículos publicados
 router.get(
     '/articles',

@@ -16,6 +16,21 @@ function uploadImage(buffer, folder) {
     });
 }
 
+async function deleteImage(secureUrl) {
+    const publicId = _extractPublicId(secureUrl);
+    if (!publicId) return null;
+    return cloudinary.uploader.destroy(publicId);
+}
+
+function _extractPublicId(secureUrl) {
+    const parts = secureUrl.split('/upload/');
+    if (parts.length < 2) return null;
+    const afterUpload = parts[1];
+    const withoutVersion = afterUpload.replace(/^v\d+\//, '');
+    return withoutVersion.replace(/\.[^.]+$/, '');
+}
+
 module.exports = {
     uploadImage,
+    deleteImage,
 };

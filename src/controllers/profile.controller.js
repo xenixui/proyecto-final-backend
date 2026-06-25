@@ -259,6 +259,37 @@ async function uploadPhoto(req, res) {
     }
 }
 
+async function deletePhoto(req, res) {
+    try {
+        const profiles = await query(
+            `SELECT photo_url FROM profiles WHERE fk_usuarios_id = ?`,
+            [req.user.id],
+        );
+
+        if (!profiles[0]?.photo_url) {
+            return res.status(404).json({
+                message: 'No hay foto de perfil para eliminar',
+            });
+        }
+
+        await cloudinaryService.deleteImage(profiles[0].photo_url);
+
+        await query(
+            `UPDATE profiles SET photo_url = NULL WHERE fk_usuarios_id = ?`,
+            [req.user.id],
+        );
+
+        return res.status(200).json({
+            message: 'Foto de perfil eliminada correctamente',
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al eliminar la foto de perfil',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getProfileByUser,
     getProfiles,
@@ -270,6 +301,7 @@ module.exports = {
     removedRole,
     updateProfile,
     uploadPhoto,
+    deletePhoto,
     getMyArticles,
     getMyPurchases,
     getMySales,
