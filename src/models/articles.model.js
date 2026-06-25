@@ -342,6 +342,27 @@ async function updateByUserId(articleId, userId, data) {
     });
 }
 
+async function markAsSoldByUserId(articleId, userId) {
+
+    const result = await db.query(
+        `UPDATE articles
+         SET status = 'SOLD'
+         WHERE id = ?
+         AND fk_users_id = ?
+         AND status = 'PUBLISHED'`,
+        [
+            articleId,
+            userId,
+        ]
+    );
+
+    if (result.affectedRows === 0) {
+        return null;
+    }
+
+    return getById(articleId);
+}
+
 module.exports = {
     getAll,
     getById,
@@ -353,5 +374,6 @@ module.exports = {
     countByStatus,
     remove,
     getByIdAndUserId,
-    updateByUserId
+    updateByUserId,
+    markAsSoldByUserId
 }

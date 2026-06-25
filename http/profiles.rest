@@ -97,3 +97,54 @@ Authorization: Bearer {{token}}
 DELETE {{baseUrl}}/api/profiles/210001/roles/2
 Authorization:  Bearer {{token}}
 
+### ============================================
+### ACTUALIZAR PERFIL
+### ============================================
+
+### Editar mi perfil (usuario autenticado)
+PUT {{baseUrl}}/api/profiles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "testuser",
+  "name": "Test",
+  "surname": "User",
+  "photo_url": null,
+  "phone": null,
+  "country": "España",
+  "city": "Madrid",
+  "postal_code": "28001",
+  "biography": "Mi biografía"
+}
+
+### Admin edita perfil de cualquier usuario
+PUT {{baseUrl}}/api/profiles/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "updateduser",
+  "name": "Updated",
+  "surname": "Name",
+  "photo_url": null,
+  "phone": null,
+  "country": "España",
+  "city": "Barcelona",
+  "postal_code": "08001",
+  "biography": "Biografía actualizada por admin"
+}
+
+### Admin edita perfil — Sin rol admin (403)
+# Usar token de un usuario sin rol admin
+PUT {{baseUrl}}/api/profiles/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "forbidden",
+  "country": "España",
+  "city": "Madrid",
+  "postal_code": "28001"
+}
+
