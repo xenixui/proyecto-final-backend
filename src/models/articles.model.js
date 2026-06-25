@@ -276,46 +276,70 @@ async function getByIdAndUserId(articleId, userId) {
 }
 
 async function updateByUserId(articleId, userId, data) {
+    return withTransaction(async (connection) => {
 
-    const result = await db.query(
-        `UPDATE articles
-         SET title = ?,
-             description = ?,
-             price = ?,
-             \`condition\` = ?,
-             year_of_manufacture = ?,
-             case_material = ?,
-             bracelet_material = ?,
-             original_box = ?,
-             original_papers = ?,
-             shipping_available = ?,
-             fk_styles_id = ?,
-             fk_models_id = ?
-         WHERE id = ?
-         AND fk_users_id = ?`,
-        [
-            data.title,
-            data.description,
-            data.price,
-            data.condition,
-            data.year_of_manufacture,
-            data.case_material,
-            data.bracelet_material,
-            data.original_box ? 1 : 0,
-            data.original_papers ? 1 : 0,
-            data.shipping_available ? 1 : 0,
-            data.fk_styles_id,
-            data.fk_models_id,
-            articleId,
-            userId,
-        ]
-    );
+        const [result] = await connection.execute(
+            `UPDATE articles
+             SET title = ?,
+                 description = ?,
+                 price = ?,
+                 \`condition\` = ?,
+                 year_of_manufacture = ?,
+                 case_material = ?,
+                 bracelet_material = ?,
+                 original_box = ?,
+                 original_papers = ?,
+                 shipping_available = ?,
+                 fk_styles_id = ?,
+                 fk_models_id = ?
+             WHERE id = ?
+             AND fk_users_id = ?`,
+            [
+                data.title,
+                data.description,
+                data.price,
+                data.condition,
+                data.year_of_manufacture,
+                data.case_material,
+                data.bracelet_material,
+                data.original_box ? 1 : 0,
+                data.original_papers ? 1 : 0,
+                data.shipping_available ? 1 : 0,
+                data.fk_styles_id,
+                data.fk_models_id,
+                articleId,
+                userId,
+            ]
+        );
 
-    if (result.affectedRows === 0) {
-        return null;
-    }
+        if (result.affectedRows === 0) {
+            return null;
+        }
 
-    return getById(articleId);
+        if (data.images) {
+
+            await connection.execute(
+                `DELETE FROM articles_images
+                 WHERE fk_articles_id = ?`,
+                [articleId]
+            );
+
+            const values = data.images.map((image, index) => [
+                image.image_url,
+                image.is_cover || index === 0 ? 1 : 0,
+                articleId,
+            ]);
+
+            await connection.query(
+                `INSERT INTO articles_images
+                    (image_url, is_cover, fk_articles_id)
+                 VALUES ?`,
+                [values]
+            );
+        }
+
+        return getById(articleId);
+    });
 }
 
 module.exports = {
