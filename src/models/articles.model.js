@@ -191,7 +191,7 @@ async function create(data, userId) {
 
         const articleId = insertArticleResult.insertId;
 
-        if (data.images.length > 0) {
+        if (data.images?.length > 0) {
             const values = data.images.map((image, i) => {
                 const isCover = image.is_cover || i === 0;
 
@@ -363,6 +363,48 @@ async function markAsSoldByUserId(articleId, userId) {
     return getById(articleId);
 }
 
+async function hasCoverImage(articleId) {
+    const result = await db.query(
+        `SELECT COUNT(*) AS count
+         FROM articles_images
+         WHERE fk_articles_id = ?
+         AND is_cover = 1`,
+        [articleId],
+    );
+
+    return result[0].count > 0;
+}
+
+async function addImages(articleId, images) {
+    if (!images.length) {
+        return [];
+    }
+
+    const values = images.map((image) => [
+        image.image_url,
+        image.is_cover ? 1 : 0,
+        articleId,
+    ]);
+
+    await db.query(
+        `INSERT INTO articles_images
+            (image_url, is_cover, fk_articles_id)
+            VALUES ?`,
+        [values],
+    );
+
+    const urls = images.map((image) => image.image_url);
+    const placeholders = urls.map(() => '?').join(', ');
+
+    return db.query(
+        `SELECT *
+         FROM articles_images
+         WHERE fk_articles_id = ?
+         AND image_url IN (${placeholders})`,
+        [articleId, ...urls],
+    );
+}
+
 module.exports = {
     getAll,
     getById,
@@ -375,5 +417,7 @@ module.exports = {
     remove,
     getByIdAndUserId,
     updateByUserId,
-    markAsSoldByUserId
-}
+    markAsSoldByUserId,
+    hasCoverImage,
+    addImages,
+};

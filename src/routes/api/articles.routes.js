@@ -7,9 +7,14 @@ const {
     create,
     remove,
     update,
-    markAsSold
+    markAsSold,
+    uploadImages,
 } = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const {
+    uploadArticleImages,
+    handleUploadErrors,
+} = require('../../middlewares/upload.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const { createArticleSchema, updateArticleSchema } = require('../../schemas/articles.schema');
 const router = require('express').Router();
@@ -27,6 +32,15 @@ router.get('/:article_id', getById);
 
 //Crear artículo
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
+
+//Subir imágenes de un artículo
+router.post(
+    '/:article_id/images',
+    authMiddleware,
+    uploadArticleImages,
+    handleUploadErrors,
+    uploadImages,
+);
 
 //Eliminar artículo
 router.delete('/:article_id', authMiddleware, remove);

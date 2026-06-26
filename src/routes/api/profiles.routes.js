@@ -9,6 +9,10 @@ const {
     updateProfileBodySchema,
 } = require('../../schemas/profile.schema');
 const requireRole = require('../../middlewares/role.middleware');
+const {
+    uploadProfilePhoto,
+    handleUploadErrors,
+} = require('../../middlewares/upload.middleware');
 
 const router = express.Router();
 
@@ -37,7 +41,19 @@ router.put(
     profileController.updateProfile,
 );
 
-// GET /api/profiles/articles -> mis artículos publicados
+// POST /api/profiles/photo  →  subir foto de perfil
+router.post(
+    '/photo',
+    authMiddleware,
+    uploadProfilePhoto,
+    handleUploadErrors,
+    profileController.uploadPhoto,
+);
+
+// DELETE /api/profiles/photo  →  eliminar foto de perfil
+router.delete('/photo', authMiddleware, profileController.deletePhoto);
+
+// GET /api/profile/articles -> mis artículos publicados
 router.get('/articles', authMiddleware, profileController.getMyArticles);
 
 // GET /api/profiles/orders/purchases -> mis compras

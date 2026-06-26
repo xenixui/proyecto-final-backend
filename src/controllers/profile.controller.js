@@ -1,6 +1,7 @@
 const { query } = require('../config/database');
 const profileModel = require('../models/profiles.model');
 const profileService = require('../services/profile.service');
+const cloudinaryService = require('../services/cloudinary.service');
 
 async function getProfileByUser(req, res) {
     try {
@@ -240,6 +241,68 @@ async function getMyChats(req, res, next) {
     }
 }
 
+async function uploadPhoto(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: 'No se ha seleccionado ninguna imagen',
+            });
+        }
+
+        const result = await cloudinaryService.uploadImage(
+            req.file.buffer,
+            `profiles/${req.user.id}`,
+        );
+
+        await query(
+            `UPDATE profiles
+             SET photo_url = ?
+             WHERE fk_usuarios_id = ?`,
+            [result.secure_url, req.user.id],
+        );
+
+        return res.status(200).json({
+            photo_url: result.secure_url,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al subir la foto de perfil',
+            error: error.message,
+        });
+    }
+}
+
+async function deletePhoto(req, res) {
+    try {
+        const profiles = await query(
+            `SELECT photo_url FROM profiles WHERE fk_usuarios_id = ?`,
+            [req.user.id],
+        );
+
+        if (!profiles[0]?.photo_url) {
+            return res.status(404).json({
+                message: 'No hay foto de perfil para eliminar',
+            });
+        }
+
+        await cloudinaryService.deleteImage(profiles[0].photo_url);
+
+        await query(
+            `UPDATE profiles SET photo_url = NULL WHERE fk_usuarios_id = ?`,
+            [req.user.id],
+        );
+
+        return res.status(200).json({
+            message: 'Foto de perfil eliminada correctamente',
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al eliminar la foto de perfil',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getProfileByUser,
     getProfiles,
@@ -250,6 +313,8 @@ module.exports = {
     assignedRole,
     removedRole,
     updateProfile,
+    uploadPhoto,
+    deletePhoto,
     updateProfileByUserId,
     getMyArticles,
     getMyPurchases,
