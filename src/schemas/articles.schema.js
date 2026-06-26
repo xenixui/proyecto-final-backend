@@ -147,6 +147,24 @@ const updateArticleSchema = yup.object({
         .typeError('El modelo seleccionado no es válido')
         .integer()
         .required('El modelo no puede estar vacío'),
+
+    images: yup
+        .array()
+        .of(
+            yup.object({
+                image_url: yup
+                    .string()
+                    .trim()
+                    .url('La URL de la imagen no es válida')
+                    .required('La URL de la imagen es obligatoria'),
+            
+                is_cover: yup
+                    .boolean()
+                    .default(false)
+                    .notRequired(),
+            }),
+        )
+        .min(1, 'Debe existir al menos una imagen'),
 });
 
 module.exports = {

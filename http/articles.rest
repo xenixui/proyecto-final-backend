@@ -90,14 +90,26 @@ Content-Type: application/json
   "description": "Audemars Piguet Royal Oak Offshore en buen estado. Revisión reciente aceptable.",
   "price": 68000,
   "condition": "VERY_GOOD",
-  "year_of_manufacture": 2026,
+  "year_of_manufacture": 2024,
   "case_material": "Acero inoxidable",
   "bracelet_material": "Acero inoxidable",
   "original_box": true,
   "original_papers": false,
   "shipping_available": true,
   "fk_styles_id": 1,
-  "fk_models_id": 1
+  "fk_models_id": 1,
+  "images": [
+    {
+      "image_url": "https://www.garciajoyeros.com/8757-thickbox_default/audemars-piguet-royal-oak-offshore.jpg",
+      "is_cover": true
+    },
+    {
+      "image_url": "https://www.uhrenworld.com/media/images/org/215004_1.jpg"
+    },
+    {
+      "image_url": "https://res.cloudinary.com/wc-photo/image/upload/c_fill,w_3000,h_3000,g_auto/c_limit,w_2880/f_auto/q_auto/v1750417001/product/0b76a8cfc2050c5e459aed2aec089cc8/713ea787ca7b244c60ed38babcdb5cee?_a=BAVAfVDW0"
+    }
+  ]
 }
 
 ### Marcar como vendido
