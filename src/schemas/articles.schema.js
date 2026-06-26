@@ -69,21 +69,6 @@ const createArticleSchema = yup.object({
     // Si el usuario quiere guardarlo como borrador en vez de publicarlo directamente
     publish: yup.boolean().default(true).notRequired(),
 
-    // Array de URLs de imágenes (opcional; las imágenes se suben después de crear el artículo)
-    images: yup
-        .array()
-        .of(
-            yup.object({
-                image_url: yup
-                    .string()
-                    .trim()
-                    .url('La URL de la imagen no es válida')
-                    .required('La URL de la imagen es obligatoria'),
-                is_cover: yup.boolean().default(false).notRequired(),
-            }),
-        )
-        .default([])
-        .notRequired(),
 });
 
 const updateArticleSchema = yup.object({
@@ -148,23 +133,6 @@ const updateArticleSchema = yup.object({
         .integer()
         .required('El modelo no puede estar vacío'),
 
-    images: yup
-        .array()
-        .of(
-            yup.object({
-                image_url: yup
-                    .string()
-                    .trim()
-                    .url('La URL de la imagen no es válida')
-                    .required('La URL de la imagen es obligatoria'),
-            
-                is_cover: yup
-                    .boolean()
-                    .default(false)
-                    .notRequired(),
-            }),
-        )
-        .min(1, 'Debe existir al menos una imagen'),
 });
 
 module.exports = {

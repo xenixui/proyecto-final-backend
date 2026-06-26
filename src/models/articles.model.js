@@ -22,14 +22,30 @@ async function getAll(page = 1, limit = 10) {
     };
 }
 
+async function mapArticle(article) {
+    const images = await db.query(
+        `SELECT id, image_url, is_cover
+         FROM articles_images
+         WHERE fk_articles_id = ?
+         ORDER BY is_cover DESC, id ASC`,
+        [article.id],
+    );
+
+    return {
+        ...article,
+        images,
+    };
+}
+
 async function getById(article_id) {
-    const result = await db.query(`SELECT * FROM articles WHERE id = ?`, [
-        article_id,
-    ]);
+    const article = await db.query(
+        `SELECT * FROM articles WHERE id = ?`,
+        [article_id],
+    );
 
-    if (result.length === 0) return 0;
+    if (!article.length) return null;
 
-    return result[0];
+    return mapArticle(article[0]);
 }
 
 async function search(term) {
@@ -159,16 +175,19 @@ async function retire(id) {
 
 async function create(data, userId) {
     return withTransaction(async (connection) => {
+
         const status = data.publish === false ? 'DRAFT' : 'PUBLISHED';
         const publishedAt = status === 'PUBLISHED' ? new Date() : null;
 
         const [insertArticleResult] = await connection.execute(
             `INSERT INTO articles
-                (title, description, price, ` +
-                '`condition`' +
-                `, year_of_manufacture,
-                 case_material, bracelet_material, original_box, original_papers,
-                 status, shipping_available, published_at, fk_users_id, fk_styles_id, fk_models_id)
+                (title, description, price, \`condition\`,
+                 year_of_manufacture,
+                 case_material, bracelet_material,
+                 original_box, original_papers,
+                 status, shipping_available,
+                 published_at, fk_users_id,
+                 fk_styles_id, fk_models_id)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 data.title,
@@ -191,21 +210,6 @@ async function create(data, userId) {
 
         const articleId = insertArticleResult.insertId;
 
-        if (data.images?.length > 0) {
-            const values = data.images.map((image, i) => {
-                const isCover = image.is_cover || i === 0;
-
-                return [image.image_url, isCover ? 1 : 0, articleId];
-            });
-
-            await connection.query(
-                `INSERT INTO articles_images
-                    (image_url, is_cover, fk_articles_id)
-                    VALUES ?`,
-                [values],
-            );
-        }
-
         const [rows] = await connection.execute(
             `SELECT *
              FROM articles
@@ -216,6 +220,7 @@ async function create(data, userId) {
         return rows[0];
     });
 }
+
 
 async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
     page = parseInt(page, 10);
@@ -316,29 +321,8 @@ async function updateByUserId(articleId, userId, data) {
             return null;
         }
 
-        if (data.images) {
-
-            await connection.execute(
-                `DELETE FROM articles_images
-                 WHERE fk_articles_id = ?`,
-                [articleId]
-            );
-
-            const values = data.images.map((image, index) => [
-                image.image_url,
-                image.is_cover || index === 0 ? 1 : 0,
-                articleId,
-            ]);
-
-            await connection.query(
-                `INSERT INTO articles_images
-                    (image_url, is_cover, fk_articles_id)
-                 VALUES ?`,
-                [values]
-            );
-        }
-
-        return getById(articleId);
+        await connection.commit();
+        return await getById(articleId);
     });
 }
 
