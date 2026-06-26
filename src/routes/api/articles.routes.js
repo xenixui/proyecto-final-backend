@@ -9,6 +9,7 @@ const {
     update,
     markAsSold,
     uploadImages,
+    deleteImages,
 } = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const {
@@ -16,7 +17,7 @@ const {
     handleUploadErrors,
 } = require('../../middlewares/upload.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
-const { createArticleSchema, updateArticleSchema } = require('../../schemas/articles.schema');
+const { createArticleSchema, updateArticleSchema, deleteArticleImagesSchema } = require('../../schemas/articles.schema');
 const router = require('express').Router();
 
 //Recuperar todos los artículos
@@ -40,6 +41,14 @@ router.post(
     uploadArticleImages,
     handleUploadErrors,
     uploadImages,
+);
+
+//Eliminar imágenes de un artículo
+router.delete(
+    '/:article_id/images',
+    authMiddleware,
+    validateSchema(deleteArticleImagesSchema),
+    deleteImages,
 );
 
 //Eliminar artículo
