@@ -7,7 +7,7 @@ function publicUser(user) {
     return {
         id: user.id,
         email: user.email,
-        rol: user.rol || 'USER',
+        rol: user.rol || 'user',
         status: user.status,
         created_at: user.created_at,
         last_login: user.last_login,
@@ -38,7 +38,7 @@ async function getRolesForUser(userId) {
 
 const ROLE_PRIORITY = ['admin', 'moderator', 'user'];
 
-async function resolveUserRole(userId, fallbackRole = 'USER') {
+async function resolveUserRole(userId, fallbackRole = 'user') {
     const roles = await getRolesForUser(userId).catch(() => []);
 
     if (!roles.length) {
@@ -83,7 +83,7 @@ async function loginUser(email, password) {
         user.id,
     ]);
 
-    const effectiveRole = await resolveUserRole(user.id, 'USER');
+    const effectiveRole = await resolveUserRole(user.id, 'user');
 
     const token = signToken({
         id: user.id,
@@ -115,7 +115,7 @@ async function getAuthenticatedUser(userId) {
     );
 
     const roles = await getRolesForUser(userId).catch(() => []);
-    const effectiveRole = await resolveUserRole(userId, 'USER');
+    const effectiveRole = await resolveUserRole(userId, 'user');
 
     return {
         ...user,
