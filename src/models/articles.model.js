@@ -389,6 +389,49 @@ async function addImages(articleId, images) {
     );
 }
 
+async function getSimilar(articleId, limit = 3) {
+    const [current] = await db.query(
+        `SELECT a.id, a.fk_styles_id, m.fk_brands_id
+         FROM articles a
+         INNER JOIN models m ON m.id = a.fk_models_id
+         WHERE a.id = ?`,
+        [articleId],
+    );
+
+    if (!current) return [];
+
+    return db.query(
+        `SELECT
+            a.id,
+            a.title,
+            a.description,
+            a.price,
+            a.condition,
+            a.year_of_manufacture,
+            p.city,
+            p.country,
+            (SELECT image_url FROM articles_images ai
+                WHERE ai.fk_articles_id = a.id
+                ORDER BY ai.is_cover DESC, ai.id ASC
+                LIMIT 1) AS cover
+         FROM articles a
+         INNER JOIN models m ON m.id = a.fk_models_id
+         LEFT JOIN profiles p ON p.fk_usuarios_id = a.fk_users_id
+         WHERE a.id != ?
+           AND a.status = 'PUBLISHED'
+           AND (a.fk_styles_id = ? OR m.fk_brands_id = ?)
+         ORDER BY (m.fk_brands_id = ?) DESC, a.published_at DESC
+         LIMIT ?`,
+        [
+            articleId,
+            current.fk_styles_id,
+            current.fk_brands_id,
+            current.fk_brands_id,
+            limit,
+        ],
+    );
+}
+
 module.exports = {
     getAll,
     getById,
@@ -404,4 +447,5 @@ module.exports = {
     markAsSoldByUserId,
     hasCoverImage,
     addImages,
+    getSimilar,
 };
