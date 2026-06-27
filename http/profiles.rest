@@ -45,7 +45,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "email": "sara.martin@gmail.com",
+  "email": "sara2.martin@gmail.com",
   "password": "2026password",
   "name": "Sara",
   "username": "Sara9",
