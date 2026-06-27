@@ -36,7 +36,7 @@ async function getRolesForUser(userId) {
     );
 }
 
-const ROLE_PRIORITY = ['ADMINISTRATOR', 'MODERATOR', 'USER'];
+const ROLE_PRIORITY = ['admin', 'moderator', 'user'];
 
 async function resolveUserRole(userId, fallbackRole = 'USER') {
     const roles = await getRolesForUser(userId).catch(() => []);
