@@ -135,7 +135,22 @@ const updateArticleSchema = yup.object({
 
 });
 
+const deleteArticleImagesSchema = yup.object({
+    image_ids: yup
+        .array()
+        .of(
+            yup
+                .number()
+                .typeError('Cada image_id debe ser un número')
+                .integer('Cada image_id debe ser un número entero')
+                .positive('Cada image_id debe ser un número positivo'),
+        )
+        .min(1, 'Debes indicar al menos una imagen')
+        .required('image_ids es obligatorio'),
+});
+
 module.exports = {
     createArticleSchema,
-    updateArticleSchema
+    updateArticleSchema,
+    deleteArticleImagesSchema,
 };
