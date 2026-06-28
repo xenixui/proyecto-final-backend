@@ -8,7 +8,7 @@ const {
     rejectReportSchema,
 } = require('../../schemas/moderacion.schema');
 
-const moderatorGuard = [authMiddleware, requireRole('MODERATOR', 'ADMINISTRATOR')];
+const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
 
 // Listado de reportes activos
 router.get('/reportes', ...moderatorGuard, moderacionController.getReports);
