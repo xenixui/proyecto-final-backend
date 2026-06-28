@@ -6,6 +6,7 @@ router.use('/auth', require('./api/auth.routes'));
 router.use('/articles', require('./api/articles.routes'));
 router.use('/moderacion', require('./api/moderacion.routes'));
 router.use('/brands', require('./api/brands.routes'));
+router.use('/models', require('./api/models.routes'));
 router.use('/profiles', require('./api/profiles.routes'));
 router.use('/users', require('./api/users.routes'));
 router.use('/stats', require('./api/stats.routes'));
