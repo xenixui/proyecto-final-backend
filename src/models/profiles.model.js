@@ -7,7 +7,7 @@ async function getAllProfiles() {
 
 async function getProfilesByRole(rol) {
     const result = await db.query(
-        `SELECT p.*, r.rol
+        `SELECT p.*, r.rol, u.status
         FROM profiles p
         INNER JOIN users u ON u.id = p.fk_usuarios_id
         INNER JOIN users_roles ur ON ur.fk_users_id = u.id
