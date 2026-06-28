@@ -30,25 +30,6 @@ async function getByUserId(userId) {
     return result[0] || null;
 }
 
-async function getUserBasicData(userId) {
-    const result = await db.query(
-        `SELECT u.created_at, 
-            u.status,
-            p.username,
-            p.name,
-            p.surname,
-            p.city ,
-            p.country 
-    FROM users AS u
-    INNER JOIN profiles AS p ON p.fk_usuarios_id = u.id
-    WHERE u.id = ?`,
-        [userId],
-    );
-
-    if (result.length === 0) return null;
-    return result[0];
-}
-
 async function getPurchasesByUser(fk_buyer_id) {
     const result = await db.query(
         `SELECT title, description, price, condition, status
@@ -188,7 +169,6 @@ module.exports = {
     getAllProfiles,
     getProfilesByRole,
     getByUserId,
-    getUserBasicData,
     getPurchasesByUser,
     getSalesByUser,
     getReviewsByUser,
