@@ -2,6 +2,7 @@ const {
     getAll,
     search,
     getById,
+    getSimilar,
     getByUserIdAndStatus,
     filter,
     create,
@@ -30,6 +31,9 @@ router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 
 //Obtener artículo por ID
 router.get('/:article_id', getById);
+
+//Obtener artículos similares (mismo estilo o marca)
+router.get('/:article_id/similares', getSimilar);
 
 //Crear artículo
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
