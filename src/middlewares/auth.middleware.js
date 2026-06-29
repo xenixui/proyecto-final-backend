@@ -14,34 +14,19 @@ async function authMiddleware(req, res, next) {
 
         let user;
 
-        try {
-            const users = await query(
-                `SELECT id, email, rol, status, created_at, update_at, last_login
-         FROM users
-         WHERE id = ?
-         LIMIT 1`,
-                [payload.id],
-            );
-            user = users[0];
-        } catch (error) {
-            if (error?.code !== 'ER_BAD_FIELD_ERROR') {
-                throw error;
-            }
+        const users = await query(
+            `SELECT id, email, status, created_at, update_at, last_login
+                    FROM users
+                    WHERE id = ?
+                    LIMIT 1`,
+            [payload.id],
+        );
 
-            const users = await query(
-                `SELECT id, email, status, created_at, update_at, last_login
-         FROM users
-         WHERE id = ?
-         LIMIT 1`,
-                [payload.id],
-            );
-
-            if (users[0]) {
-                user = {
-                    ...users[0],
-                    rol: payload.rol || 'USER',
-                };
-            }
+        if (users[0]) {
+            user = {
+                ...users[0],
+                rol: payload.rol || 'USER',
+            };
         }
 
         if (user?.status !== 'ACTIVE') {

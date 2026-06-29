@@ -1,5 +1,22 @@
 const express = require('express');
-const profileController = require('../../controllers/profile.controller');
+const {
+    getProfiles,
+    createUser,
+    updateProfile,
+    uploadPhoto,
+    deletePhoto,
+    getMyArticles,
+    getMyPurchases,
+    getMySales,
+    getMyChats,
+    getProfileDetailById,
+    deleteUser,
+    blockedUser,
+    assignedRole,
+    removedRole,
+    updateProfileByUserId,
+    getProfileByUser,
+} = require('../../controllers/profile.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
 const {
@@ -18,19 +35,14 @@ const router = express.Router();
 
 // ─── Rutas fijas (deben ir antes de /:userId para evitar colisiones) ───
 
-router.get(
-    '/',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.getProfiles,
-);
+router.get('/', authMiddleware, requireRole('admin'), getProfiles);
 
 router.post(
     '/',
     authMiddleware,
     requireRole('admin'),
     validateSchema(registerUserByAdminSchema, 'body'),
-    profileController.createUser,
+    createUser,
 );
 
 // PUT /api/profiles  →  editar mi perfil
@@ -38,7 +50,7 @@ router.put(
     '/',
     authMiddleware,
     validateSchema(updateProfileBodySchema, 'body'),
-    profileController.updateProfile,
+    updateProfile,
 );
 
 // POST /api/profiles/photo  →  subir foto de perfil
@@ -47,27 +59,23 @@ router.post(
     authMiddleware,
     uploadProfilePhoto,
     handleUploadErrors,
-    profileController.uploadPhoto,
+    uploadPhoto,
 );
 
 // DELETE /api/profiles/photo  →  eliminar foto de perfil
-router.delete('/photo', authMiddleware, profileController.deletePhoto);
+router.delete('/photo', authMiddleware, deletePhoto);
 
 // GET /api/profile/articles -> mis artículos publicados
-router.get('/articles', authMiddleware, profileController.getMyArticles);
+router.get('/articles', authMiddleware, getMyArticles);
 
 // GET /api/profiles/orders/purchases -> mis compras
-router.get(
-    '/orders/purchases',
-    authMiddleware,
-    profileController.getMyPurchases,
-);
+router.get('/orders/purchases', authMiddleware, getMyPurchases);
 
 // GET /api/profiles/orders/sales -> mis ventas
-router.get('/orders/sales', authMiddleware, profileController.getMySales);
+router.get('/orders/sales', authMiddleware, getMySales);
 
 // GET /api/profiles/chats -> mis chats (comprador o vendedor)
-router.get('/chats', authMiddleware, profileController.getMyChats);
+router.get('/chats', authMiddleware, getMyChats);
 
 // ─── Rutas admin con parámetros específicos ───────────────────────────
 
@@ -75,36 +83,26 @@ router.get(
     '/:id/detail',
     authMiddleware,
     requireRole('admin'),
-    profileController.getProfileDetailById,
+    getProfileDetailById,
 );
 
-router.delete(
-    '/:id',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.deleteUser,
-);
+router.delete('/:id', authMiddleware, requireRole('admin'), deleteUser);
 
-router.patch(
-    '/:id/block',
-    authMiddleware,
-    requireRole('admin'),
-    profileController.blockedUser,
-);
+router.patch('/:id/block', authMiddleware, requireRole('admin'), blockedUser);
 
 router.post(
     '/:id/roles',
     authMiddleware,
     requireRole('admin'),
     validateSchema(assignRoleSchema, 'body'),
-    profileController.assignedRole,
+    assignedRole,
 );
 
 router.delete(
     '/:id/roles/:roleId',
     authMiddleware,
     requireRole('admin'),
-    profileController.removedRole,
+    removedRole,
 );
 
 // PUT /api/profiles/:userId  →  admin edita el perfil de cualquier usuario
@@ -114,7 +112,7 @@ router.put(
     requireRole('admin'),
     validateSchema(getProfileByUserSchema, 'params'),
     validateSchema(updateProfileBodySchema, 'body'),
-    profileController.updateProfileByUserId,
+    updateProfileByUserId,
 );
 
 // GET /api/profiles/:userId  →  obtener perfil por userId
@@ -122,7 +120,7 @@ router.get(
     '/:userId',
     authMiddleware,
     validateSchema(getProfileByUserSchema, 'params'),
-    profileController.getProfileByUser,
+    getProfileByUser,
 );
 
 module.exports = router;

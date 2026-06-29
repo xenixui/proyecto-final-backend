@@ -161,13 +161,11 @@ async function remove(req, res) {
 
 async function update(req, res) {
     try {
-
-        const article =
-            await ArticleModel.updateByUserId(
-                req.params.article_id,
-                req.user.id,
-                req.body
-            );
+        const article = await ArticleModel.updateByUserId(
+            req.params.article_id,
+            req.user.id,
+            req.body,
+        );
 
         if (!article) {
             return res.status(403).json({
@@ -178,7 +176,6 @@ async function update(req, res) {
         return res.status(200).json({
             article,
         });
-
     } catch (error) {
         return res.status(500).json({
             message: 'Error al actualizar el artículo',
@@ -189,12 +186,10 @@ async function update(req, res) {
 
 async function markAsSold(req, res) {
     try {
-
-        const article =
-            await ArticleModel.markAsSoldByUserId(
-                req.params.article_id,
-                req.user.id,
-            );
+        const article = await ArticleModel.markAsSoldByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
 
         if (!article) {
             return res.status(404).json({
@@ -205,14 +200,59 @@ async function markAsSold(req, res) {
         return res.status(200).json({
             article,
         });
-
     } catch (error) {
-
         return res.status(500).json({
             message: 'Error al marcar el artículo como vendido',
             error: error.message,
         });
     }
+}
+
+async function removeArticleImages(req, res, imageIds) {
+    try {
+        const articleId = req.params.article_id;
+        const uniqueIds = [...new Set(imageIds)];
+
+        const article = await ArticleModel.getByIdAndUserId(
+            articleId,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(403).json({
+                message: 'Acceso denegado',
+            });
+        }
+
+        const images = await ArticleModel.getImagesByIds(articleId, uniqueIds);
+
+        if (images.length !== uniqueIds.length) {
+            return res.status(404).json({
+                message: 'Una o más imágenes no fueron encontradas',
+            });
+        }
+
+        await Promise.all(
+            images.map((image) =>
+                cloudinaryService.deleteImage(image.image_url),
+            ),
+        );
+        await ArticleModel.removeImages(articleId, uniqueIds, images);
+
+        return res.status(200).json({
+            message: 'Imágenes eliminadas correctamente',
+            deleted_count: uniqueIds.length,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al eliminar las imágenes',
+            error: error.message,
+        });
+    }
+}
+
+async function deleteImages(req, res) {
+    return removeArticleImages(req, res, req.body.image_ids);
 }
 
 async function uploadImages(req, res) {
@@ -287,5 +327,6 @@ module.exports = {
     update,
     markAsSold,
     uploadImages,
+    deleteImages,
     getSimilar,
 };

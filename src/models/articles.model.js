@@ -359,6 +359,45 @@ async function hasCoverImage(articleId) {
     return result[0].count > 0;
 }
 
+async function getImagesByIds(articleId, imageIds) {
+    if (!imageIds.length) {
+        return [];
+    }
+
+    const placeholders = imageIds.map(() => '?').join(', ');
+
+    return db.query(
+        `SELECT id, image_url, is_cover, fk_articles_id
+         FROM articles_images
+         WHERE fk_articles_id = ?
+         AND id IN (${placeholders})`,
+        [articleId, ...imageIds],
+    );
+}
+
+async function removeImages(articleId, imageIds, images) {
+    const hadCover = images.some((image) => image.is_cover === 1);
+    const placeholders = imageIds.map(() => '?').join(', ');
+
+    await db.query(
+        `DELETE FROM articles_images
+         WHERE fk_articles_id = ?
+         AND id IN (${placeholders})`,
+        [articleId, ...imageIds],
+    );
+
+    if (hadCover) {
+        await db.query(
+            `UPDATE articles_images
+             SET is_cover = 1
+             WHERE fk_articles_id = ?
+             ORDER BY id ASC
+             LIMIT 1`,
+            [articleId],
+        );
+    }
+}
+
 async function addImages(articleId, images) {
     if (!images.length) {
         return [];
@@ -446,6 +485,8 @@ module.exports = {
     updateByUserId,
     markAsSoldByUserId,
     hasCoverImage,
+    getImagesByIds,
+    removeImages,
     addImages,
     getSimilar,
 };

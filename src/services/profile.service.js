@@ -3,9 +3,12 @@ const { hashPassword } = require('../utils/password');
 const userModel = require('../models/user.model');
 
 async function getProfileDetail(userId) {
-    const user = await profileModel.getUserBasicData(userId);
-
-    if (!user) return null;
+    let user;
+    try {
+        user = await getProfileByUser(userId);
+    } catch (error) {
+        return null;
+    }
 
     const purchases = (await profileModel.getPurchasesByUser(userId)) || [];
     const sales = (await profileModel.getSalesByUser(userId)) || [];
