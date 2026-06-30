@@ -184,6 +184,53 @@ async function update(req, res) {
     }
 }
 
+async function markAsReserved(req, res) {
+    try {
+        const article = await ArticleModel.markAsReservedByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible para reservar',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al marcar el artículo como reservado',
+            error: error.message,
+        });
+    }
+}
+
+async function markAsPublished(req, res) {
+    try {
+        const article = await ArticleModel.markAsPublishedByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible para quitar la reserva',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al quitar la reserva del artículo',
+            error: error.message,
+        });
+    }
+}
 async function markAsSold(req, res) {
     try {
         const article = await ArticleModel.markAsSoldByUserId(
@@ -193,7 +240,7 @@ async function markAsSold(req, res) {
 
         if (!article) {
             return res.status(404).json({
-                message: 'Artículo no encontrado o no disponible',
+                message: 'Artículo no encontrado o no disponible para marcar como vendido',
             });
         }
 
@@ -325,6 +372,8 @@ module.exports = {
     create,
     remove,
     update,
+    markAsReserved,
+    markAsPublished,
     markAsSold,
     uploadImages,
     deleteImages,

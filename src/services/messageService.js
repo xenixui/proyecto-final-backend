@@ -87,6 +87,7 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
     );
 
     const isBuyer = Number(chat.fk_buyer_id) === Number(userId);
+    const isSeller = Number(chat.seller_id) === Number(userId);
 
     return {
       chatId,
@@ -95,6 +96,7 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
         created_at: chat.created_at,
         contact_name: isBuyer ? chat.seller_name : chat.buyer_name,
         contact_photo: isBuyer ? chat.seller_photo : chat.buyer_photo,
+        can_manage_article: isSeller,
         article: {
           id: chat.article_id,
           title: chat.article_title,
