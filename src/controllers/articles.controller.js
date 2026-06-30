@@ -316,6 +316,30 @@ async function getSimilar(req, res) {
     }
 }
 
+async function addFavorite(req, res) {
+    try {
+        await ArticleModel.addFavorite(req.user.id, req.params.article_id);
+        return res.status(204).send();
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al añadir el artículo a favoritos',
+            error: error.message,
+        });
+    }
+}
+
+async function removeFavorite(req, res) {
+    try {
+        await ArticleModel.removeFavorite(req.user.id, req.params.article_id);
+        return res.status(204).send();
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al quitar el artículo de favoritos',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll,
     getById,
@@ -329,4 +353,6 @@ module.exports = {
     uploadImages,
     deleteImages,
     getSimilar,
+    addFavorite,
+    removeFavorite,
 };

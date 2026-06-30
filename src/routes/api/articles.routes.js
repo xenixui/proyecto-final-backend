@@ -10,9 +10,12 @@ const {
     update,
     markAsSold,
     uploadImages,
+    addFavorite,
+    removeFavorite,
     deleteImages,
 } = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const optionalAuthMiddleware = require('../../middlewares/optionalAuth.middleware');
 const {
     uploadArticleImages,
     handleUploadErrors,
@@ -30,10 +33,14 @@ router.get('/search/:term', search);
 router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 
 //Obtener artículo por ID
-router.get('/:article_id', getById);
+router.get('/:article_id', optionalAuthMiddleware, getById);
 
 //Obtener artículos similares (mismo estilo o marca)
 router.get('/:article_id/similares', getSimilar);
+
+//Favoritos
+router.post('/:article_id/favoritos', authMiddleware, addFavorite);
+router.delete('/:article_id/favoritos', authMiddleware, removeFavorite);
 
 //Crear artículo
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
