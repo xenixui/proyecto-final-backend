@@ -1,4 +1,5 @@
-const reportService = require('../services/report.service')
+const reportService = require('../services/report.service');
+const reportModel = require('../models/reports.model');
 
 async function createReport(req, res) {
     try {
@@ -27,6 +28,21 @@ async function createReport(req, res) {
     }
 }
 
-module.exports = {
-    createReport
+async function getReportsByStatus(req, res) {
+    try {
+        const { status } = req.validatedQuery;
+        const reports = await reportModel.getByStatus(status);
+        return res.json(reports);
+    } catch (err) {
+        console.error('error:', err);
+        return res.status(500).json({
+            message: 'Error al obtener los reportes',
+            error: err.message,
+        });
+    }
 }
+
+module.exports = {
+    createReport,
+    getReportsByStatus,
+};

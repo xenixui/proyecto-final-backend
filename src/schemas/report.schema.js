@@ -9,6 +9,8 @@ const validReasons = [
     'other'
 ];
 
+const validStatuses = ['PENDING', 'UNDER REVIEW', 'RESOLVED', 'REJECTED'];
+
 const createReportSchema = yup.object({
     reason: yup
         .string()
@@ -29,6 +31,17 @@ const createReportSchema = yup.object({
         .integer('fk_articles_id debe ser un número entero')
         .positive('fk_articles_id debe ser un número positivo')
         .required('fk_articles_id es obligatorio')
-})
+});
 
-module.exports = createReportSchema
+const getReportsByStatusQuerySchema = yup.object({
+    status: yup
+        .string()
+        .typeError('El estado debe ser una cadena de texto')
+        .oneOf(validStatuses, 'El estado seleccionado no es válido')
+        .required('El estado es obligatorio'),
+});
+
+module.exports = {
+    createReportSchema,
+    getReportsByStatusQuerySchema,
+};

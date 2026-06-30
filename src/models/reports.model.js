@@ -135,10 +135,34 @@ async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
     return result;
 }
 
+async function getByStatus(status) {
+    return db.query(
+        `SELECT
+            r.id,
+            r.reason,
+            r.comments,
+            r.status,
+            r.created_at,
+            r.resolved_at,
+            r.fk_articles_id AS article_id,
+            p.name,
+            p.surname,
+            u.email
+         FROM reports r
+         INNER JOIN users u ON u.id = r.fk_users_id
+         LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
+         WHERE r.status = ?
+           AND r.fk_articles_id IS NOT NULL
+         ORDER BY r.created_at DESC`,
+        [status],
+    );
+}
+
 module.exports = {
     getAll,
     getHistory,
     getById,
+    getByStatus,
     resolve,
     reject,
     insertReport,

@@ -1,12 +1,12 @@
 @baseUrl = http://localhost:3000
 @email = test.user@example.com
-
+@adminEmail = admin@example.com
 @password = secret123
+@token = {{login.response.body.token}}
+@adminToken = {{adminLogin.response.body.token}}
 
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwMDQsImVtYWlsIjoidGVzdC51c2VyQGV4YW1wbGUuY29tIiwicm9sIjoidXNlciIsImlhdCI6MTc4MTY5MTQwNywiZXhwIjoxNzgxNzc3ODA3fQ.quGSbhzBz0Klk0MQu-k6BeR8J6LSoUmhu9NXfxfq80c
-
-### Login para obtener token
-
+### Login para obtener token (usuario)
+# @name login
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
@@ -15,6 +15,15 @@ Content-Type: application/json
   "password": "{{password}}"
 }
 
+### Login para obtener token (admin)
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
 
 ### ============================================
 ### Reports
@@ -38,7 +47,34 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  
   "comments": "Sospecho que este reloj es falso",
   "fk_articles_id": 90001
 }
+
+### ============================================
+### Admin: listar reportes por estado
+### ============================================
+
+# Listar reportes pendientes (admin)
+GET {{baseUrl}}/api/reports?status=PENDING
+Authorization: Bearer {{adminToken}}
+
+###
+# Listar reportes en revisión (admin)
+GET {{baseUrl}}/api/reports?status=UNDER%20REVIEW
+Authorization: Bearer {{adminToken}}
+
+###
+# Listar reportes resueltos (admin)
+GET {{baseUrl}}/api/reports?status=RESOLVED
+Authorization: Bearer {{adminToken}}
+
+###
+# Estado inválido (400)
+GET {{baseUrl}}/api/reports?status=INVALID
+Authorization: Bearer {{adminToken}}
+
+###
+# Acceso denegado para usuario no admin (403)
+GET {{baseUrl}}/api/reports?status=PENDING
+Authorization: Bearer {{token}}
