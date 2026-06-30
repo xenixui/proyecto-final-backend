@@ -150,7 +150,9 @@ async function remove(req, res) {
 
         await ArticleModel.remove(req.params.article_id);
 
-        return res.sendStatus(200);
+        res.status(200).json({
+            message: 'Artículo eliminado correctamente'
+        });
     } catch (error) {
         return res.status(500).json({
             message: 'Error al eliminar el artículo',
@@ -203,6 +205,30 @@ async function markAsSold(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al marcar el artículo como vendido',
+            error: error.message,
+        });
+    }
+}
+
+async function publish(req, res) {
+    try {
+        const article = await ArticleModel.publishByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al publicar el artículo',
             error: error.message,
         });
     }
@@ -313,6 +339,7 @@ module.exports = {
     remove,
     update,
     markAsSold,
+    publish,
     uploadImages,
     deleteImages,
 };

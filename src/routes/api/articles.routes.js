@@ -8,6 +8,7 @@ const {
     remove,
     update,
     markAsSold,
+    publish,
     uploadImages,
     deleteImages,
 } = require('../../controllers/articles.controller');
@@ -59,5 +60,8 @@ router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), 
 
 //Marcar artículo como vendido
 router.patch('/:article_id/sold', authMiddleware, markAsSold);
+
+//Publicar un artículo que está en borrador
+router.patch('/:article_id/publish', authMiddleware, publish);
 
 module.exports = router;

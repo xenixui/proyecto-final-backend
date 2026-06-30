@@ -37,15 +37,91 @@ async function mapArticle(article) {
     };
 }
 
-async function getById(article_id) {
-    const article = await db.query(
-        `SELECT * FROM articles WHERE id = ?`,
-        [article_id],
+async function getById(articleId) {
+
+    const rows = await db.query(
+        `
+        SELECT
+
+            a.*,
+            b.id   AS brand_id,
+            b.name AS brand_name,
+            m.id AS model_id,
+            m.name AS model_name,
+            m.reference,
+            m.gender,
+            m.movement_type,
+            s.id AS style_id,
+            s.name AS style_name,
+            p.city,
+            p.country
+        FROM articles a
+        INNER JOIN models m
+            ON m.id = a.fk_models_id
+        INNER JOIN brands b
+            ON b.id = m.fk_brands_id
+        INNER JOIN styles s
+            ON s.id = a.fk_styles_id
+        LEFT JOIN profiles p
+            ON p.fk_usuarios_id = a.fk_users_id
+        WHERE a.id = ?
+        `,
+        [articleId]
     );
 
-    if (!article.length) return null;
+    if (!rows.length) {
+        return null;
+    }
 
-    return mapArticle(article[0]);
+    const article = rows[0];
+
+    const images = await db.query(
+        `
+        SELECT
+            id,
+            image_url,
+            is_cover
+        FROM articles_images
+        WHERE fk_articles_id = ?
+        ORDER BY is_cover DESC, id ASC
+        `,
+        [articleId]
+    );
+
+    return {
+        id: article.id,
+        title: article.title,
+        description: article.description,
+        price: article.price,
+        condition: article.condition,
+        year_of_manufacture: article.year_of_manufacture,
+        case_material: article.case_material,
+        bracelet_material: article.bracelet_material,
+        original_box: !!article.original_box,
+        original_papers: !!article.original_papers,
+        shipping_available: !!article.shipping_available,
+        status: article.status,
+        city: article.city,
+        country: article.country,
+        brand: {
+            id: article.brand_id,
+            name: article.brand_name
+        },
+        model: {
+            id: article.model_id,
+            name: article.model_name,
+            reference: article.reference,
+            movement_type: article.movement_type,
+            gender: article.gender
+        },
+        style: {
+            id: article.style_id,
+            name: article.style_name
+        },
+        images,
+        fk_usuarios_id: article.fk_users_id
+    };
+
 }
 
 async function search(term) {
@@ -347,6 +423,28 @@ async function markAsSoldByUserId(articleId, userId) {
     return getById(articleId);
 }
 
+async function publishByUserId(articleId, userId) {
+
+    const result = await db.query(
+        `UPDATE articles
+         SET status = 'PUBLISHED',
+             published_at = NOW()
+         WHERE id = ?
+         AND fk_users_id = ?
+         AND status = 'DRAFT'`,
+        [
+            articleId,
+            userId,
+        ]
+    );
+
+    if (result.affectedRows === 0) {
+        return null;
+    }
+
+    return getById(articleId);
+}
+
 async function hasCoverImage(articleId) {
     const result = await db.query(
         `SELECT COUNT(*) AS count
@@ -441,6 +539,7 @@ module.exports = {
     getByIdAndUserId,
     updateByUserId,
     markAsSoldByUserId,
+    publishByUserId,
     hasCoverImage,
     getImagesByIds,
     removeImages,
