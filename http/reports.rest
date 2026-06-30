@@ -78,3 +78,26 @@ Authorization: Bearer {{adminToken}}
 # Acceso denegado para usuario no admin (403)
 GET {{baseUrl}}/api/reports?status=PENDING
 Authorization: Bearer {{token}}
+
+### ============================================
+### Admin: obtener reporte por id
+### ============================================
+
+# Obtener reporte por id (admin)
+GET {{baseUrl}}/api/reports/1
+Authorization: Bearer {{adminToken}}
+
+###
+# Reporte no encontrado (404)
+GET {{baseUrl}}/api/reports/999999
+Authorization: Bearer {{adminToken}}
+
+###
+# Id inválido (400)
+GET {{baseUrl}}/api/reports/abc
+Authorization: Bearer {{adminToken}}
+
+###
+# Acceso denegado para usuario no admin (403)
+GET {{baseUrl}}/api/reports/1
+Authorization: Bearer {{token}}

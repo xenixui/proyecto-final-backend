@@ -42,7 +42,29 @@ async function getReportsByStatus(req, res) {
     }
 }
 
+async function getReportById(req, res) {
+    try {
+        const { id } = req.params;
+        const report = await reportModel.getById(id);
+
+        if (!report) {
+            return res.status(404).json({
+                message: 'Reporte no encontrado',
+            });
+        }
+
+        return res.json(report);
+    } catch (err) {
+        console.error('error:', err);
+        return res.status(500).json({
+            message: 'Error al obtener el reporte',
+            error: err.message,
+        });
+    }
+}
+
 module.exports = {
     createReport,
     getReportsByStatus,
+    getReportById,
 };

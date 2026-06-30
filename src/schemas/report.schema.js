@@ -6,7 +6,7 @@ const validReasons = [
     'suspicious_price',
     'spam',
     'inappropriate_content',
-    'other'
+    'other',
 ];
 
 const validStatuses = ['PENDING', 'UNDER REVIEW', 'RESOLVED', 'REJECTED'];
@@ -22,7 +22,10 @@ const createReportSchema = yup.object({
         .string()
         .typeError('Los comentarios deben ser una cadena de texto')
         .required('Los comentarios son obligatorios')
-        .min(10, 'Por favor, introduce al menos 10 caracteres explicando el problema')
+        .min(
+            10,
+            'Por favor, introduce al menos 10 caracteres explicando el problema',
+        )
         .max(500, 'El comentario no puede superar los 500 caracteres'),
 
     fk_articles_id: yup
@@ -30,18 +33,27 @@ const createReportSchema = yup.object({
         .typeError('fk_articles_id debe ser un número')
         .integer('fk_articles_id debe ser un número entero')
         .positive('fk_articles_id debe ser un número positivo')
-        .required('fk_articles_id es obligatorio')
+        .required('fk_articles_id es obligatorio'),
 });
 
 const getReportsByStatusQuerySchema = yup.object({
     status: yup
         .string()
-        .typeError('El estado debe ser una cadena de texto')
+        .trim()
         .oneOf(validStatuses, 'El estado seleccionado no es válido')
         .required('El estado es obligatorio'),
+});
+
+const reportIdParamSchema = yup.object({
+    id: yup
+        .number()
+        .trim()
+        .typeError('El id del reporte debe ser un número')
+        .required('El id del reporte es obligatorio'),
 });
 
 module.exports = {
     createReportSchema,
     getReportsByStatusQuerySchema,
+    reportIdParamSchema,
 };

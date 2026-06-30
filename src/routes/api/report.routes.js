@@ -6,6 +6,7 @@ const { validateSchema } = require('../../middlewares/validation.middleware');
 const {
     createReportSchema,
     getReportsByStatusQuerySchema,
+    reportIdParamSchema,
 } = require('../../schemas/report.schema');
 
 router.get(
@@ -14,6 +15,14 @@ router.get(
     requireRole('admin'),
     validateSchema(getReportsByStatusQuerySchema, 'query'),
     reportController.getReportsByStatus,
+);
+
+router.get(
+    '/:id',
+    authMiddleware,
+    requireRole('admin'),
+    validateSchema(reportIdParamSchema, 'params'),
+    reportController.getReportById,
 );
 
 router.post(
