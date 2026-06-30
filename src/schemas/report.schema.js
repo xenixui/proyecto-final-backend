@@ -36,18 +36,44 @@ const createReportSchema = yup.object({
         .required('fk_articles_id es obligatorio'),
 });
 
+const reportPageQuerySchema = yup
+    .number()
+    .transform((_, originalValue) =>
+        originalValue === '' || originalValue == null
+            ? undefined
+            : Number(originalValue),
+    )
+    .typeError('page debe ser un número')
+    .integer('page debe ser un número entero')
+    .positive('page debe ser un número positivo')
+    .optional();
+
+const reportLimitQuerySchema = yup
+    .number()
+    .transform((_, originalValue) =>
+        originalValue === '' || originalValue == null
+            ? undefined
+            : Number(originalValue),
+    )
+    .typeError('limit debe ser un número')
+    .integer('limit debe ser un número entero')
+    .positive('limit debe ser un número positivo')
+    .max(100, 'limit no puede superar 100')
+    .optional();
+
 const getReportsByStatusQuerySchema = yup.object({
     status: yup
         .string()
         .trim()
         .oneOf(validStatuses, 'El estado seleccionado no es válido')
-        .required('El estado es obligatorio'),
+        .optional(),
+    page: reportPageQuerySchema,
+    limit: reportLimitQuerySchema,
 });
 
 const reportIdParamSchema = yup.object({
     id: yup
         .number()
-        .trim()
         .typeError('El id del reporte debe ser un número')
         .required('El id del reporte es obligatorio'),
 });

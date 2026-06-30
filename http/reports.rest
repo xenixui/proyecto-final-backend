@@ -55,8 +55,18 @@ Authorization: Bearer {{token}}
 ### Admin: listar reportes por estado
 ### ============================================
 
+# Listar todos los reportes (admin)
+GET {{baseUrl}}/api/reports
+Authorization: Bearer {{adminToken}}
+
+###
+# Listar reportes con paginación (admin)
+GET {{baseUrl}}/api/reports?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
 # Listar reportes pendientes (admin)
-GET {{baseUrl}}/api/reports?status=PENDING
+GET {{baseUrl}}/api/reports?status=PENDING&page=1&limit=10
 Authorization: Bearer {{adminToken}}
 
 ###

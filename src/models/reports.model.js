@@ -135,9 +135,12 @@ async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
     return result;
 }
 
-async function getByStatus(status) {
-    return db.query(
-        `SELECT
+async function getByStatus(status, page = 1, limit = 10) {
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+    const offset = (page - 1) * limit;
+
+    let queryStr = `SELECT
             r.id,
             r.reason,
             r.comments,
@@ -151,11 +154,28 @@ async function getByStatus(status) {
          FROM reports r
          INNER JOIN users u ON u.id = r.fk_users_id
          LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
-         WHERE r.status = ?
-           AND r.fk_articles_id IS NOT NULL
-         ORDER BY r.created_at DESC`,
-        [status],
-    );
+         WHERE r.fk_articles_id IS NOT NULL`;
+    let countQueryStr = `SELECT COUNT(*) AS total FROM reports r WHERE r.fk_articles_id IS NOT NULL`;
+    const params = [];
+
+    if (status) {
+        queryStr += ` AND r.status = ?`;
+        countQueryStr += ` AND r.status = ?`;
+        params.push(status);
+    }
+
+    queryStr += ` ORDER BY r.created_at DESC LIMIT ? OFFSET ?`;
+
+    const data = await db.query(queryStr, [...params, limit, offset]);
+    const total = await db.query(countQueryStr, params);
+
+    return {
+        page,
+        per_page: limit,
+        total: total[0].total,
+        total_pages: Math.ceil(total[0].total / limit),
+        data,
+    };
 }
 
 module.exports = {

@@ -30,9 +30,13 @@ async function createReport(req, res) {
 
 async function getReportsByStatus(req, res) {
     try {
-        const { status } = req.validatedQuery;
-        const reports = await reportModel.getByStatus(status);
-        return res.json(reports);
+        const { status, page, limit } = req.validatedQuery;
+        const result = await reportModel.getByStatus(
+            status,
+            page || 1,
+            limit || 10,
+        );
+        return res.json(result);
     } catch (err) {
         console.error('error:', err);
         return res.status(500).json({
