@@ -37,17 +37,6 @@ async function mapArticle(article) {
     };
 }
 
-// async function getById(article_id) {
-//     const article = await db.query(
-//         `SELECT * FROM articles WHERE id = ?`,
-//         [article_id],
-//     );
-
-//     if (!article.length) return null;
-
-//     return mapArticle(article[0]);
-// }
-
 async function getById(article_id, currentUserId) {
     const rows = await db.query(
         `SELECT
