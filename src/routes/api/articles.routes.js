@@ -11,6 +11,7 @@ const {
     markAsReserved,
     markAsPublished,
     markAsSold,
+    publish,
     uploadImages,
     deleteImages,
 } = require('../../controllers/articles.controller');
@@ -67,5 +68,8 @@ router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), 
 router.patch('/:article_id/reserved', authMiddleware, markAsReserved);
 router.patch('/:article_id/published', authMiddleware, markAsPublished);
 router.patch('/:article_id/sold', authMiddleware, markAsSold);
+
+//Publicar un artículo que está en borrador
+router.patch('/:article_id/publish', authMiddleware, publish);
 
 module.exports = router;

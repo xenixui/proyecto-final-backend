@@ -65,11 +65,11 @@ async function filter(req, res) {
         const filters = {
             minPrice: req.query.minPrice,
             maxPrice: req.query.maxPrice,
-            brandId: req.query.brandId,
-            modelId: req.query.modelId,
+            brandId: req.query.brandId,       
+            modelIds: req.query.modelIds,    
             styleId: req.query.styleId,
-            gender: req.query.gender,
-            movementType: req.query.movementType,
+            gender: req.query.gender,         
+            movementType: req.query.movementType, 
             yearOfManufacture: req.query.yearOfManufacture,
             condition: req.query.condition,
             originalBox: req.query.originalBox === 'true' ? 1 : undefined,
@@ -150,7 +150,9 @@ async function remove(req, res) {
 
         await ArticleModel.remove(req.params.article_id);
 
-        return res.sendStatus(200);
+        res.status(200).json({
+            message: 'Artículo eliminado correctamente'
+        });
     } catch (error) {
         return res.status(500).json({
             message: 'Error al eliminar el artículo',
@@ -250,6 +252,30 @@ async function markAsSold(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al marcar el artículo como vendido',
+            error: error.message,
+        });
+    }
+}
+
+async function publish(req, res) {
+    try {
+        const article = await ArticleModel.publishByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al publicar el artículo',
             error: error.message,
         });
     }
@@ -375,6 +401,7 @@ module.exports = {
     markAsReserved,
     markAsPublished,
     markAsSold,
+    publish,
     uploadImages,
     deleteImages,
     getSimilar,

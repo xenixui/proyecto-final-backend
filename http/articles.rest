@@ -69,7 +69,8 @@ Content-Type: application/json
 
 ### Eliminar anuncio
 DELETE {{host}}/articles/id
-Authorization: Bearer `token`
+Authorization: Bearer 'token'
+Content-Type: application/json
 
 ### Editar anuncio
 PUT {{host}}/articles/id
