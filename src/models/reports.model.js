@@ -135,10 +135,25 @@ async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
     return result;
 }
 
-async function getByStatus(status, page = 1, limit = 10) {
-    page = parseInt(page, 10);
-    limit = parseInt(limit, 10);
-    const offset = (page - 1) * limit;
+async function getByStatus(filters = {}) {
+    const {
+        status,
+        reason,
+        search,
+        created_from,
+        created_to,
+        page = 1,
+        limit = 10,
+    } = filters;
+
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const joins = `
+         INNER JOIN users u ON u.id = r.fk_users_id
+         LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
+         INNER JOIN articles a ON a.id = r.fk_articles_id`;
 
     let queryStr = `SELECT
             r.id,
@@ -151,29 +166,71 @@ async function getByStatus(status, page = 1, limit = 10) {
             p.name,
             p.surname,
             u.email
-         FROM reports r
-         INNER JOIN users u ON u.id = r.fk_users_id
-         LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
+         FROM reports r${joins}
          WHERE r.fk_articles_id IS NOT NULL`;
-    let countQueryStr = `SELECT COUNT(*) AS total FROM reports r WHERE r.fk_articles_id IS NOT NULL`;
+    let countQueryStr = `SELECT COUNT(*) AS total
+         FROM reports r${joins}
+         WHERE r.fk_articles_id IS NOT NULL`;
     const params = [];
 
     if (status) {
-        queryStr += ` AND r.status = ?`;
-        countQueryStr += ` AND r.status = ?`;
+        queryStr += ' AND r.status = ?';
+        countQueryStr += ' AND r.status = ?';
         params.push(status);
     }
 
-    queryStr += ` ORDER BY r.created_at DESC LIMIT ? OFFSET ?`;
+    if (reason) {
+        queryStr += ' AND r.reason = ?';
+        countQueryStr += ' AND r.reason = ?';
+        params.push(reason);
+    }
 
-    const data = await db.query(queryStr, [...params, limit, offset]);
+    if (created_from) {
+        queryStr += ' AND r.created_at >= ?';
+        countQueryStr += ' AND r.created_at >= ?';
+        params.push(created_from);
+    }
+
+    if (created_to) {
+        queryStr += ' AND r.created_at <= ?';
+        countQueryStr += ' AND r.created_at <= ?';
+        params.push(created_to);
+    }
+
+    if (search) {
+        const searchPattern = `%${search.toLowerCase()}%`;
+        const searchClause = ` AND (
+            CAST(r.id AS CHAR) LIKE ?
+            OR CAST(r.fk_articles_id AS CHAR) LIKE ?
+            OR LOWER(a.title) LIKE ?
+            OR LOWER(u.email) LIKE ?
+            OR LOWER(IFNULL(p.name, '')) LIKE ?
+            OR LOWER(IFNULL(p.surname, '')) LIKE ?
+            OR LOWER(r.comments) LIKE ?
+        )`;
+        queryStr += searchClause;
+        countQueryStr += searchClause;
+        params.push(
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+        );
+    }
+
+    queryStr += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
+
+    const data = await db.query(queryStr, [...params, parsedLimit, offset]);
     const total = await db.query(countQueryStr, params);
 
     return {
-        page,
-        per_page: limit,
+        page: parsedPage,
+        per_page: parsedLimit,
         total: total[0].total,
-        total_pages: Math.ceil(total[0].total / limit),
+        total_pages: Math.ceil(total[0].total / parsedLimit),
         data,
     };
 }

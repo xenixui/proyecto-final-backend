@@ -11,6 +11,72 @@ const validReasons = [
 
 const validStatuses = ['PENDING', 'UNDER REVIEW', 'RESOLVED', 'REJECTED'];
 
+const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+function normalizeDateBoundary(value, boundary) {
+    if (ISO_DATE_ONLY.test(value)) {
+        const suffix =
+            boundary === 'start' ? 'T00:00:00.000Z' : 'T23:59:59.999Z';
+        return new Date(`${value}${suffix}`);
+    }
+
+    return new Date(value);
+}
+
+function isValidDateValue(value) {
+    if (!value) {
+        return true;
+    }
+
+    const parsed = normalizeDateBoundary(
+        value,
+        value.length === 10 ? 'start' : 'end',
+    );
+    return !Number.isNaN(parsed.getTime());
+}
+
+const reportCreatedFromQuerySchema = yup
+    .string()
+    .transform((_, originalValue) =>
+        originalValue === '' || originalValue == null
+            ? undefined
+            : String(originalValue).trim(),
+    )
+    .test(
+        'is-valid-date',
+        'El formato de created_from no es válido',
+        isValidDateValue,
+    )
+    .transform((value) => {
+        if (!value) {
+            return undefined;
+        }
+
+        return normalizeDateBoundary(value, 'start');
+    })
+    .optional();
+
+const reportCreatedToQuerySchema = yup
+    .string()
+    .transform((_, originalValue) =>
+        originalValue === '' || originalValue == null
+            ? undefined
+            : String(originalValue).trim(),
+    )
+    .test(
+        'is-valid-date',
+        'El formato de created_to no es válido',
+        isValidDateValue,
+    )
+    .transform((value) => {
+        if (!value) {
+            return undefined;
+        }
+
+        return normalizeDateBoundary(value, 'end');
+    })
+    .optional();
+
 const createReportSchema = yup.object({
     reason: yup
         .string()
@@ -61,15 +127,46 @@ const reportLimitQuerySchema = yup
     .max(100, 'limit no puede superar 100')
     .optional();
 
-const getReportsByStatusQuerySchema = yup.object({
-    status: yup
-        .string()
-        .trim()
-        .oneOf(validStatuses, 'El estado seleccionado no es válido')
-        .optional(),
-    page: reportPageQuerySchema,
-    limit: reportLimitQuerySchema,
-});
+const getReportsByStatusQuerySchema = yup
+    .object({
+        status: yup
+            .string()
+            .trim()
+            .oneOf(validStatuses, 'El estado seleccionado no es válido')
+            .optional(),
+        reason: yup
+            .string()
+            .trim()
+            .oneOf(validReasons, 'El motivo seleccionado no es válido')
+            .optional(),
+        search: yup
+            .string()
+            .transform((value) => {
+                if (value == null) {
+                    return undefined;
+                }
+
+                const trimmed = String(value).trim();
+                return trimmed === '' ? undefined : trimmed;
+            })
+            .optional(),
+        created_from: reportCreatedFromQuerySchema,
+        created_to: reportCreatedToQuerySchema,
+        page: reportPageQuerySchema,
+        limit: reportLimitQuerySchema,
+    })
+    .test(
+        'date-range',
+        'created_from no puede ser posterior a created_to',
+        function validateDateRange(values) {
+            const { created_from, created_to } = values;
+            if (!created_from || !created_to) {
+                return true;
+            }
+
+            return created_from <= created_to;
+        },
+    );
 
 const reportIdParamSchema = yup.object({
     id: yup

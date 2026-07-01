@@ -85,6 +85,46 @@ GET {{baseUrl}}/api/reports?status=INVALID
 Authorization: Bearer {{adminToken}}
 
 ###
+# Filtrar por motivo (admin)
+GET {{baseUrl}}/api/reports?reason=fake_item&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
+# Búsqueda libre (admin)
+GET {{baseUrl}}/api/reports?search=rolex&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
+# Búsqueda vacía ignorada (admin)
+GET {{baseUrl}}/api/reports?search=&status=PENDING&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
+# Filtrar por rango de fechas (admin)
+GET {{baseUrl}}/api/reports?created_from=2026-07-01&created_to=2026-07-31&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
+# Filtros combinados (admin)
+GET {{baseUrl}}/api/reports?status=PENDING&search=rolex&reason=fake_item&created_from=2026-07-01&created_to=2026-07-31&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+###
+# Motivo inválido (400)
+GET {{baseUrl}}/api/reports?reason=invalid_reason
+Authorization: Bearer {{adminToken}}
+
+###
+# Fecha inválida (400)
+GET {{baseUrl}}/api/reports?created_from=not-a-date
+Authorization: Bearer {{adminToken}}
+
+###
+# created_from posterior a created_to (400)
+GET {{baseUrl}}/api/reports?created_from=2026-07-31&created_to=2026-07-01
+Authorization: Bearer {{adminToken}}
+
+###
 # Acceso denegado para usuario no admin (403)
 GET {{baseUrl}}/api/reports?status=PENDING
 Authorization: Bearer {{token}}
