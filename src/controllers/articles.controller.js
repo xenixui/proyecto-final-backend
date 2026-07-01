@@ -329,6 +329,19 @@ async function uploadImages(req, res) {
     }
 }
 
+async function getSimilar(req, res) {
+    try {
+        const limit = Number(req.query.limit) || 3;
+        const result = await ArticleModel.getSimilar(req.params.article_id, limit);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar artículos similares',
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAll,
     getById,
@@ -342,4 +355,5 @@ module.exports = {
     publish,
     uploadImages,
     deleteImages,
+    getSimilar,
 };

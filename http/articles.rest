@@ -95,3 +95,6 @@ Content-Type: application/json
 ### Marcar como vendido
 PATCH {{host}}/articles/id/sold
 Authorization: Bearer `token`
+
+### Articulos similares (mismo estilo o marca)
+GET {{host}}/articles/1/similares
