@@ -37,14 +37,22 @@ async function mapArticle(article) {
     };
 }
 
-async function getById(article_id, currentUserId) {
+async function getById(articleId, currentUserId) {
     const rows = await db.query(
-        `SELECT
+        `
+        SELECT
             a.*,
+            b.id   AS brand_id,
             b.name AS brand_name,
-            m.reference AS model_reference,
+            m.id AS model_id,
+            m.name AS model_name,
+            m.reference,
+            m.gender,
             m.movement_type,
+            s.id AS style_id,
             s.name AS style_name,
+            p.city,
+            p.country,
             u.id AS seller_user_id,
             p.username AS seller_username,
             p.name AS seller_name,
@@ -52,31 +60,43 @@ async function getById(article_id, currentUserId) {
             p.photo_url AS seller_photo_url,
             p.rating AS seller_rating,
             p.created_at AS seller_created_at
-         FROM articles a
-         INNER JOIN models m ON m.id = a.fk_models_id
-         INNER JOIN brands b ON b.id = m.fk_brands_id
-         INNER JOIN styles s ON s.id = a.fk_styles_id
-         INNER JOIN users u ON u.id = a.fk_users_id
-         LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
-         WHERE a.id = ?`,
-        [article_id],
+        FROM articles a
+        INNER JOIN models m ON m.id = a.fk_models_id
+        INNER JOIN brands b ON b.id = m.fk_brands_id
+        INNER JOIN styles s ON s.id = a.fk_styles_id
+        INNER JOIN users u ON u.id = a.fk_users_id
+        LEFT JOIN profiles p ON p.fk_usuarios_id = a.fk_users_id
+        WHERE a.id = ?
+        `,
+        [articleId],
     );
 
-    if (!rows.length) return null;
+    if (!rows.length) {
+        return null;
+    }
 
-    const row = rows[0];
-    const article = await mapArticle(row);
+    const article = rows[0];
+
+    const images = await db.query(
+        `
+        SELECT id, image_url, is_cover
+        FROM articles_images
+        WHERE fk_articles_id = ?
+        ORDER BY is_cover DESC, id ASC
+        `,
+        [articleId],
+    );
 
     const [{ sales_count }] = await db.query(
         `SELECT COUNT(*) AS sales_count FROM articles WHERE fk_users_id = ? AND status = 'SOLD'`,
-        [row.fk_users_id],
+        [article.fk_users_id],
     );
 
     let is_favorite = false;
     if (currentUserId) {
         const fav = await db.query(
             `SELECT id FROM favorite WHERE fk_users_id = ? AND fk_articles_id = ?`,
-            [currentUserId, article_id],
+            [currentUserId, articleId],
         );
         is_favorite = fav.length > 0;
     }
@@ -90,31 +110,44 @@ async function getById(article_id, currentUserId) {
         year_of_manufacture: article.year_of_manufacture,
         case_material: article.case_material,
         bracelet_material: article.bracelet_material,
-        original_box: article.original_box,
-        original_papers: article.original_papers,
+        original_box: !!article.original_box,
+        original_papers: !!article.original_papers,
+        shipping_available: !!article.shipping_available,
         status: article.status,
-        shipping_available: article.shipping_available,
         published_at: article.published_at,
+        city: article.city,
+        country: article.country,
         fk_users_id: article.fk_users_id,
         fk_styles_id: article.fk_styles_id,
         fk_models_id: article.fk_models_id,
-        images: article.images,
-        brand: row.brand_name,
-        style_name: row.style_name,
-        movement_type: row.movement_type,
-        reference: row.model_reference,
+        brand: {
+            id: article.brand_id,
+            name: article.brand_name,
+        },
+        model: {
+            id: article.model_id,
+            name: article.model_name,
+            reference: article.reference,
+            movement_type: article.movement_type,
+            gender: article.gender,
+        },
+        style: {
+            id: article.style_id,
+            name: article.style_name,
+        },
+        images,
         is_favorite,
         seller: {
-            id: row.seller_user_id,
-            username: row.seller_username,
-            name: row.seller_name,
-            surname: row.seller_surname,
-            photo_url: row.seller_photo_url,
-            rating: row.seller_rating,
+            id: article.seller_user_id,
+            username: article.seller_username,
+            name: article.seller_name,
+            surname: article.seller_surname,
+            photo_url: article.seller_photo_url,
+            rating: article.seller_rating,
             sales_count,
             purchases_count: 0,
-            member_since: row.seller_created_at
-                ? new Date(row.seller_created_at).getFullYear()
+            member_since: article.seller_created_at
+                ? new Date(article.seller_created_at).getFullYear()
                 : null,
         },
     };
