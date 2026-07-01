@@ -2,24 +2,94 @@ const db = require('../config/database');
 const { withTransaction } = db;
 
 async function getAll(page = 1, limit = 10) {
+
     page = parseInt(page, 10);
     limit = parseInt(limit, 10);
+
     const offset = (page - 1) * limit;
 
     const data = await db.query(
-        `SELECT * FROM articles ORDER BY published_at DESC LIMIT ? OFFSET ?`,
-        [limit, offset],
+        `
+        SELECT
+            a.id,
+            a.title,
+            a.description,
+            a.price,
+            a.condition,
+            a.year_of_manufacture,
+            a.original_box,
+            a.original_papers,
+            a.shipping_available,
+            a.status,
+            a.published_at,
+
+            b.id   AS brand_id,
+            b.name AS brand_name,
+
+            m.id   AS model_id,
+            m.name AS model_name,
+            m.reference,
+            m.gender,
+            m.movement_type,
+
+            s.id   AS style_id,
+            s.name AS style_name,
+
+            p.city,
+            p.country,
+
+            ai.image_url AS cover
+
+        FROM articles a
+
+        INNER JOIN models m
+            ON m.id = a.fk_models_id
+
+        INNER JOIN brands b
+            ON b.id = m.fk_brands_id
+
+        INNER JOIN styles s
+            ON s.id = a.fk_styles_id
+
+        LEFT JOIN profiles p
+            ON p.fk_usuarios_id = a.fk_users_id
+
+        LEFT JOIN articles_images ai
+            ON ai.fk_articles_id = a.id
+           AND ai.is_cover = 1
+
+        WHERE a.status='PUBLISHED'
+
+        ORDER BY a.published_at DESC
+
+        LIMIT ?
+        OFFSET ?
+        `,
+        [limit, offset]
     );
 
-    const total = await db.query(`SELECT COUNT(*) as total FROM articles`);
+    const total = await db.query(
+        `
+        SELECT COUNT(*) total
+        FROM articles
+        WHERE status='PUBLISHED'
+        `
+    );
 
     return {
+
         page,
+
         per_page: limit,
+
         total: total[0].total,
+
         total_pages: Math.ceil(total[0].total / limit),
-        data,
+
+        data
+
     };
+
 }
 
 async function mapArticle(article) {
@@ -119,96 +189,14 @@ async function getById(articleId) {
             name: article.style_name
         },
         images,
-        fk_usuarios_id: article.fk_users_id
+        fk_users_id: article.fk_users_id
     };
 
 }
 
 async function search(term) {
-    const result = await db.query(
-        `SELECT *
-        FROM articles
-        INNER JOIN models ON articles.fk_models_id = models.id
-        INNER JOIN brands ON models.fk_brands_id = brands.id
-        WHERE brands.name LIKE ?
-        OR models.name LIKE ?
-        OR models.reference LIKE ?
-        OR articles.description LIKE ?
-        ORDER BY articles.published_at DESC`,
-        [`%${term}%`, `%${term}%`, `%${term}%`, `%${term}%`],
-    );
-    return result;
-}
-
-async function filter(filters) {
-    const conditions = [];
-    const params = [];
-
-    // Precio minimo
-    if (filters.minPrice !== undefined) {
-        conditions.push('a.price >= ?');
-        params.push(filters.minPrice);
-    }
-    // Precio maximo
-    if (filters.maxPrice !== undefined) {
-        conditions.push('a.price <= ?');
-        params.push(filters.maxPrice);
-    }
-    // Marca
-    if (filters.brandId) {
-        conditions.push('b.id = ?');
-        params.push(filters.brandId);
-    }
-    // Modelo
-    if (filters.modelId) {
-        conditions.push('m.id = ?');
-        params.push(filters.modelId);
-    }
-    // Estilo
-    if (filters.styleId) {
-        conditions.push('a.fk_styles_id = ?');
-        params.push(filters.styleId);
-    }
-    // Genero
-    if (filters.gender) {
-        conditions.push('m.gender = ?');
-        params.push(filters.gender);
-    }
-    // Tipo de movimiento
-    if (filters.movementType) {
-        conditions.push('m.movement_type = ?');
-        params.push(filters.movementType);
-    }
-    // Anio de fabricacion
-    if (filters.yearOfManufacture) {
-        conditions.push('a.year_of_manufacture = ?');
-        params.push(filters.yearOfManufacture);
-    }
-    // Estado de conservacion
-    if (filters.condition) {
-        conditions.push('a.condition = ?');
-        params.push(filters.condition);
-    }
-    // Caja original
-    if (filters.originalBox !== undefined) {
-        conditions.push('a.original_box = ?');
-        params.push(filters.originalBox);
-    }
-    // Papeles originales
-    if (filters.originalPapers !== undefined) {
-        conditions.push('a.original_papers = ?');
-        params.push(filters.originalPapers);
-    }
-    // Envio disponible
-    if (filters.shippingAvailable !== undefined) {
-        conditions.push('a.shipping_available = ?');
-        params.push(filters.shippingAvailable);
-    }
-
-    const whereClause =
-        conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    const queryString = `
+    return await db.query(
+        `
         SELECT
             a.id,
             a.title,
@@ -216,33 +204,237 @@ async function filter(filters) {
             a.price,
             a.condition,
             a.year_of_manufacture,
+            a.case_material,
+            a.bracelet_material,
             a.original_box,
             a.original_papers,
-            a.status,
             a.shipping_available,
+            a.status,
             a.published_at,
-            a.fk_users_id AS seller_id,
-            b.id AS brand_id,
+
+            b.id   AS brand_id,
             b.name AS brand_name,
-            m.id AS model_id,
+
+            m.id   AS model_id,
             m.name AS model_name,
+            m.reference,
             m.gender,
             m.movement_type,
-            s.id AS style_id,
-            s.name AS style_name,
-            p.city AS seller_city,
-            p.country AS seller_country,
-            p.postal_code AS seller_postal_code
-        FROM articles a
-        INNER JOIN models m ON m.id = a.fk_models_id
-        INNER JOIN brands b ON b.id = m.fk_brands_id
-        INNER JOIN styles s ON s.id = a.fk_styles_id
-        LEFT JOIN profiles p ON p.fk_usuarios_id = a.fk_users_id
-        ${whereClause}
-        ORDER BY a.published_at DESC, a.id DESC
-    `;
 
-    return db.query(queryString, params);
+            s.id   AS style_id,
+            s.name AS style_name,
+
+            p.city,
+            p.country,
+
+            ai.image_url AS cover
+
+        FROM articles a
+
+        INNER JOIN models m
+            ON a.fk_models_id = m.id
+
+        INNER JOIN brands b
+            ON m.fk_brands_id = b.id
+
+        INNER JOIN styles s
+            ON a.fk_styles_id = s.id
+
+        LEFT JOIN profiles p
+            ON p.fk_usuarios_id = a.fk_users_id
+
+        LEFT JOIN articles_images ai
+            ON ai.fk_articles_id = a.id
+            AND ai.is_cover = 1
+
+        WHERE
+            a.status = 'PUBLISHED'
+            AND (
+                b.name LIKE ?
+                OR m.name LIKE ?
+                OR m.reference LIKE ?
+                OR a.title LIKE ?
+                OR a.description LIKE ?
+            )
+
+        ORDER BY a.published_at DESC
+        `,
+        [
+            `%${term}%`,
+            `%${term}%`,
+            `%${term}%`,
+            `%${term}%`,
+            `%${term}%`
+        ]
+    );
+}
+
+async function filter(filters) {
+
+    const conditions = [`a.status = 'PUBLISHED'`];
+    const params = [];
+
+    if (filters.minPrice !== undefined) {
+        conditions.push('a.price >= ?');
+        params.push(filters.minPrice);
+    }
+
+    if (filters.maxPrice !== undefined) {
+        conditions.push('a.price <= ?');
+        params.push(filters.maxPrice);
+    }
+
+    if (filters.brandId) {
+        conditions.push('b.id = ?');
+        params.push(filters.brandId);
+    }
+
+    // Soporta selección múltiple de modelos (modelIds="1,2,3"),
+    // manteniendo compatibilidad con el filtro antiguo de un único modelId.
+    if (filters.modelIds) {
+
+        const modelIds = String(filters.modelIds)
+            .split(',')
+            .map((id) => id.trim())
+            .filter((id) => id.length > 0);
+
+        if (modelIds.length) {
+            const placeholders = modelIds.map(() => '?').join(', ');
+            conditions.push(`m.id IN (${placeholders})`);
+            params.push(...modelIds);
+        }
+
+    } else if (filters.modelId) {
+        conditions.push('m.id = ?');
+        params.push(filters.modelId);
+    }
+
+    if (filters.styleId) {
+        conditions.push('s.id = ?');
+        params.push(filters.styleId);
+    }
+
+    if (filters.gender) {
+        const genders = String(filters.gender)
+            .split(',')
+            .map((g) => g.trim())
+            .filter((g) => g.length > 0);
+
+        if (genders.length) {
+            const placeholders = genders.map(() => '?').join(', ');
+            conditions.push(`m.gender IN (${placeholders})`);
+            params.push(...genders);
+        }
+    }
+
+    if (filters.movementType) {
+        const movements = String(filters.movementType)
+            .split(',')
+            .map((m) => m.trim())
+            .filter((m) => m.length > 0);
+
+        if (movements.length) {
+            const placeholders = movements.map(() => '?').join(', ');
+            conditions.push(`m.movement_type IN (${placeholders})`);
+            params.push(...movements);
+        }
+    }
+
+    if (filters.yearOfManufacture) {
+        conditions.push('a.year_of_manufacture = ?');
+        params.push(filters.yearOfManufacture);
+    }
+
+    if (filters.condition) {
+        const conditionsList = String(filters.condition)
+            .split(',')
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0);
+
+        if (conditionsList.length) {
+            const placeholders = conditionsList.map(() => '?').join(', ');
+            conditions.push(`a.condition IN (${placeholders})`);
+            params.push(...conditionsList);
+        }
+    }
+
+    if (filters.originalBox !== undefined) {
+        conditions.push('a.original_box = ?');
+        params.push(filters.originalBox);
+    }
+
+    if (filters.originalPapers !== undefined) {
+        conditions.push('a.original_papers = ?');
+        params.push(filters.originalPapers);
+    }
+
+    if (filters.shippingAvailable !== undefined) {
+        conditions.push('a.shipping_available = ?');
+        params.push(filters.shippingAvailable);
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    return await db.query(
+        `
+        SELECT
+
+            a.id,
+            a.title,
+            a.description,
+            a.price,
+            a.condition,
+            a.year_of_manufacture,
+            a.case_material,
+            a.bracelet_material,
+            a.original_box,
+            a.original_papers,
+            a.shipping_available,
+            a.status,
+            a.published_at,
+
+            b.id   AS brand_id,
+            b.name AS brand_name,
+
+            m.id   AS model_id,
+            m.name AS model_name,
+            m.reference,
+            m.gender,
+            m.movement_type,
+
+            s.id   AS style_id,
+            s.name AS style_name,
+
+            p.city,
+            p.country,
+
+            ai.image_url AS cover
+
+        FROM articles a
+
+        INNER JOIN models m
+            ON a.fk_models_id = m.id
+
+        INNER JOIN brands b
+            ON m.fk_brands_id = b.id
+
+        INNER JOIN styles s
+            ON a.fk_styles_id = s.id
+
+        LEFT JOIN profiles p
+            ON p.fk_usuarios_id = a.fk_users_id
+
+        LEFT JOIN articles_images ai
+            ON ai.fk_articles_id = a.id
+            AND ai.is_cover = 1
+
+        ${whereClause}
+
+        ORDER BY a.published_at DESC, a.id DESC
+        `,
+        params
+    );
+
 }
 
 async function retire(id) {
