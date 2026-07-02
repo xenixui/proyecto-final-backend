@@ -9,18 +9,18 @@ const {
 
 const router = express.Router();
 
-// POST /api/reports/users/:userId  →  reportar un usuario
+// POST /api/profiles/:userId/reportes  →  reportar un usuario
 router.post(
-    '/users/:userId',
+    '/:userId/reportes',
     authMiddleware,
     validateSchema(reportUserParamsSchema, 'params'),
     validateSchema(reportReasonBodySchema, 'body'),
     reportController.reportUser,
 );
 
-// GET /api/reports/mine  →  ver mis reportes de usuarios enviados
+// GET /api/profiles/reportes/mine  →  ver mis reportes de usuarios enviados
 router.get(
-    '/mine',
+    '/reportes/mine',
     authMiddleware,
     reportController.getMyUserReports,
 );

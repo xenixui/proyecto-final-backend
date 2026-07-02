@@ -136,6 +136,15 @@ async function blockUser(userId) {
     return result;
 }
 
+// Desbloquear
+async function unblockUser(userId) {
+    const result = await db.query(
+        `UPDATE users SET status = 'ACTIVE' WHERE id = ?`,
+        [userId],
+    );
+    return result;
+}
+
 // Asignar role
 async function assignRole(userId, rolName) {
     const roleResult = await db.query(
@@ -177,6 +186,7 @@ module.exports = {
     createUserByAdmin,
     deactivateUser,
     blockUser,
+    unblockUser,
     assignRole,
     removeRole,
 };

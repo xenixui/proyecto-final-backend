@@ -208,8 +208,9 @@ CREATE TABLE IF NOT EXISTS `db_tfm`.`reports` (
   `reason` TEXT NOT NULL,
   `status` ENUM('PENDING', 'UNDER REVIEW', 'RESOLVED') NOT NULL DEFAULT 'PENDING',
   `created_at` DATETIME NULL,
-  `fk_articles_id` INT NOT NULL,
+  `fk_articles_id` INT NULL,
   `fk_users_id` INT NOT NULL,
+  `fk_reported_user_id` INT NULL,
   `fk_moderator_id` INT NULL,
   `resolution` ENUM('APPROVED', 'RETIRED') NULL,
   `moderator_note` TEXT NULL,
@@ -217,6 +218,7 @@ CREATE TABLE IF NOT EXISTS `db_tfm`.`reports` (
   PRIMARY KEY (`id`),
   INDEX `fk_Reportes_Articulos1_idx` (`fk_articles_id` ASC) VISIBLE,
   INDEX `fk_Reportes_Usuarios1_idx` (`fk_users_id` ASC) VISIBLE,
+  INDEX `fk_reported_user_id_idx` (`fk_reported_user_id` ASC) VISIBLE,
   INDEX `fk_reports_users1_idx` (`fk_moderator_id` ASC) VISIBLE,
   CONSTRAINT `fk_Reportes_Articulos1`
     FOREIGN KEY (`fk_articles_id`)
@@ -225,6 +227,11 @@ CREATE TABLE IF NOT EXISTS `db_tfm`.`reports` (
     ON UPDATE CASCADE,
   CONSTRAINT `fk_Reportes_Usuarios1`
     FOREIGN KEY (`fk_users_id`)
+    REFERENCES `db_tfm`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_reported_user_id_fk`
+    FOREIGN KEY (`fk_reported_user_id`)
     REFERENCES `db_tfm`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,

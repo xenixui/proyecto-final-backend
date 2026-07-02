@@ -130,6 +130,28 @@ async function blockedUser(req, res) {
     }
 }
 
+// desbloquear
+async function unblockedUser(req, res) {
+    try {
+        const { id } = req.params;
+        const result = await profileModel.unblockUser(id);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                message:
+                    'No se encontró ningún usuario con ese ID para desbloquear',
+            });
+        }
+        res.json({
+            message: 'Usuario desbloqueado correctamente',
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al desbloquear al usuario',
+        });
+    }
+}
+
 async function assignedRole(req, res) {
     try {
         const { id } = req.params;
@@ -310,6 +332,7 @@ module.exports = {
     createUser,
     deleteUser,
     blockedUser,
+    unblockedUser,
     assignedRole,
     removedRole,
     updateProfile,
