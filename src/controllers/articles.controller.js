@@ -18,7 +18,7 @@ async function getAll(req, res) {
 
 async function getById(req, res) {
     try {
-        const result = await ArticleModel.getById(req.params.article_id);
+        const result = await ArticleModel.getById(req.params.article_id, req.user?.id);
         if (!result) {
             return res.status(404).json({
                 message: 'No existe artículo con este ID',
@@ -186,6 +186,53 @@ async function update(req, res) {
     }
 }
 
+async function markAsReserved(req, res) {
+    try {
+        const article = await ArticleModel.markAsReservedByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible para reservar',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al marcar el artículo como reservado',
+            error: error.message,
+        });
+    }
+}
+
+async function markAsPublished(req, res) {
+    try {
+        const article = await ArticleModel.markAsPublishedByUserId(
+            req.params.article_id,
+            req.user.id,
+        );
+
+        if (!article) {
+            return res.status(404).json({
+                message: 'Artículo no encontrado o no disponible para quitar la reserva',
+            });
+        }
+
+        return res.status(200).json({
+            article,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al quitar la reserva del artículo',
+            error: error.message,
+        });
+    }
+}
 async function markAsSold(req, res) {
     try {
         const article = await ArticleModel.markAsSoldByUserId(
@@ -195,7 +242,7 @@ async function markAsSold(req, res) {
 
         if (!article) {
             return res.status(404).json({
-                message: 'Artículo no encontrado o no disponible',
+                message: 'Artículo no encontrado o no disponible para marcar como vendido',
             });
         }
 
@@ -332,11 +379,39 @@ async function uploadImages(req, res) {
 async function getSimilar(req, res) {
     try {
         const limit = Number(req.query.limit) || 3;
-        const result = await ArticleModel.getSimilar(req.params.article_id, limit);
+        const result = await ArticleModel.getSimilar(
+            req.params.article_id, 
+            req.user?.id,  // ← añadir esto
+            limit
+        );
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
             message: 'Error al recuperar artículos similares',
+            error: error.message,
+        });
+    }
+}
+
+async function addFavorite(req, res) {
+    try {
+        await ArticleModel.addFavorite(req.user.id, req.params.article_id);
+        return res.status(201).send();
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al añadir el artículo a favoritos',
+            error: error.message,
+        });
+    }
+}
+
+async function removeFavorite(req, res) {
+    try {
+        await ArticleModel.removeFavorite(req.user.id, req.params.article_id);
+        return res.status(201).send();
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al quitar el artículo de favoritos',
             error: error.message,
         });
     }
@@ -351,9 +426,13 @@ module.exports = {
     create,
     remove,
     update,
+    markAsReserved,
+    markAsPublished,
     markAsSold,
     publish,
     uploadImages,
     deleteImages,
     getSimilar,
+    addFavorite,
+    removeFavorite,
 };

@@ -60,6 +60,10 @@ Authorization: Bearer {{token}}
 PATCH {{host}}/profiles/180001/block
 Authorization: Bearer {{token}}
 
+### Desbloquear
+PATCH {{host}}/profiles/180001/unblock
+Authorization: Bearer {{token}}
+
 ### Asignar rol
 POST {{host}}/profiles/180002/roles
 Content-Type: application/json

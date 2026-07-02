@@ -8,12 +8,17 @@ const {
     create,
     remove,
     update,
+    markAsReserved,
+    markAsPublished,
     markAsSold,
     publish,
     uploadImages,
+    addFavorite,
+    removeFavorite,
     deleteImages,
 } = require('../../controllers/articles.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const optionalAuthMiddleware = require('../../middlewares/optionalAuth.middleware');
 const {
     uploadArticleImages,
     handleUploadErrors,
@@ -31,10 +36,14 @@ router.get('/search/:term', search);
 router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 
 //Obtener artículo por ID
-router.get('/:article_id', getById);
+router.get('/:article_id', optionalAuthMiddleware, getById);
 
 //Obtener artículos similares (mismo estilo o marca)
-router.get('/:article_id/similares', getSimilar);
+router.get('/:article_id/similares', optionalAuthMiddleware, getSimilar);
+
+//Favoritos
+router.post('/:article_id/favoritos', authMiddleware, addFavorite);
+router.delete('/:article_id/favoritos', authMiddleware, removeFavorite);
 
 //Crear artículo
 router.post('/', authMiddleware, validateSchema(createArticleSchema), create);
@@ -62,7 +71,9 @@ router.delete('/:article_id', authMiddleware, remove);
 // Actualizar artículo
 router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), update);
 
-//Marcar artículo como vendido
+// Cambiar estado del artículo desde el chat de venta
+router.patch('/:article_id/reserved', authMiddleware, markAsReserved);
+router.patch('/:article_id/published', authMiddleware, markAsPublished);
 router.patch('/:article_id/sold', authMiddleware, markAsSold);
 
 //Publicar un artículo que está en borrador
