@@ -756,7 +756,7 @@ async function addImages(articleId, images) {
     );
 }
 
-async function getSimilar(articleId, limit = 3) {
+async function getSimilar(articleId, currentUserId, limit = 3) {
     const [current] = await db.query(
         `SELECT a.id, a.fk_styles_id, m.fk_brands_id
          FROM articles a
@@ -767,7 +767,7 @@ async function getSimilar(articleId, limit = 3) {
 
     if (!current) return [];
 
-    return db.query(
+    const articles = await db.query(
         `SELECT
             a.id,
             a.title,
@@ -789,14 +789,22 @@ async function getSimilar(articleId, limit = 3) {
            AND (a.fk_styles_id = ? OR m.fk_brands_id = ?)
          ORDER BY (m.fk_brands_id = ?) DESC, a.published_at DESC
          LIMIT ?`,
-        [
-            articleId,
-            current.fk_styles_id,
-            current.fk_brands_id,
-            current.fk_brands_id,
-            limit,
-        ],
+        [articleId, current.fk_styles_id, current.fk_brands_id, current.fk_brands_id, limit],
     );
+
+    if (!currentUserId || !articles.length) return articles;
+
+    // Obtener qué artículos similares ya son favoritos del usuario
+    const ids = articles.map(a => a.id);
+    const placeholders = ids.map(() => '?').join(', ');
+    const favs = await db.query(
+        `SELECT fk_articles_id FROM favorite 
+         WHERE fk_users_id = ? AND fk_articles_id IN (${placeholders})`,
+        [currentUserId, ...ids],
+    );
+
+    const favSet = new Set(favs.map(f => f.fk_articles_id));
+    return articles.map(a => ({ ...a, is_favorite: favSet.has(a.id) }));
 }
 
 async function addFavorite(userId, articleId) {

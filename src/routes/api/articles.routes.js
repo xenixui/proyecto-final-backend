@@ -39,7 +39,7 @@ router.get('/user/:userId', authMiddleware, getByUserIdAndStatus);
 router.get('/:article_id', optionalAuthMiddleware, getById);
 
 //Obtener artículos similares (mismo estilo o marca)
-router.get('/:article_id/similares', getSimilar);
+router.get('/:article_id/similares', optionalAuthMiddleware, getSimilar);
 
 //Favoritos
 router.post('/:article_id/favoritos', authMiddleware, addFavorite);

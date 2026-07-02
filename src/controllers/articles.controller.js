@@ -18,7 +18,7 @@ async function getAll(req, res) {
 
 async function getById(req, res) {
     try {
-        const result = await ArticleModel.getById(req.params.article_id);
+        const result = await ArticleModel.getById(req.params.article_id, req.user?.id);
         if (!result) {
             return res.status(404).json({
                 message: 'No existe artículo con este ID',
@@ -379,7 +379,11 @@ async function uploadImages(req, res) {
 async function getSimilar(req, res) {
     try {
         const limit = Number(req.query.limit) || 3;
-        const result = await ArticleModel.getSimilar(req.params.article_id, limit);
+        const result = await ArticleModel.getSimilar(
+            req.params.article_id, 
+            req.user?.id,  // ← añadir esto
+            limit
+        );
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
