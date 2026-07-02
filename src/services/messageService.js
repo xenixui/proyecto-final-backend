@@ -94,6 +94,7 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
       chat: {
         id: chat.id,
         created_at: chat.created_at,
+        contact_id: isBuyer ? chat.seller_id : chat.fk_buyer_id,
         contact_name: isBuyer ? chat.seller_name : chat.buyer_name,
         contact_photo: isBuyer ? chat.seller_photo : chat.buyer_photo,
         can_manage_article: isSeller,
