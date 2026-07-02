@@ -12,6 +12,7 @@ const {
     getProfileDetailById,
     deleteUser,
     blockedUser,
+    unblockedUser,
     assignedRole,
     removedRole,
     updateProfileByUserId,
@@ -89,6 +90,7 @@ router.get(
 router.delete('/:id', authMiddleware, requireRole('admin'), deleteUser);
 
 router.patch('/:id/block', authMiddleware, requireRole('admin'), blockedUser);
+router.patch('/:id/unblock', authMiddleware, requireRole('admin'), unblockedUser);
 
 router.post(
     '/:id/roles',
