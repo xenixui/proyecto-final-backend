@@ -15,6 +15,7 @@ const {
     unblockedUser,
     assignedRole,
     removedRole,
+    getUserRoles,
     updateProfileByUserId,
     getProfileByUser,
 } = require('../../controllers/profile.controller');
@@ -87,10 +88,27 @@ router.get(
     getProfileDetailById,
 );
 
-router.delete('/:id', authMiddleware, requireRole('admin'), deleteUser);
+router.get(
+    '/:id/roles',
+    authMiddleware,
+    requireRole('admin'),
+    getUserRoles,
+);
 
-router.patch('/:id/block', authMiddleware, requireRole('admin'), blockedUser);
-router.patch('/:id/unblock', authMiddleware, requireRole('admin'), unblockedUser);
+router.delete('/:id', 
+    authMiddleware, 
+    requireRole('admin'), 
+    deleteUser);
+
+router.patch('/:id/block', 
+    authMiddleware, 
+    requireRole('admin'), 
+    blockedUser);
+
+router.patch('/:id/unblock', 
+    authMiddleware, 
+    requireRole('admin'), 
+    unblockedUser);
 
 router.post(
     '/:id/roles',

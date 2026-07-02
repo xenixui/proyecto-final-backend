@@ -39,6 +39,10 @@ Authorization: Bearer {{token}}
 GET {{host}}/profiles/30004/detail
 Authorization: Bearer {{token}}
 
+### Ver roles de un perfil concreto
+GET http://localhost:3000/profiles/30004/roles
+Authorization: Bearer <token>
+
 ### Dar de alta
 POST {{host}}/profiles
 Content-Type: application/json
