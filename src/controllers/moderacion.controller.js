@@ -71,7 +71,11 @@ async function rejectReport(req, res) {
 
 async function retireArticle(req, res) {
     try {
-        const result = await moderacionService.retireArticle(req.params.id);
+        const result = await moderacionService.retireArticle(
+            req.params.id,
+            req.body.reportId,
+            req.user.id,
+        );
         return res.json(result);
     } catch (error) {
         return res.status(error.status || 500).json({

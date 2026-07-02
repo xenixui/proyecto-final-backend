@@ -118,6 +118,19 @@ async function reject(id, { moderatorId, moderatorNote }) {
     );
 }
 
+async function markUnderReview(id, { moderatorId }, connection) {
+    const sql = `UPDATE reports
+         SET status = 'UNDER REVIEW',
+             fk_moderator_id = ?
+         WHERE id = ?`;
+
+    if (connection) {
+        await connection.execute(sql, [moderatorId, id]);
+    } else {
+        await db.query(sql, [moderatorId, id]);
+    }
+}
+
 async function countGestionados() {
     const result = await db.query(
         "SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'",
@@ -242,6 +255,7 @@ module.exports = {
     getByStatus,
     resolve,
     reject,
+    markUnderReview,
     insertReport,
     countGestionados,
 };

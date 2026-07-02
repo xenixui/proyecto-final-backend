@@ -26,6 +26,9 @@ PATCH {{host}}/moderacion/articulos/1/retirar
 Content-Type: application/json
 Authorization: ******
 
+{
+    "reportId": 1
+}
 ## Resolver reporte como válido (artículo retirado)
 ###
 PATCH {{host}}/moderacion/reportes/1/resolver

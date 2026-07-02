@@ -1,3 +1,4 @@
+const { withTransaction } = require('../config/database');
 const reportsModel = require('../models/reports.model');
 const articlesModel = require('../models/articles.model');
 const notificationsModel = require('../models/notifications.model');
@@ -68,14 +69,27 @@ async function rejectReport(id, moderatorId, { moderatorNote }) {
     return { message: 'Reporte rechazado correctamente' };
 }
 
-async function retireArticle(id) {
-    const article = await articlesModel.getById(id);
+async function retireArticle(articleId, reportId, moderatorId) {
+    const article = await articlesModel.getById(articleId);
     if (!article) throw _error('Artículo no encontrado', 404);
     if (article.status === 'RETIRED') {
         throw _error('El artículo ya está retirado', 409);
     }
 
-    await articlesModel.retire(id);
+    const report = await reportsModel.getById(reportId);
+    if (!report) throw _error('Reporte no encontrado', 404);
+    if (Number(report.article_id) !== Number(articleId)) {
+        throw _error('El reporte no pertenece a este artículo', 409);
+    }
+    if (report.status === 'RESOLVED' || report.status === 'REJECTED') {
+        throw _error('El reporte ya ha sido resuelto', 409);
+    }
+
+    await withTransaction(async (connection) => {
+        await articlesModel.retire(articleId, connection);
+        await reportsModel.markUnderReview(reportId, { moderatorId }, connection);
+    });
+
     return { message: 'Artículo retirado correctamente' };
 }
 

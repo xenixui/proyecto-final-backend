@@ -6,6 +6,7 @@ const moderacionController = require('../../controllers/moderacion.controller');
 const {
     resolveReportSchema,
     rejectReportSchema,
+    retireArticleSchema,
 } = require('../../schemas/moderacion.schema');
 
 const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
@@ -39,10 +40,11 @@ router.patch(
     moderacionController.rejectReport,
 );
 
-// Retirar un artículo por moderación
+// Retirar un artículo por moderación (body: { reportId })
 router.patch(
     '/articulos/:id/retirar',
     ...moderatorGuard,
+    validateSchema(retireArticleSchema),
     moderacionController.retireArticle,
 );
 

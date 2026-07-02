@@ -466,8 +466,14 @@ async function filter(filters) {
 
 }
 
-async function retire(id) {
-    await db.query(`UPDATE articles SET status = 'RETIRED' WHERE id = ?`, [id]);
+async function retire(id, connection) {
+    const sql = `UPDATE articles SET status = 'RETIRED' WHERE id = ?`;
+
+    if (connection) {
+        await connection.execute(sql, [id]);
+    } else {
+        await db.query(sql, [id]);
+    }
 }
 
 async function create(data, userId) {
