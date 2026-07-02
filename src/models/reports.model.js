@@ -146,6 +146,7 @@ async function getByStatus(filters = {}) {
     const {
         status,
         reason,
+        byreportype,
         search,
         created_from,
         created_to,
@@ -170,6 +171,7 @@ async function getByStatus(filters = {}) {
             r.created_at,
             r.resolved_at,
             r.fk_articles_id AS article_id,
+            r.fk_reported_user_id AS reported_user_id,
             p.name,
             p.surname,
             u.email
@@ -190,6 +192,16 @@ async function getByStatus(filters = {}) {
         queryStr += ' AND r.reason = ?';
         countQueryStr += ' AND r.reason = ?';
         params.push(reason);
+    }
+
+    if (byreportype === 'articulo') {
+        queryStr += ' AND r.fk_reported_user_id IS NULL';
+        countQueryStr += ' AND r.fk_reported_user_id IS NULL';
+    }
+
+    if (byreportype === 'usuario') {
+        queryStr += ' AND r.fk_reported_user_id IS NOT NULL';
+        countQueryStr += ' AND r.fk_reported_user_id IS NOT NULL';
     }
 
     if (created_from) {

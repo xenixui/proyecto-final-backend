@@ -10,6 +10,7 @@ const validReasons = [
 ];
 
 const validStatuses = ['PENDING', 'UNDER REVIEW', 'RESOLVED', 'REJECTED'];
+const validReportTypes = ['articulo', 'usuario'];
 
 const ISO_DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -138,6 +139,15 @@ const getReportsByStatusQuerySchema = yup
             .string()
             .trim()
             .oneOf(validReasons, 'El motivo seleccionado no es válido')
+            .optional(),
+        byreportype: yup
+            .string()
+            .transform((_, originalValue) =>
+                originalValue === '' || originalValue == null
+                    ? undefined
+                    : String(originalValue).trim(),
+            )
+            .oneOf(validReportTypes, 'El tipo de reporte seleccionado no es válido')
             .optional(),
         search: yup
             .string()
