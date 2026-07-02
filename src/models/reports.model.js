@@ -114,7 +114,7 @@ async function closeReport(
 
 async function markUnderReview(id, { moderatorId }, connection) {
     const sql = `UPDATE reports
-         SET status = 'UNDER_REVIEW',
+         SET status = 'UNDER REVIEW',
              fk_moderator_id = ?
          WHERE id = ?`;
 
