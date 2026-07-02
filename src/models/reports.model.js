@@ -160,7 +160,7 @@ async function getByStatus(filters = {}) {
     const joins = `
          INNER JOIN users u ON u.id = r.fk_users_id
          LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
-         INNER JOIN articles a ON a.id = r.fk_articles_id`;
+         LEFT JOIN articles a ON a.id = r.fk_articles_id`;
 
     let queryStr = `SELECT
             r.id,
@@ -174,10 +174,10 @@ async function getByStatus(filters = {}) {
             p.surname,
             u.email
          FROM reports r${joins}
-         WHERE r.fk_articles_id IS NOT NULL`;
+         WHERE 1 = 1`;
     let countQueryStr = `SELECT COUNT(*) AS total
          FROM reports r${joins}
-         WHERE r.fk_articles_id IS NOT NULL`;
+         WHERE 1 = 1`;
     const params = [];
 
     if (status) {
