@@ -20,7 +20,13 @@ GET {{host}}/moderacion/reportes/1
 Content-Type: application/json
 Authorization: ******
 
-## Retirar artículo por moderación
+## Marcar reporte en revisión
+###
+PATCH {{host}}/moderacion/reportes/1/en_revision
+Content-Type: application/json
+Authorization: ******
+
+## Retirar artículo por moderación (cierra reporte como APPROVED)
 ###
 PATCH {{host}}/moderacion/articulos/1/retirar
 Content-Type: application/json
@@ -29,29 +35,8 @@ Authorization: ******
 {
     "reportId": 1
 }
-## Resolver reporte como válido (artículo retirado)
-###
-PATCH {{host}}/moderacion/reportes/1/resolver
-Content-Type: application/json
-Authorization: ******
 
-{
-    "resolution": "RETIRED",
-    "moderator_note": "Artículo retirado por incumplimiento de normas."
-}
-
-## Resolver reporte como no válido (reporte cerrado)
-###
-PATCH {{host}}/moderacion/reportes/1/resolver
-Content-Type: application/json
-Authorization: ******
-
-{
-    "resolution": "APPROVED",
-    "moderator_note": "Reporte revisado, el artículo cumple las normas."
-}
-
-## Rechazar un reporte
+## Rechazar un reporte (cierra reporte como REJECTED)
 ###
 PATCH {{host}}/moderacion/reportes/1/rechazar
 Content-Type: application/json

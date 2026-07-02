@@ -50,14 +50,14 @@ async function getHistory(page = 1, limit = 10) {
          FROM reports r
          INNER JOIN articles a ON a.id = r.fk_articles_id
          INNER JOIN users u ON u.id = r.fk_users_id
-         WHERE r.status IN ('RESOLVED', 'REJECTED')
+         WHERE r.status = 'RESOLVED'
          ORDER BY r.resolved_at DESC
          LIMIT ? OFFSET ?`,
         [limit, offset],
     );
 
     const total = await db.query(
-        `SELECT COUNT(*) AS total FROM reports WHERE status IN ('RESOLVED', 'REJECTED')`,
+        `SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'`,
     );
 
     return {
@@ -90,37 +90,31 @@ async function getById(id) {
     return result[0] || null;
 }
 
-async function resolve(id, { moderatorId, resolution, moderatorNote }) {
+async function closeReport(
+    id,
+    { moderatorId, resolution, moderatorNote },
+    connection,
+) {
     const now = new Date();
-    await db.query(
-        `UPDATE reports
+    const sql = `UPDATE reports
          SET status = 'RESOLVED',
              resolved_at = ?,
              fk_moderator_id = ?,
              resolution = ?,
              moderator_note = ?
-         WHERE id = ?`,
-        [now, moderatorId, resolution, moderatorNote || null, id],
-    );
-}
+         WHERE id = ?`;
+    const params = [now, moderatorId, resolution, moderatorNote || null, id];
 
-async function reject(id, { moderatorId, moderatorNote }) {
-    const now = new Date();
-    await db.query(
-        `UPDATE reports
-         SET status = 'REJECTED',
-             resolved_at = ?,
-             fk_moderator_id = ?,
-             resolution = NULL,
-             moderator_note = ?
-         WHERE id = ?`,
-        [now, moderatorId, moderatorNote || null, id],
-    );
+    if (connection) {
+        await connection.execute(sql, params);
+    } else {
+        await db.query(sql, params);
+    }
 }
 
 async function markUnderReview(id, { moderatorId }, connection) {
     const sql = `UPDATE reports
-         SET status = 'UNDER REVIEW',
+         SET status = 'UNDER_REVIEW',
              fk_moderator_id = ?
          WHERE id = ?`;
 
@@ -253,8 +247,7 @@ module.exports = {
     getHistory,
     getById,
     getByStatus,
-    resolve,
-    reject,
+    closeReport,
     markUnderReview,
     insertReport,
     countGestionados,

@@ -3,13 +3,8 @@ const reportsModel = require('../models/reports.model');
 const articlesModel = require('../models/articles.model');
 const notificationsModel = require('../models/notifications.model');
 
-const MODERATION_CLOSE_MESSAGE = 'Tu reporte ha sido revisado y cerrado sin acción';
-
-function _error(message, status) {
-    const error = new Error(message);
-    error.status = status;
-    return error;
-}
+const MODERATION_CLOSE_MESSAGE =
+    'Tu reporte ha sido revisado y cerrado sin acción';
 
 async function _notifyModerationClose(report) {
     await notificationsModel.create({
@@ -35,69 +30,85 @@ async function getReportById(id) {
     return report;
 }
 
-async function resolveReport(id, moderatorId, { resolution, moderatorNote }) {
-    const report = await reportsModel.getById(id);
-    if (!report) throw _error('Reporte no encontrado', 404);
-    if (report.resolved_at) throw _error('El reporte ya ha sido resuelto', 409);
-
-    await reportsModel.resolve(id, { moderatorId, resolution, moderatorNote });
-
-    if (resolution === 'RETIRED') {
-        await notificationsModel.create({
-            userId: report.seller_id,
-            message: 'Artículo retirado por reporte',
-            type: 'MODERATION',
-            articleId: report.article_id,
-            reportId: report.id,
-        });
-    } else {
-        await _notifyModerationClose(report);
+async function markReportUnderReview(reportId, moderatorId) {
+    const report = await reportsModel.getById(reportId);
+    if (!report) {
+        throw _error('Reporte no encontrado', 404);
     }
+    _isReportResolved(report);
 
-    return { message: 'Reporte resuelto correctamente' };
+    await reportsModel.markUnderReview(reportId, { moderatorId });
 }
 
 async function rejectReport(id, moderatorId, { moderatorNote }) {
     const report = await reportsModel.getById(id);
-    if (!report) throw _error('Reporte no encontrado', 404);
-    if (report.resolved_at) throw _error('El reporte ya ha sido resuelto', 409);
+    if (!report) {
+        throw _error('Reporte no encontrado', 404);
+    }
+    _isReportResolved(report);
 
-    await reportsModel.reject(id, { moderatorId, moderatorNote });
+    await reportsModel.closeReport(id, {
+        moderatorId,
+        resolution: 'REJECTED',
+        moderatorNote,
+    });
 
     await _notifyModerationClose(report);
-
-    return { message: 'Reporte rechazado correctamente' };
 }
 
 async function retireArticle(articleId, reportId, moderatorId) {
     const article = await articlesModel.getById(articleId);
-    if (!article) throw _error('Artículo no encontrado', 404);
+    if (!article) {
+        throw _error('Artículo no encontrado', 404);
+    }
     if (article.status === 'RETIRED') {
         throw _error('El artículo ya está retirado', 409);
     }
 
     const report = await reportsModel.getById(reportId);
-    if (!report) throw _error('Reporte no encontrado', 404);
+    if (!report) {
+        throw _error('Reporte no encontrado', 404);
+    }
     if (Number(report.article_id) !== Number(articleId)) {
         throw _error('El reporte no pertenece a este artículo', 409);
     }
-    if (report.status === 'RESOLVED' || report.status === 'REJECTED') {
-        throw _error('El reporte ya ha sido resuelto', 409);
-    }
+    _isReportResolved(report);
 
     await withTransaction(async (connection) => {
         await articlesModel.retire(articleId, connection);
-        await reportsModel.markUnderReview(reportId, { moderatorId }, connection);
+        await reportsModel.closeReport(
+            reportId,
+            { moderatorId, resolution: 'APPROVED' },
+            connection,
+        );
     });
 
-    return { message: 'Artículo retirado correctamente' };
+    await notificationsModel.create({
+        userId: report.seller_id,
+        message: 'Artículo retirado por reporte',
+        type: 'MODERATION',
+        articleId: report.article_id,
+        reportId: report.id,
+    });
+}
+
+function _error(message, status) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+}
+
+function _isReportResolved(report) {
+    if (report.resolved_at || report.status === 'RESOLVED') {
+        throw _error('El reporte ya ha sido resuelto', 409);
+    }
 }
 
 module.exports = {
     getReports,
     getReportsHistory,
     getReportById,
-    resolveReport,
+    markReportUnderReview,
     rejectReport,
     retireArticle,
 };
