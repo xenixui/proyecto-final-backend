@@ -1,5 +1,7 @@
 const db = require('../config/database');
-const { withTransaction } = db;
+const {
+    withTransaction
+} = db;
 
 async function getAll(page = 1, limit = 10) {
 
@@ -761,6 +763,28 @@ async function getSimilar(articleId, limit = 3) {
     );
 }
 
+async function getArticlesByDate(periodo) {
+    let whereClause = `WHERE status = 'PUBLISHED'`;
+
+    if (periodo === '7d') {
+        whereClause += ` AND published_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
+    } else if (periodo === '30d') {
+        whereClause += ` AND published_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
+    } else if (periodo === 'today') {
+        whereClause += ` AND DATE(published_at) = CURDATE()`;
+    }
+
+    const result = await db.query(
+        `SELECT DATE(published_at) AS date, COUNT(*) AS total
+         FROM articles
+         ${whereClause}
+         GROUP BY DATE(published_at)
+         ORDER BY DATE(published_at) ASC`
+    );
+    return result;
+}
+
+
 module.exports = {
     getAll,
     getById,
@@ -780,4 +804,5 @@ module.exports = {
     removeImages,
     addImages,
     getSimilar,
+    getArticlesByDate,
 };

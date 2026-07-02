@@ -50,9 +50,65 @@ async function getReportesGestionados(_req, res) {
     }
 }
 
+async function getReportesPorEstado(_req, res) {
+    try {
+        const { periodo } = _req.query;
+        const result = await ReportsModel.countByStatus(periodo);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar reportes por estado',
+            error: error.message,
+        });
+    }
+}
+
+async function getUsuariosPorEstado(_req, res) {
+    try {
+        const { periodo } = _req.query;
+        const result = await UserModel.countByStatus(periodo);
+        return res.json(result);
+    } catch (error) {           
+        return res.status(500).json({                   
+        message: 'Error al recuperar usuarios por estado',
+            error: error.message,
+        });
+    }
+}
+
+async function getUsuariosPorFecha(_req, res) {
+    try {
+        const { periodo } = _req.query; 
+        const result = await UserModel.getSessionByDate(periodo);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar usuarios por fecha',   
+            error: error.message,
+        });
+    }       
+}
+
+async function getArticulosPorFecha(_req, res) {
+    try {
+        const { periodo } = _req.query;
+        const result = await ArticleModel.getArticlesByDate(periodo);
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar artículos por fecha',  
+            error: error.message,
+        });
+    }   
+}
+
 module.exports = {
     getArticulosPublicados,
     getArticulosVendidos,
     getUsuariosActivos,
     getReportesGestionados,
+    getReportesPorEstado,
+    getUsuariosPorEstado,
+    getUsuariosPorFecha,
+    getArticulosPorFecha,
 };
