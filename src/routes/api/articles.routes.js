@@ -8,6 +8,8 @@ const {
     create,
     remove,
     update,
+    markAsReserved,
+    markAsPublished,
     markAsSold,
     publish,
     uploadImages,
@@ -69,7 +71,9 @@ router.delete('/:article_id', authMiddleware, remove);
 // Actualizar artículo
 router.put('/:article_id', authMiddleware, validateSchema(updateArticleSchema), update);
 
-//Marcar artículo como vendido
+// Cambiar estado del artículo desde el chat de venta
+router.patch('/:article_id/reserved', authMiddleware, markAsReserved);
+router.patch('/:article_id/published', authMiddleware, markAsPublished);
 router.patch('/:article_id/sold', authMiddleware, markAsSold);
 
 //Publicar un artículo que está en borrador

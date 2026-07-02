@@ -623,18 +623,14 @@ async function updateByUserId(articleId, userId, data) {
     });
 }
 
-async function markAsSoldByUserId(articleId, userId) {
-
+async function transitionStatusByUserId(articleId, userId, nextStatus, currentStatus) {
     const result = await db.query(
         `UPDATE articles
-         SET status = 'SOLD'
+         SET status = ?
          WHERE id = ?
          AND fk_users_id = ?
-         AND status = 'PUBLISHED'`,
-        [
-            articleId,
-            userId,
-        ]
+         AND status = ?`,
+        [nextStatus, articleId, userId, currentStatus]
     );
 
     if (result.affectedRows === 0) {
@@ -643,6 +639,19 @@ async function markAsSoldByUserId(articleId, userId) {
 
     return getById(articleId);
 }
+
+function markAsReservedByUserId(articleId, userId) {
+    return transitionStatusByUserId(articleId, userId, 'RESERVED', 'PUBLISHED');
+}
+
+function markAsPublishedByUserId(articleId, userId) {
+    return transitionStatusByUserId(articleId, userId, 'PUBLISHED', 'RESERVED');
+}
+
+function markAsSoldByUserId(articleId, userId) {
+    return transitionStatusByUserId(articleId, userId, 'SOLD', 'RESERVED');
+}
+
 
 async function publishByUserId(articleId, userId) {
 
@@ -825,6 +834,8 @@ module.exports = {
     remove,
     getByIdAndUserId,
     updateByUserId,
+    markAsReservedByUserId,
+    markAsPublishedByUserId,
     markAsSoldByUserId,
     publishByUserId,
     hasCoverImage,

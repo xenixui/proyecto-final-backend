@@ -8,7 +8,7 @@ async function insertUserReport(reporterId, reportedUserId, reason, comments) {
     const result = await query(
         `INSERT INTO reports (reason, comments, status, created_at, fk_reported_user_id, fk_users_id)
          VALUES (?, ?, 'PENDING', NOW(), ?, ?)`,
-        [reason, comments ? comments.trim() : null, reportedUserId, reporterId],
+        [reason, comments?.trim() ?? '', reportedUserId, reporterId],
     );
     return result;
 }
