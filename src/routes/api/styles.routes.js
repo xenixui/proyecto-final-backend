@@ -31,7 +31,7 @@ router.get(
 router.post(
     '/',
     authMiddleware,
-    requireRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR', 'admin'),
     validateSchema(createStyleSchema),
     stylesController.create,
 );
@@ -39,7 +39,7 @@ router.post(
 router.put(
     '/:id',
     authMiddleware,
-    requireRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR', 'admin'),
     validateSchema(styleIdParamSchema, 'params'),
     validateSchema(updateStyleSchema),
     stylesController.update,
@@ -48,7 +48,7 @@ router.put(
 router.delete(
     '/:id',
     authMiddleware,
-    requireRole('ADMINISTRATOR'),
+    requireRole('ADMINISTRATOR', 'admin'),
     validateSchema(styleIdParamSchema, 'params'),
     stylesController.remove,
 );
