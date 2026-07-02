@@ -1,6 +1,8 @@
 const { withTransaction } = require('../config/database');
 const reportsModel = require('../models/reports.model');
 const articlesModel = require('../models/articles.model');
+const profilesModel = require('../models/profiles.model');
+const userModel = require('../models/user.model');
 const notificationsModel = require('../models/notifications.model');
 
 const MODERATION_CLOSE_MESSAGE =
@@ -92,6 +94,34 @@ async function retireArticle(articleId, reportId, moderatorId) {
     });
 }
 
+async function blockUser(userId, reportId, moderatorId) {
+    const user = await userModel.getById(userId);
+    if (!user) {
+        throw _error('Usuario no encontrado', 404);
+    }
+    if (user.status === 'BLOCKED') {
+        throw _error('El usuario ya está bloqueado', 409);
+    }
+
+    const report = await reportsModel.getById(reportId);
+    if (!report) {
+        throw _error('Reporte no encontrado', 404);
+    }
+    if (Number(report.reported_user_id) !== Number(userId)) {
+        throw _error('El reporte no pertenece a este usuario', 409);
+    }
+    _isReportResolved(report);
+
+    await withTransaction(async (connection) => {
+        await profilesModel.blockUser(userId, connection);
+        await reportsModel.closeReport(
+            reportId,
+            { moderatorId, resolution: 'APPROVED' },
+            connection,
+        );
+    });
+}
+
 function _error(message, status) {
     const error = new Error(message);
     error.status = status;
@@ -111,4 +141,5 @@ module.exports = {
     markReportUnderReview,
     rejectReport,
     retireArticle,
+    blockUser,
 };

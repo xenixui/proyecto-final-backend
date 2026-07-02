@@ -74,6 +74,7 @@ async function getById(id) {
         `SELECT r.id, r.reason, r.comments, r.status, r.created_at, r.resolved_at,
                 r.resolution, r.moderator_note,
                 r.fk_articles_id AS article_id,
+                r.fk_reported_user_id AS reported_user_id,
                 r.fk_users_id AS reporter_id,
                 r.fk_moderator_id AS moderator_id,
                 a.title AS article_title,
@@ -81,7 +82,7 @@ async function getById(id) {
                 a.fk_users_id AS seller_id,
                 u.email AS reporter_email
          FROM reports r
-         INNER JOIN articles a ON a.id = r.fk_articles_id
+         LEFT JOIN articles a ON a.id = r.fk_articles_id
          INNER JOIN users u ON u.id = r.fk_users_id
          WHERE r.id = ?`,
         [id],

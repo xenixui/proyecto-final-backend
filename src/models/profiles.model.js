@@ -128,11 +128,15 @@ async function deactivateUser(userId) {
 
 // Bloquear
 
-async function blockUser(userId) {
-    const result = await db.query(
-        `UPDATE users SET status = 'BLOCKED' WHERE id = ?`,
-        [userId],
-    );
+async function blockUser(userId, connection) {
+    const sql = `UPDATE users SET status = 'BLOCKED' WHERE id = ?`;
+
+    if (connection) {
+        const [result] = await connection.execute(sql, [userId]);
+        return result;
+    }
+
+    const result = await db.query(sql, [userId]);
     return result;
 }
 

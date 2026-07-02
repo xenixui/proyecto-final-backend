@@ -6,6 +6,7 @@ const moderacionController = require('../../controllers/moderacion.controller');
 const {
     rejectReportSchema,
     retireArticleSchema,
+    blockUserSchema,
 } = require('../../schemas/moderacion.schema');
 
 const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
@@ -44,6 +45,14 @@ router.patch(
     ...moderatorGuard,
     validateSchema(retireArticleSchema),
     moderacionController.retireArticle,
+);
+
+// Bloquear un usuario por moderación (body: { reportId })
+router.patch(
+    '/usuario/:id/bloquear',
+    ...moderatorGuard,
+    validateSchema(blockUserSchema),
+    moderacionController.blockUser,
 );
 
 module.exports = router;

@@ -36,6 +36,16 @@ Authorization: ******
     "reportId": 1
 }
 
+## Bloquear usuario por moderación (cierra reporte como APPROVED)
+###
+PATCH {{host}}/moderacion/usuario/1/bloquear
+Content-Type: application/json
+Authorization: ******
+
+{
+    "reportId": 1
+}
+
 ## Rechazar un reporte (cierra reporte como REJECTED)
 ###
 PATCH {{host}}/moderacion/reportes/1/rechazar

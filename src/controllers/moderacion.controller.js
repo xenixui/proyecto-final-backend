@@ -81,6 +81,21 @@ async function retireArticle(req, res) {
     }
 }
 
+async function blockUser(req, res) {
+    try {
+        await moderacionService.blockUser(
+            req.params.id,
+            req.body.reportId,
+            req.user.id,
+        );
+        return res.sendStatus(204);
+    } catch (error) {
+        return res.status(error.status || 500).json({
+            message: error.message || 'Error al bloquear el usuario',
+        });
+    }
+}
+
 module.exports = {
     getReports,
     getReportsHistory,
@@ -88,4 +103,5 @@ module.exports = {
     markReportUnderReview,
     rejectReport,
     retireArticle,
+    blockUser,
 };

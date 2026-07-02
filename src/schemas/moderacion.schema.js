@@ -11,7 +11,15 @@ const retireArticleSchema = yup.object({
         .required('reportId es obligatorio'),
 });
 
+const blockUserSchema = yup.object({
+    reportId: yup
+        .number()
+        .typeError('reportId debe ser un número')
+        .required('reportId es obligatorio'),
+});
+
 module.exports = {
     rejectReportSchema,
     retireArticleSchema,
+    blockUserSchema,
 };
