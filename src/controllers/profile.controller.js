@@ -216,6 +216,7 @@ async function getUserRoles(req, res) {
         console.error('Error al obtener roles del usuario:', error);
         return res.status(500).json({
             message: 'Error al obtener roles del usuario',
+            error: error.message,
         });
     }
 }
