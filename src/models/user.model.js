@@ -1,5 +1,17 @@
 const { query, withTransaction } = require('../config/database');
 
+async function getById(userId) {
+    const result = await query(
+        `SELECT id, email, status, created_at, update_at, last_login
+         FROM users
+         WHERE id = ?
+         LIMIT 1`,
+        [userId],
+    );
+
+    return result[0] || null;
+}
+
 async function getUserByEmail(email) {
     const result = await query(
         `SELECT id, email, password, status, created_at, update_at, last_login
@@ -110,6 +122,7 @@ async function getSessionByDate(periodo) {
 }
 
 module.exports = {
+    getById,
     getUserByEmail,
     createUser,
     countActive,

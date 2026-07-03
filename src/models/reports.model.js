@@ -50,14 +50,14 @@ async function getHistory(page = 1, limit = 10) {
          FROM reports r
          INNER JOIN articles a ON a.id = r.fk_articles_id
          INNER JOIN users u ON u.id = r.fk_users_id
-         WHERE r.status IN ('RESOLVED', 'REJECTED')
+         WHERE r.status = 'RESOLVED'
          ORDER BY r.resolved_at DESC
          LIMIT ? OFFSET ?`,
         [limit, offset],
     );
 
     const total = await db.query(
-        `SELECT COUNT(*) AS total FROM reports WHERE status IN ('RESOLVED', 'REJECTED')`,
+        `SELECT COUNT(*) AS total FROM reports WHERE status = 'RESOLVED'`,
     );
 
     return {
@@ -74,6 +74,7 @@ async function getById(id) {
         `SELECT r.id, r.reason, r.comments, r.status, r.created_at, r.resolved_at,
                 r.resolution, r.moderator_note,
                 r.fk_articles_id AS article_id,
+                r.fk_reported_user_id AS reported_user_id,
                 r.fk_users_id AS reporter_id,
                 r.fk_moderator_id AS moderator_id,
                 a.title AS article_title,
@@ -81,7 +82,7 @@ async function getById(id) {
                 a.fk_users_id AS seller_id,
                 u.email AS reporter_email
          FROM reports r
-         INNER JOIN articles a ON a.id = r.fk_articles_id
+         LEFT JOIN articles a ON a.id = r.fk_articles_id
          INNER JOIN users u ON u.id = r.fk_users_id
          WHERE r.id = ?`,
         [id],
@@ -90,32 +91,39 @@ async function getById(id) {
     return result[0] || null;
 }
 
-async function resolve(id, { moderatorId, resolution, moderatorNote }) {
+async function closeReport(
+    id,
+    { moderatorId, resolution, moderatorNote },
+    connection,
+) {
     const now = new Date();
-    await db.query(
-        `UPDATE reports
+    const sql = `UPDATE reports
          SET status = 'RESOLVED',
              resolved_at = ?,
              fk_moderator_id = ?,
              resolution = ?,
              moderator_note = ?
-         WHERE id = ?`,
-        [now, moderatorId, resolution, moderatorNote || null, id],
-    );
+         WHERE id = ?`;
+    const params = [now, moderatorId, resolution, moderatorNote || null, id];
+
+    if (connection) {
+        await connection.execute(sql, params);
+    } else {
+        await db.query(sql, params);
+    }
 }
 
-async function reject(id, { moderatorId, moderatorNote }) {
-    const now = new Date();
-    await db.query(
-        `UPDATE reports
-         SET status = 'REJECTED',
-             resolved_at = ?,
-             fk_moderator_id = ?,
-             resolution = NULL,
-             moderator_note = ?
-         WHERE id = ?`,
-        [now, moderatorId, moderatorNote || null, id],
-    );
+async function markUnderReview(id, { moderatorId }, connection) {
+    const sql = `UPDATE reports
+         SET status = 'UNDER REVIEW',
+             fk_moderator_id = ?
+         WHERE id = ?`;
+
+    if (connection) {
+        await connection.execute(sql, [moderatorId, id]);
+    } else {
+        await db.query(sql, [moderatorId, id]);
+    }
 }
 
 async function countGestionados() {
@@ -135,10 +143,121 @@ async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
     return result;
 }
 
+async function getByStatus(filters = {}) {
+    const {
+        status,
+        reason,
+        byreportype,
+        search,
+        created_from,
+        created_to,
+        page = 1,
+        limit = 10,
+    } = filters;
+
+    const parsedPage = parseInt(page, 10);
+    const parsedLimit = parseInt(limit, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const joins = `
+         INNER JOIN users u ON u.id = r.fk_users_id
+         LEFT JOIN profiles p ON p.fk_usuarios_id = u.id
+         LEFT JOIN articles a ON a.id = r.fk_articles_id`;
+
+    let queryStr = `SELECT
+            r.id,
+            r.reason,
+            r.comments,
+            r.status,
+            r.created_at,
+            r.resolved_at,
+            r.fk_articles_id AS article_id,
+            r.fk_reported_user_id AS reported_user_id,
+            p.name,
+            p.surname,
+            u.email
+         FROM reports r${joins}
+         WHERE 1 = 1`;
+    let countQueryStr = `SELECT COUNT(*) AS total
+         FROM reports r${joins}
+         WHERE 1 = 1`;
+    const params = [];
+
+    if (status) {
+        queryStr += ' AND r.status = ?';
+        countQueryStr += ' AND r.status = ?';
+        params.push(status);
+    }
+
+    if (reason) {
+        queryStr += ' AND r.reason = ?';
+        countQueryStr += ' AND r.reason = ?';
+        params.push(reason);
+    }
+
+    if (byreportype === 'articulo') {
+        queryStr += ' AND r.fk_reported_user_id IS NULL';
+        countQueryStr += ' AND r.fk_reported_user_id IS NULL';
+    }
+
+    if (byreportype === 'usuario') {
+        queryStr += ' AND r.fk_reported_user_id IS NOT NULL';
+        countQueryStr += ' AND r.fk_reported_user_id IS NOT NULL';
+    }
+
+    if (created_from) {
+        queryStr += ' AND r.created_at >= ?';
+        countQueryStr += ' AND r.created_at >= ?';
+        params.push(created_from);
+    }
+
+    if (created_to) {
+        queryStr += ' AND r.created_at <= ?';
+        countQueryStr += ' AND r.created_at <= ?';
+        params.push(created_to);
+    }
+
+    if (search) {
+        const searchPattern = `%${search.toLowerCase()}%`;
+        const searchClause = ` AND (
+            CAST(r.id AS CHAR) LIKE ?
+            OR CAST(r.fk_articles_id AS CHAR) LIKE ?
+            OR LOWER(a.title) LIKE ?
+            OR LOWER(u.email) LIKE ?
+            OR LOWER(IFNULL(p.name, '')) LIKE ?
+            OR LOWER(IFNULL(p.surname, '')) LIKE ?
+            OR LOWER(r.comments) LIKE ?
+        )`;
+        queryStr += searchClause;
+        countQueryStr += searchClause;
+        params.push(
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+            searchPattern,
+        );
+    }
+
+    queryStr += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
+
+    const data = await db.query(queryStr, [...params, parsedLimit, offset]);
+    const total = await db.query(countQueryStr, params);
+
+    return {
+        page: parsedPage,
+        per_page: parsedLimit,
+        total: total[0].total,
+        total_pages: Math.ceil(total[0].total / parsedLimit),
+        data,
+    };
+}
 async function countByStatus(periodo) {
     let whereClause = '';
-    
-    if(periodo === '7d') {
+
+    if (periodo === '7d') {
         whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
     } else if (periodo === '30d') {
         whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
@@ -150,7 +269,7 @@ async function countByStatus(periodo) {
         `SELECT status, COUNT(*) AS total 
         FROM reports  
         ${whereClause}
-        GROUP BY status`
+        GROUP BY status`,
     );
     return result;
 }
@@ -159,8 +278,9 @@ module.exports = {
     getAll,
     getHistory,
     getById,
-    resolve,
-    reject,
+    getByStatus,
+    closeReport,
+    markUnderReview,
     insertReport,
     countGestionados,
     countByStatus,
