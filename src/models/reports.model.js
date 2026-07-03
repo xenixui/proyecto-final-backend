@@ -253,6 +253,24 @@ async function getByStatus(filters = {}) {
         total_pages: Math.ceil(total[0].total / parsedLimit),
         data,
     };
+async function countByStatus(periodo) {
+    let whereClause = '';
+    
+    if(periodo === '7d') {
+        whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    } else if (periodo === '30d') {
+        whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+    } else if (periodo === 'today') {
+        whereClause = `WHERE DATE(created_at) = CURDATE()`;
+    }
+
+    const result = await db.query(
+        `SELECT status, COUNT(*) AS total 
+        FROM reports  
+        ${whereClause}
+        GROUP BY status`
+    );
+    return result;
 }
 
 module.exports = {
@@ -264,4 +282,5 @@ module.exports = {
     markUnderReview,
     insertReport,
     countGestionados,
+    countByStatus,
 };

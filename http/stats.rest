@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@adminEmail = admin@example.com
+@adminEmail = test.user@example.com
 @adminPassword = secret123
 @userEmail = test.user@example.com
 @userPassword = secret123
@@ -94,3 +94,112 @@ GET {{baseUrl}}/api/stats/reportes-gestionados
 ### Reportes gestionados (403 - usuario normal)
 GET {{baseUrl}}/api/stats/reportes-gestionados
 Authorization: Bearer {{userToken}}
+
+
+### ============================================
+### Usuarios por estado
+### ============================================
+
+### Usuarios por estado (200 - admin)
+GET {{baseUrl}}/api/stats/usuarios-por-estado
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por estado (401 - sin token)
+GET {{baseUrl}}/api/stats/usuarios-por-estado
+
+### Usuarios por estado (403 - usuario normal)
+GET {{baseUrl}}/api/stats/usuarios-por-estado
+Authorization: Bearer {{userToken}}
+
+### Usuarios por estado - últimos 7 días
+GET {{baseUrl}}/api/stats/usuarios-por-estado?periodo=7d
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por estado - últimos 30 días
+GET {{baseUrl}}/api/stats/usuarios-por-estado?periodo=30d
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por estado - hoy
+GET {{baseUrl}}/api/stats/usuarios-por-estado?periodo=today
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### Reportes por estado
+### ============================================
+
+### Reportes por estado (200 - admin)
+GET {{baseUrl}}/api/stats/reportes-por-estado
+Authorization: Bearer {{adminToken}}
+
+### Reportes por estado (401 - sin token)
+GET {{baseUrl}}/api/stats/reportes-por-estado
+
+### Reportes por estado (403 - usuario normal)
+GET {{baseUrl}}/api/stats/reportes-por-estado
+Authorization: Bearer {{userToken}}
+
+### Reportes por estado - últimos 7 días
+GET {{baseUrl}}/api/stats/reportes-por-estado?periodo=7d
+Authorization: Bearer {{adminToken}}
+
+### Reportes por estado - últimos 30 días
+GET {{baseUrl}}/api/stats/reportes-por-estado?periodo=30d
+Authorization: Bearer {{adminToken}}
+
+### Reportes por estado - hoy
+GET {{baseUrl}}/api/stats/reportes-por-estado?periodo=today
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### Artículos por fecha
+### ============================================
+
+### Artículos por fecha (200 - admin)
+GET {{baseUrl}}/api/stats/articulos-por-fecha
+Authorization: Bearer {{adminToken}}
+
+### Artículos por fecha (401 - sin token)
+GET {{baseUrl}}/api/stats/articulos-por-fecha
+
+### Artículos por fecha (403 - usuario normal)
+GET {{baseUrl}}/api/stats/articulos-por-fecha
+Authorization: Bearer {{userToken}}
+
+### Artículos por fecha - últimos 7 días
+GET {{baseUrl}}/api/stats/articulos-por-fecha?periodo=7d
+Authorization: Bearer {{adminToken}}
+
+### Artículos por fecha - últimos 30 días
+GET {{baseUrl}}/api/stats/articulos-por-fecha?periodo=30d
+Authorization: Bearer {{adminToken}}
+
+### Artículos por fecha - hoy
+GET {{baseUrl}}/api/stats/articulos-por-fecha?periodo=today
+Authorization: Bearer {{adminToken}}
+
+### ============================================
+### Usuarios por fecha (sesiones)
+### ============================================
+
+### Usuarios por fecha (200 - admin)
+GET {{baseUrl}}/api/stats/usuarios-por-fecha
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por fecha (401 - sin token)
+GET {{baseUrl}}/api/stats/usuarios-por-fecha
+
+### Usuarios por fecha (403 - usuario normal)
+GET {{baseUrl}}/api/stats/usuarios-por-fecha
+Authorization: Bearer {{userToken}}
+
+### Usuarios por fecha - últimos 7 días
+GET {{baseUrl}}/api/stats/usuarios-por-fecha?periodo=7d
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por fecha - últimos 30 días
+GET {{baseUrl}}/api/stats/usuarios-por-fecha?periodo=30d
+Authorization: Bearer {{adminToken}}
+
+### Usuarios por fecha - hoy
+GET {{baseUrl}}/api/stats/usuarios-por-fecha?periodo=today
+Authorization: Bearer {{adminToken}}
