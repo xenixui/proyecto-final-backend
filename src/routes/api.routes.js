@@ -13,6 +13,7 @@ router.use('/stats', require('./api/stats.routes'));
 router.use('/styles', require('./api/styles.routes'));
 router.use('/chats', require('./api/chat.routes'));
 router.use('/reports', require('./api/report.routes'));
+router.use('/reviews', require('./api/reviews.routes'));
 router.use('/profile', require('./api/reportUser.routes'));
 
 module.exports = router;
