@@ -45,12 +45,6 @@ async function search(req, res) {
 
         const result = await ArticleModel.search(term);
 
-        if (result.length === 0) {
-            return res.status(404).json({
-                message: 'No se han encontrado resultados',
-            });
-        }
-
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
