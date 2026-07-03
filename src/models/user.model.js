@@ -68,8 +68,51 @@ async function countActive() {
     return result[0].total;
 }
 
+
+async function countByStatus(periodo) {
+    let whereClause = '';
+    
+    if(periodo === '7d') {
+        whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    } else if (periodo === '30d') {
+        whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+    } else if (periodo === 'today') {
+        whereClause = `WHERE DATE(created_at) = CURDATE()`;
+    }
+    
+    const result = await query(`
+        SELECT status, COUNT(*) AS total    
+        FROM users
+        ${whereClause}
+        GROUP BY status
+    `);
+    return result;
+}
+
+async function getSessionByDate(periodo) {
+    let whereClause = `WHERE last_login IS NOT NULL`;
+    if(periodo === '7d') {
+        whereClause += ` AND last_login >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+    }else if (periodo === '30d') {
+        whereClause += ` AND last_login >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+    } else if (periodo === 'today') {
+        whereClause += ` AND DATE(last_login) = CURDATE()`;
+    } 
+
+    const result = await query(`
+        SELECT DATE(last_login) AS date, COUNT(*) AS total
+        FROM users
+        ${whereClause}
+        GROUP BY DATE(last_login)
+        ORDER BY DATE(last_login) ASC
+    `);
+    return result;
+}
+
 module.exports = {
     getUserByEmail,
     createUser,
     countActive,
+    countByStatus,
+    getSessionByDate,
 };
