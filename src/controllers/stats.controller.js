@@ -50,9 +50,9 @@ async function getReportesGestionados(_req, res) {
     }
 }
 
-async function getReportesPorEstado(_req, res) {
+async function getReportesPorEstado(req, res) {
     try {
-        const { periodo } = _req.query;
+        const { periodo } = req.query;
         const result = await ReportsModel.countByStatus(periodo);
         return res.json(result);
     } catch (error) {
@@ -63,9 +63,9 @@ async function getReportesPorEstado(_req, res) {
     }
 }
 
-async function getUsuariosPorEstado(_req, res) {
+async function getUsuariosPorEstado(req, res) {
     try {
-        const { periodo } = _req.query;
+        const { periodo } = req.query;
         const result = await UserModel.countByStatus(periodo);
         return res.json(result);
     } catch (error) {           
@@ -76,9 +76,9 @@ async function getUsuariosPorEstado(_req, res) {
     }
 }
 
-async function getUsuariosPorFecha(_req, res) {
+async function getUsuariosPorFecha(req, res) {
     try {
-        const { periodo } = _req.query; 
+        const { periodo } = req.query; 
         const result = await UserModel.getSessionByDate(periodo);
         return res.json(result);
     } catch (error) {
@@ -89,9 +89,9 @@ async function getUsuariosPorFecha(_req, res) {
     }       
 }
 
-async function getArticulosPorFecha(_req, res) {
+async function getArticulosPorFecha(req, res) {
     try {
-        const { periodo } = _req.query;
+        const { periodo } = req.query;
         const result = await ArticleModel.getArticlesByDate(periodo);
         return res.json(result);
     } catch (error) {

@@ -12,7 +12,7 @@ const {
     getArticulosPorFecha,
 } = require('../../controllers/stats.controller');
 
-const adminOnly = [authMiddleware, requireRole('admin')];
+const adminOnly = [authMiddleware, requireRole('ADMINISTRATOR','admin')];
 
 router.get('/articulos-publicados', ...adminOnly, getArticulosPublicados);
 router.get('/articulos-vendidos', ...adminOnly, getArticulosVendidos);
