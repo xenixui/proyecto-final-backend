@@ -532,17 +532,28 @@ async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
     limit = parseInt(limit, 10);
     const offset = (page - 1) * limit;
 
-    let queryStr = `SELECT * FROM articles WHERE fk_users_id = ?`;
+    let queryStr = `
+        SELECT
+            a.*,
+            (
+                SELECT image_url
+                FROM articles_images ai2
+                WHERE ai2.fk_articles_id = a.id
+                ORDER BY ai2.is_cover DESC, ai2.id ASC
+                LIMIT 1
+            ) AS cover
+        FROM articles a
+        WHERE a.fk_users_id = ?`;
     let countQueryStr = `SELECT COUNT(*) as total FROM articles WHERE fk_users_id = ?`;
     const params = [userId];
 
     if (status) {
-        queryStr += ` AND status = ?`;
+        queryStr += ` AND a.status = ?`;
         countQueryStr += ` AND status = ?`;
         params.push(status);
     }
 
-    queryStr += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
+    queryStr += ` ORDER BY a.published_at DESC LIMIT ? OFFSET ?`;
 
     const data = await db.query(queryStr, [...params, limit, offset]);
     const total = await db.query(countQueryStr, params);
