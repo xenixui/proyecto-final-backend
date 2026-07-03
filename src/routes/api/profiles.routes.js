@@ -81,6 +81,8 @@ router.get('/chats', authMiddleware, getMyChats);
 
 // ─── Rutas admin con parámetros específicos ───────────────────────────
 
+
+// GET /api/profiles/:id/detail → detalle completo de un usuario (solo admin)
 router.get(
     '/:id/detail',
     authMiddleware,
@@ -88,6 +90,7 @@ router.get(
     getProfileDetailById,
 );
 
+// GET /api/profiles/:id/roles → roles de un usuario (solo admin)
 router.get(
     '/:id/roles',
     authMiddleware,
@@ -95,21 +98,25 @@ router.get(
     getUserRoles,
 );
 
+// DELETE /api/profiles/:id → dar de baja a un usuario (solo admin)
 router.delete('/:id', 
     authMiddleware, 
     requireRole('admin'), 
     deleteUser);
 
+// PATCH /api/profiles/:id/block → bloquear usuario (solo admin)    
 router.patch('/:id/block', 
     authMiddleware, 
     requireRole('admin'), 
     blockedUser);
 
+// PATCH /api/profiles/:id/unblock → desbloquear usuario (solo admin)
 router.patch('/:id/unblock', 
     authMiddleware, 
     requireRole('admin'), 
     unblockedUser);
 
+// POST /api/profiles/:id/roles → asignar rol a un usuario (solo admin)
 router.post(
     '/:id/roles',
     authMiddleware,
@@ -118,6 +125,7 @@ router.post(
     assignedRole,
 );
 
+// DELETE /api/profiles/:id/roles/:roleId → quitar rol a un usuario (solo admin)
 router.delete(
     '/:id/roles/:roleId',
     authMiddleware,
