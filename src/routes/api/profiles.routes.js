@@ -18,6 +18,7 @@ const {
     getUserRoles,
     updateProfileByUserId,
     getProfileByUser,
+    getProfileActivity,
 } = require('../../controllers/profile.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
@@ -79,6 +80,13 @@ router.get('/orders/sales', authMiddleware, getMySales);
 // GET /api/profiles/chats -> mis chats (comprador o vendedor)
 router.get('/chats', authMiddleware, getMyChats);
 
+// GET /api/profiles/:userId/activity -> valoraciones y favoritos del perfil
+router.get(
+    '/:userId/activity',
+    authMiddleware,
+    validateSchema(getProfileByUserSchema, 'params'),
+    getProfileActivity,
+);
 // ─── Rutas admin con parámetros específicos ───────────────────────────
 
 

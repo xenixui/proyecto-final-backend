@@ -89,6 +89,11 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
     const isBuyer = Number(chat.fk_buyer_id) === Number(userId);
     const isSeller = Number(chat.seller_id) === Number(userId);
 
+    const [reviewRows] = await connection.execute(
+      `SELECT id FROM reviews WHERE fk_buyer_id = ? AND fk_article_id = ? LIMIT 1`,
+      [chat.fk_buyer_id, chat.article_id]
+    );
+
     return {
       chatId,
       chat: {
@@ -98,6 +103,10 @@ async function getChatMessagesAndMarkRead(chatId, userId) {
         contact_name: isBuyer ? chat.seller_name : chat.buyer_name,
         contact_photo: isBuyer ? chat.seller_photo : chat.buyer_photo,
         can_manage_article: isSeller,
+        my_role: isBuyer ? 'BUYER' : 'SELLER',
+        buyer_id: chat.fk_buyer_id,
+        seller_id: chat.seller_id,
+        has_reviewed: reviewRows.length > 0,
         article: {
           id: chat.article_id,
           title: chat.article_title,

@@ -26,12 +26,53 @@ async function getProfileByUser(req, res) {
             return res.status(404).json('Perfil no encontrado');
         }
 
-        return res.json(profiles[0]);
+        const stats = await profileModel.getPublicStatsByUser(userId);
+
+        return res.json({
+            ...profiles[0],
+            rating: stats.rating,
+            stats: {
+                sales_count: stats.sales_count,
+                purchases_count: stats.purchases_count,
+                reviews_count: stats.reviews_count,
+                member_since: profiles[0].created_at
+                    ? new Date(profiles[0].created_at).getFullYear()
+                    : null,
+            },
+        });
     } catch (error) {
         return res.status(error.status).json(error.message);
     }
 }
 
+async function getProfileActivity(req, res) {
+    try {
+        const { userId } = req.params;
+
+        const profile = await profileModel.getByUserId(userId);
+        if (!profile) {
+            return res.status(404).json({
+                message: 'Perfil no encontrado',
+            });
+        }
+
+        const reviews = await profileModel.getPublicReviewsByUser(userId);
+        const favorites =
+            Number(req.user.id) === Number(userId)
+                ? await profileModel.getFavoriteArticlesByUser(userId)
+                : [];
+
+        return res.json({
+            reviews,
+            favorites,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: 'Error al recuperar la actividad del perfil',
+            error: error.message,
+        });
+    }
+}
 async function getProfiles(req, res) {
     try {
         const { rol } = req.query;
@@ -354,6 +395,7 @@ async function deletePhoto(req, res) {
 module.exports = {
     getProfileByUser,
     getProfiles,
+    getProfileActivity,
     getProfileDetailById,
     createUser,
     deleteUser,
