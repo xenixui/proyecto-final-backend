@@ -253,10 +253,11 @@ async function getByStatus(filters = {}) {
         total_pages: Math.ceil(total[0].total / parsedLimit),
         data,
     };
+}
 async function countByStatus(periodo) {
     let whereClause = '';
-    
-    if(periodo === '7d') {
+
+    if (periodo === '7d') {
         whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
     } else if (periodo === '30d') {
         whereClause = `WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
@@ -268,7 +269,7 @@ async function countByStatus(periodo) {
         `SELECT status, COUNT(*) AS total 
         FROM reports  
         ${whereClause}
-        GROUP BY status`
+        GROUP BY status`,
     );
     return result;
 }
