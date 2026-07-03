@@ -16,9 +16,9 @@ async function getProfileByUser(req, res) {
 
         const profiles = await query(
             `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
-             FROM profiles
-             WHERE fk_usuarios_id = ?
-             LIMIT 1`,
+            FROM profiles
+            WHERE fk_usuarios_id = ?
+            LIMIT 1`,
             [userId],
         );
 
@@ -148,7 +148,7 @@ async function deleteUser(req, res) {
     }
 }
 
-// bloquear
+// Bloquear
 
 async function blockedUser(req, res) {
     try {
@@ -171,7 +171,7 @@ async function blockedUser(req, res) {
     }
 }
 
-// desbloquear
+// Desbloquear
 async function unblockedUser(req, res) {
     try {
         const { id } = req.params;
@@ -193,6 +193,7 @@ async function unblockedUser(req, res) {
     }
 }
 
+//Asignar rol
 async function assignedRole(req, res) {
     try {
         const { id } = req.params;
@@ -215,6 +216,7 @@ async function assignedRole(req, res) {
     }
 }
 
+//Desasignar rol
 async function removedRole(req, res) {
     try {
         const { id, roleId } = req.params;
@@ -236,6 +238,30 @@ async function removedRole(req, res) {
         });
     }
 }
+
+//Obtener todos los roles de perfil
+async function getUserRoles(req, res) {
+    try {
+        const { id } = req.params;
+
+        const roles = await query(
+            `SELECT ur.fk_roles_id AS roleId, r.rol
+            FROM users_roles ur
+            JOIN roles r ON ur.fk_roles_id = r.id
+            WHERE ur.fk_users_id = ?`,
+            [id]
+        );
+
+        return res.json({ roles });
+    } catch (error) {
+        console.error('Error al obtener roles del usuario:', error);
+        return res.status(500).json({
+            message: 'Error al obtener roles del usuario',
+            error: error.message,
+        });
+    }
+}
+
 
 // PUT /api/profiles  →  actualiza los datos editables del perfil del usuario autenticado
 async function updateProfile(req, res, next) {
@@ -377,6 +403,7 @@ module.exports = {
     unblockedUser,
     assignedRole,
     removedRole,
+    getUserRoles,
     updateProfile,
     uploadPhoto,
     deletePhoto,

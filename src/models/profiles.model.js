@@ -20,10 +20,10 @@ async function getProfilesByRole(rol) {
 
 async function getByUserId(userId) {
     const result = await db.query(
-        `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
-         FROM profiles
-         WHERE fk_usuarios_id = ?
-         LIMIT 1`,
+    `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
+        FROM profiles
+        WHERE fk_usuarios_id = ?
+        LIMIT 1`,
         [userId],
     );
 
@@ -108,23 +108,29 @@ async function getFavoriteArticlesByUser(userId) {
         [userId],
     );
 }
-async function getPurchasesByUser(fk_buyer_id) {
+async function getSalesByUser(fk_users_id) {
     const result = await db.query(
-        `SELECT title, description, price, condition, status
-        FROM articles
-        WHERE fk_buyer_id = ?`,
-        [fk_buyer_id],
+        `SELECT a.id, a.title, a.description, a.price, a.condition, a.status,
+                (SELECT image_url FROM articles_images 
+                WHERE fk_articles_id = a.id AND is_cover = 1 
+                LIMIT 1) AS cover_image
+        FROM articles a
+        WHERE a.fk_users_id = ?`,
+        [fk_users_id],
     );
     if (result.length === 0) return null;
     return result;
 }
 
-async function getSalesByUser(fk_users_id) {
+async function getPurchasesByUser(fk_buyer_id) {
     const result = await db.query(
-        `SELECT title, description, price, condition, status
-        FROM articles
-        WHERE fk_users_id = ?`,
-        [fk_users_id],
+        `SELECT a.id, a.title, a.description, a.price, a.condition, a.status,
+                (SELECT image_url FROM articles_images 
+                WHERE fk_articles_id = a.id AND is_cover = 1 
+                LIMIT 1) AS cover_image
+        FROM articles a
+        WHERE a.fk_buyer_id = ?`,
+        [fk_buyer_id],
     );
     if (result.length === 0) return null;
     return result;
