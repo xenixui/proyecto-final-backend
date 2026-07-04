@@ -5,13 +5,8 @@ const {
 const userModel = require('../models/user.model');
 
 async function getProfileDetail(userId) {
-    let user;
-    try {
-        user = await getProfileByUser(userId);
-    } catch (error) {
-        console.error('Error obteniendo perfil:', error);
-        return null;
-    }
+
+    const user = await getProfileByUser(userId);
 
     const purchases = (await profileModel.getPurchasesByUser(userId)) || [];
     const sales = (await profileModel.getSalesByUser(userId)) || [];
