@@ -7,6 +7,7 @@ const {
     rejectReportSchema,
     retireArticleSchema,
     blockUserSchema,
+    updateModeratorNoteSchema,
 } = require('../../schemas/moderacion.schema');
 
 const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
@@ -29,6 +30,14 @@ router.patch(
     '/reportes/:id/en_revision',
     ...moderatorGuard,
     moderacionController.markReportUnderReview,
+);
+
+// Actualizar solo la nota del moderador
+router.patch(
+    '/reportes/:id/nota_moderador',
+    ...moderatorGuard,
+    validateSchema(updateModeratorNoteSchema),
+    moderacionController.updateModeratorNote,
 );
 
 // Rechazar un reporte
