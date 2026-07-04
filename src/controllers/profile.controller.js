@@ -1,11 +1,15 @@
-const { query } = require('../config/database');
+const {
+    query
+} = require('../config/database');
 const profileModel = require('../models/profiles.model');
 const profileService = require('../services/profile.service');
 const cloudinaryService = require('../services/cloudinary.service');
 
 async function getProfileByUser(req, res) {
     try {
-        const { userId } = req.params;
+        const {
+            userId
+        } = req.params;
 
         const users = await query('SELECT id FROM users WHERE id = ? LIMIT 1', [
             userId,
@@ -35,9 +39,9 @@ async function getProfileByUser(req, res) {
                 sales_count: stats.sales_count,
                 purchases_count: stats.purchases_count,
                 reviews_count: stats.reviews_count,
-                member_since: profiles[0].created_at
-                    ? new Date(profiles[0].created_at).getFullYear()
-                    : null,
+                member_since: profiles[0].created_at ?
+                    new Date(profiles[0].created_at).getFullYear() :
+                    null,
             },
         });
     } catch (error) {
@@ -47,7 +51,9 @@ async function getProfileByUser(req, res) {
 
 async function getProfileActivity(req, res) {
     try {
-        const { userId } = req.params;
+        const {
+            userId
+        } = req.params;
 
         const profile = await profileModel.getByUserId(userId);
         if (!profile) {
@@ -58,9 +64,9 @@ async function getProfileActivity(req, res) {
 
         const reviews = await profileModel.getPublicReviewsByUser(userId);
         const favorites =
-            Number(req.user.id) === Number(userId)
-                ? await profileModel.getFavoriteArticlesByUser(userId)
-                : [];
+            Number(req.user.id) === Number(userId) ?
+            await profileModel.getFavoriteArticlesByUser(userId) :
+            [];
 
         return res.json({
             reviews,
@@ -75,11 +81,13 @@ async function getProfileActivity(req, res) {
 }
 async function getProfiles(req, res) {
     try {
-        const { rol } = req.query;
+        const {
+            rol
+        } = req.query;
 
-        const result = rol
-            ? await profileModel.getProfilesByRole(rol.toLowerCase())
-            : await profileModel.getAllProfiles();
+        const result = rol ?
+            await profileModel.getProfilesByRole(rol.toLowerCase()) :
+            await profileModel.getAllProfiles();
 
         return res.json(result);
     } catch (error) {
@@ -102,6 +110,7 @@ async function getProfileDetailById(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al recuperar el usuario',
+            error: error.message,
         });
     }
 }
@@ -120,6 +129,7 @@ async function createUser(req, res) {
     } catch (error) {
         res.status(500).json({
             message: 'Error al crear o recuperar el usuario',
+             error: error.message,
         });
     }
 }
@@ -127,14 +137,15 @@ async function createUser(req, res) {
 // dar de baja
 async function deleteUser(req, res) {
     try {
-        const { id } = req.params;
+        const {
+            id
+        } = req.params;
 
         const result = await profileModel.deactivateUser(id);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
-                message:
-                    'No se encontró ningún usuario con ese ID para dar de baja',
+                message: 'No se encontró ningún usuario con ese ID para dar de baja',
             });
         }
 
@@ -144,6 +155,7 @@ async function deleteUser(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al dar de baja al usuario',
+             error: error.message,
         });
     }
 }
@@ -152,13 +164,14 @@ async function deleteUser(req, res) {
 
 async function blockedUser(req, res) {
     try {
-        const { id } = req.params;
+        const {
+            id
+        } = req.params;
         const result = await profileModel.blockUser(id);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
-                message:
-                    'No se encontró ningún usuario con ese ID para bloquear',
+                message: 'No se encontró ningún usuario con ese ID para bloquear',
             });
         }
         res.json({
@@ -167,6 +180,7 @@ async function blockedUser(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al bloquear al usuario',
+             error: error.message,
         });
     }
 }
@@ -174,13 +188,14 @@ async function blockedUser(req, res) {
 // Desbloquear
 async function unblockedUser(req, res) {
     try {
-        const { id } = req.params;
+        const {
+            id
+        } = req.params;
         const result = await profileModel.unblockUser(id);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
-                message:
-                    'No se encontró ningún usuario con ese ID para desbloquear',
+                message: 'No se encontró ningún usuario con ese ID para desbloquear',
             });
         }
         res.json({
@@ -189,6 +204,7 @@ async function unblockedUser(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al desbloquear al usuario',
+             error: error.message,
         });
     }
 }
@@ -196,8 +212,12 @@ async function unblockedUser(req, res) {
 //Asignar rol
 async function assignedRole(req, res) {
     try {
-        const { id } = req.params;
-        const { rol } = req.body;
+        const {
+            id
+        } = req.params;
+        const {
+            rol
+        } = req.body;
         const result = await profileModel.assignRole(id, rol);
 
         if (!result) {
@@ -212,6 +232,7 @@ async function assignedRole(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al asignar un rol',
+             error: error.message,
         });
     }
 }
@@ -219,7 +240,10 @@ async function assignedRole(req, res) {
 //Desasignar rol
 async function removedRole(req, res) {
     try {
-        const { id, roleId } = req.params;
+        const {
+            id,
+            roleId
+        } = req.params;
 
         const result = await profileModel.removeRole(id, roleId);
 
@@ -235,6 +259,7 @@ async function removedRole(req, res) {
     } catch (error) {
         return res.status(500).json({
             message: 'Error al eliminar un rol',
+             error: error.message,
         });
     }
 }
@@ -242,7 +267,9 @@ async function removedRole(req, res) {
 //Obtener todos los roles de perfil
 async function getUserRoles(req, res) {
     try {
-        const { id } = req.params;
+        const {
+            id
+        } = req.params;
 
         const roles = await query(
             `SELECT ur.fk_roles_id AS roleId, r.rol
@@ -252,7 +279,9 @@ async function getUserRoles(req, res) {
             [id]
         );
 
-        return res.json({ roles });
+        return res.json({
+            roles
+        });
     } catch (error) {
         console.error('Error al obtener roles del usuario:', error);
         return res.status(500).json({

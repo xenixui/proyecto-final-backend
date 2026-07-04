@@ -1,5 +1,7 @@
 const profileModel = require('../models/profiles.model');
-const { hashPassword } = require('../utils/password');
+const {
+    hashPassword
+} = require('../utils/password');
 const userModel = require('../models/user.model');
 
 async function getProfileDetail(userId) {
@@ -7,6 +9,7 @@ async function getProfileDetail(userId) {
     try {
         user = await getProfileByUser(userId);
     } catch (error) {
+        console.error('Error obteniendo perfil:', error);
         return null;
     }
 
@@ -51,7 +54,9 @@ async function createUserAsAdmin(data) {
 // src/services/profile.service.js
 // Lógica de negocio del perfil de usuario
 
-const { query } = require('../config/database');
+const {
+    query
+} = require('../config/database');
 
 // ─── Ver perfil ───────────────────────────────────────────────
 async function getProfileByUser(userId) {
@@ -102,7 +107,9 @@ async function updateProfile(userId, data) {
     } = data;
 
     // Comprueba que el perfil exista antes de intentar actualizarlo
-    const [{ total: profileExists }] = await query(
+    const [{
+        total: profileExists
+    }] = await query(
         'SELECT COUNT(*) AS total FROM profiles WHERE fk_usuarios_id = ?',
         [userId],
     );
@@ -116,7 +123,9 @@ async function updateProfile(userId, data) {
     // Comprueba si YA existe ese username en algún otro usuario (excluyéndome a mí mismo)
     // Usamos COUNT en vez de traer una fila: así sabemos cuántas coincidencias hay
     // y no dependemos de qué fila concreta devuelva la BD primero.
-    const [{ total: usernameTaken }] = await query(
+    const [{
+        total: usernameTaken
+    }] = await query(
         'SELECT COUNT(*) AS total FROM profiles WHERE username = ? AND fk_usuarios_id != ?',
         [username, userId],
     );
