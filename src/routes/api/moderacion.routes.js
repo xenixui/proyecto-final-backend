@@ -2,11 +2,13 @@ const router = require('express').Router();
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { requireRole } = require('../../middlewares/role.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
+const { requireReportUnderReview } = require('../../middlewares/report.middleware');
 const moderacionController = require('../../controllers/moderacion.controller');
 const {
     rejectReportSchema,
     retireArticleSchema,
     blockUserSchema,
+    updateModeratorNoteSchema,
 } = require('../../schemas/moderacion.schema');
 
 const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
@@ -29,6 +31,15 @@ router.patch(
     '/reportes/:id/en_revision',
     ...moderatorGuard,
     moderacionController.markReportUnderReview,
+);
+
+// Actualizar solo la nota del moderador
+router.patch(
+    '/reportes/:id/nota_moderador',
+    ...moderatorGuard,
+    validateSchema(updateModeratorNoteSchema),
+    requireReportUnderReview,
+    moderacionController.updateModeratorNote,
 );
 
 // Rechazar un reporte

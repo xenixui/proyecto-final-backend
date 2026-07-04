@@ -113,6 +113,16 @@ async function closeReport(
     }
 }
 
+async function updateModeratorNote(id, { moderatorId, moderatorNote }) {
+    await db.query(
+        `UPDATE reports
+         SET moderator_note = ?,
+             fk_moderator_id = ?
+         WHERE id = ?`,
+        [moderatorNote, moderatorId, id],
+    );
+}
+
 async function markUnderReview(id, { moderatorId }, connection) {
     const sql = `UPDATE reports
          SET status = 'UNDER REVIEW',
@@ -280,6 +290,7 @@ module.exports = {
     getById,
     getByStatus,
     closeReport,
+    updateModeratorNote,
     markUnderReview,
     insertReport,
     countGestionados,

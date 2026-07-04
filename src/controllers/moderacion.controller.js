@@ -52,6 +52,23 @@ async function markReportUnderReview(req, res) {
     }
 }
 
+async function updateModeratorNote(req, res) {
+    try {
+        const { moderator_note } = req.body;
+        const result = await moderacionService.updateModeratorNote(
+            req.params.id,
+            req.user.id,
+            { moderatorNote: moderator_note },
+        );
+        return res.json(result);
+    } catch (error) {
+        return res.status(error.status || 500).json({
+            message:
+                error.message || 'Error al actualizar la nota del moderador',
+        });
+    }
+}
+
 async function rejectReport(req, res) {
     try {
         const { moderator_note } = req.body;
@@ -101,6 +118,7 @@ module.exports = {
     getReportsHistory,
     getReportById,
     markReportUnderReview,
+    updateModeratorNote,
     rejectReport,
     retireArticle,
     blockUser,

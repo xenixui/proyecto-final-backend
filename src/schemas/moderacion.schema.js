@@ -18,8 +18,13 @@ const blockUserSchema = yup.object({
         .required('reportId es obligatorio'),
 });
 
+const updateModeratorNoteSchema = yup.object({
+    moderator_note: yup.string().nullable().optional(),
+});
+
 module.exports = {
     rejectReportSchema,
     retireArticleSchema,
     blockUserSchema,
+    updateModeratorNoteSchema,
 };

@@ -46,6 +46,16 @@ Authorization: ******
     "reportId": 1
 }
 
+## Actualizar nota del moderador (no modifica estado ni resolución)
+###
+PATCH {{host}}/moderacion/reportes/1/nota_moderador
+Content-Type: application/json
+Authorization: ******
+
+{
+    "moderator_note": "Revisión en curso, pendiente de contactar al vendedor."
+}
+
 ## Rechazar un reporte (cierra reporte como REJECTED)
 ###
 PATCH {{host}}/moderacion/reportes/1/rechazar
