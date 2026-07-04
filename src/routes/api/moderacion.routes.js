@@ -2,6 +2,7 @@ const router = require('express').Router();
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { requireRole } = require('../../middlewares/role.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
+const { requireReportUnderReview } = require('../../middlewares/report.middleware');
 const moderacionController = require('../../controllers/moderacion.controller');
 const {
     rejectReportSchema,
@@ -37,6 +38,7 @@ router.patch(
     '/reportes/:id/nota_moderador',
     ...moderatorGuard,
     validateSchema(updateModeratorNoteSchema),
+    requireReportUnderReview,
     moderacionController.updateModeratorNote,
 );
 

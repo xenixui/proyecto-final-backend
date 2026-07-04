@@ -43,11 +43,6 @@ async function markReportUnderReview(reportId, moderatorId) {
 }
 
 async function updateModeratorNote(id, moderatorId, { moderatorNote }) {
-    const report = await reportsModel.getById(id);
-    if (!report) {
-        throw _error('Reporte no encontrado', 404);
-    }
-
     await reportsModel.updateModeratorNote(id, {
         moderatorId,
         moderatorNote: moderatorNote ?? null,
