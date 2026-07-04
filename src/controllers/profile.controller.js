@@ -34,7 +34,7 @@ async function getProfileByUser(req, res) {
             stats: {
                 sales_count: stats.sales_count,
                 purchases_count: stats.purchases_count,
-                reviews_count: stats.reviews_count,
+                published_count: stats.published_count,
                 member_since: profiles[0].created_at
                     ? new Date(profiles[0].created_at).getFullYear()
                     : null,
@@ -249,7 +249,7 @@ async function getUserRoles(req, res) {
             FROM users_roles ur
             JOIN roles r ON ur.fk_roles_id = r.id
             WHERE ur.fk_users_id = ?`,
-            [id]
+            [id],
         );
 
         return res.json({ roles });
@@ -261,7 +261,6 @@ async function getUserRoles(req, res) {
         });
     }
 }
-
 
 // PUT /api/profiles  →  actualiza los datos editables del perfil del usuario autenticado
 async function updateProfile(req, res, next) {
