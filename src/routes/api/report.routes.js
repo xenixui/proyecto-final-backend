@@ -12,7 +12,7 @@ const {
 router.get(
     '/',
     authMiddleware,
-    requireRole('admin'),
+    requireRole('admin', 'moderator'),
     validateSchema(getReportsByStatusQuerySchema, 'query'),
     reportController.getReportsByStatus,
 );
@@ -20,7 +20,7 @@ router.get(
 router.get(
     '/:id',
     authMiddleware,
-    requireRole('admin'),
+    requireRole('admin', 'moderator'),
     validateSchema(reportIdParamSchema, 'params'),
     reportController.getReportById,
 );

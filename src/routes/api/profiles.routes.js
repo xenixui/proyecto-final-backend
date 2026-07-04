@@ -38,7 +38,7 @@ const router = express.Router();
 
 // ─── Rutas fijas (deben ir antes de /:userId para evitar colisiones) ───
 
-router.get('/', authMiddleware, requireRole('admin'), getProfiles);
+router.get('/', authMiddleware, requireRole('admin','moderator'), getProfiles);
 
 router.post(
     '/',
