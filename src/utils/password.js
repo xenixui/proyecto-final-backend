@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 const ITERATIONS = 100000;
 const KEY_LENGTH = 64;
@@ -11,7 +11,8 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, storedPassword) {
-  if (!storedPassword || !storedPassword.startsWith('pbkdf2$')) return false;
+  //if (!storedPassword || !storedPassword.startsWith('pbkdf2$')) return false;
+  if (!storedPassword?.startsWith('pbkdf2$')) return false;
 
   const [, iterations, salt, originalHash] = storedPassword.split('$');
   const hash = crypto

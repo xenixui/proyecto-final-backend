@@ -94,7 +94,7 @@ async function getAll(page = 1, limit = 10) {
 
 }
 
-async function mapArticle(article) {
+async function _mapArticle(article) {
     const images = await db.query(
         `SELECT id, image_url, is_cover
          FROM articles_images

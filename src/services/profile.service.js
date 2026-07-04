@@ -6,7 +6,7 @@ async function getProfileDetail(userId) {
     let user;
     try {
         user = await getProfileByUser(userId);
-    } catch (error) {
+    } catch (_error) {
         return null;
     }
 

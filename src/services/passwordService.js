@@ -39,7 +39,7 @@ const resetPassword = async (token, newPassword) => {
     );
 
     return { message: 'Contraseña actualizada correctamente.' };
-  } catch (err) {
+  } catch (_err) {
     throw new Error('Token inválido o expirado');
   }
 };

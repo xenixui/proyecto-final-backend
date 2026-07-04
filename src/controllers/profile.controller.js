@@ -99,7 +99,7 @@ async function getProfileDetailById(req, res) {
             });
         }
         return res.json(result);
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al recuperar el usuario',
         });
@@ -117,7 +117,7 @@ async function createUser(req, res) {
             });
         }
         return res.status(201).json(result);
-    } catch (error) {
+    } catch (_error) {
         res.status(500).json({
             message: 'Error al crear o recuperar el usuario',
         });
@@ -141,7 +141,7 @@ async function deleteUser(req, res) {
         res.json({
             message: 'Usuario dado de baja correctamente',
         });
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al dar de baja al usuario',
         });
@@ -164,7 +164,7 @@ async function blockedUser(req, res) {
         res.json({
             message: 'Usuario bloqueado correctamente',
         });
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al bloquear al usuario',
         });
@@ -186,7 +186,7 @@ async function unblockedUser(req, res) {
         res.json({
             message: 'Usuario desbloqueado correctamente',
         });
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al desbloquear al usuario',
         });
@@ -209,7 +209,7 @@ async function assignedRole(req, res) {
         res.status(201).json({
             message: 'Rol asignado correctamente',
         });
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al asignar un rol',
         });
@@ -232,7 +232,7 @@ async function removedRole(req, res) {
         res.status(200).json({
             message: 'Rol eliminado correctamente',
         });
-    } catch (error) {
+    } catch (_error) {
         return res.status(500).json({
             message: 'Error al eliminar un rol',
         });
