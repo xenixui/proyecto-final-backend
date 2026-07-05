@@ -12,7 +12,7 @@ async function getProfileDetail(userId) {
     const sales = (await profileModel.getSalesByUser(userId)) || [];
     const reviews = (await profileModel.getReviewsByUser(userId, userId)) || [];
     const reports = (await profileModel.getReportsByUser(userId)) || [];
-    const favorites = (await profileModel.getFavoritesByUser(userId)) || [];
+    const favorites = (await profileModel.getFavoriteArticlesByUser(userId)) || [];
 
     return {
         user,
