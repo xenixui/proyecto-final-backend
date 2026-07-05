@@ -3,7 +3,7 @@ const {
     withTransaction
 } = db;
 
-async function getAll(page = 1, limit = 10) {
+async function getAll(page = 1, limit = 10, currentUserId) {
 
     page = parseInt(page, 10);
     limit = parseInt(limit, 10);
@@ -69,6 +69,19 @@ async function getAll(page = 1, limit = 10) {
         `,
         [limit, offset]
     );
+
+       // Si hay usuario logueado, calculamos is_favorite para cada artículo
+    if (currentUserId && data.length) {
+        const ids = data.map(a => a.id);
+        const placeholders = ids.map(() => '?').join(', ');
+        const favs = await db.query(
+            `SELECT fk_articles_id FROM favorite 
+             WHERE fk_users_id = ? AND fk_articles_id IN (${placeholders})`,
+            [currentUserId, ...ids],
+        );
+        const favSet = new Set(favs.map(f => f.fk_articles_id));
+        data.forEach(a => { a.is_favorite = favSet.has(a.id); });
+    }
 
     const total = await db.query(
         `

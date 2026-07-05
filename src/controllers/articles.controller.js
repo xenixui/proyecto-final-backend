@@ -6,7 +6,7 @@ async function getAll(req, res) {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
 
-        const result = await ArticleModel.getAll(page, limit);
+        const result = await ArticleModel.getAll(page, limit, req.user?.id);
         return res.json(result);
     } catch (error) {
         return res.status(500).json({
