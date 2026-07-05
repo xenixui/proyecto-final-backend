@@ -12,11 +12,10 @@ const {
 
 const router = express.Router();
 
-router.get('/', authMiddleware, stylesController.getAll);
+router.get('/', stylesController.getAll);
 
 router.get(
     '/search/:term',
-    authMiddleware,
     validateSchema(styleSearchParamSchema, 'params'),
     stylesController.searchByName,
 );

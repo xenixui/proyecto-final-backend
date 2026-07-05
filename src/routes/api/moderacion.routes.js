@@ -2,10 +2,13 @@ const router = require('express').Router();
 const authMiddleware = require('../../middlewares/auth.middleware');
 const { requireRole } = require('../../middlewares/role.middleware');
 const { validateSchema } = require('../../middlewares/validation.middleware');
+const { requireReportUnderReview } = require('../../middlewares/report.middleware');
 const moderacionController = require('../../controllers/moderacion.controller');
 const {
-    resolveReportSchema,
     rejectReportSchema,
+    retireArticleSchema,
+    blockUserSchema,
+    updateModeratorNoteSchema,
 } = require('../../schemas/moderacion.schema');
 
 const moderatorGuard = [authMiddleware, requireRole('moderator', 'admin')];
@@ -23,12 +26,20 @@ router.get(
 // Detalle de un reporte
 router.get('/reportes/:id', ...moderatorGuard, moderacionController.getReportById);
 
-// Resolver un reporte (body: { resolution: 'APPROVED'|'RETIRED', moderator_note? })
+// Marcar un reporte como en revisión
 router.patch(
-    '/reportes/:id/resolver',
+    '/reportes/:id/en_revision',
     ...moderatorGuard,
-    validateSchema(resolveReportSchema),
-    moderacionController.resolveReport,
+    moderacionController.markReportUnderReview,
+);
+
+// Actualizar solo la nota del moderador
+router.patch(
+    '/reportes/:id/nota_moderador',
+    ...moderatorGuard,
+    validateSchema(updateModeratorNoteSchema),
+    requireReportUnderReview,
+    moderacionController.updateModeratorNote,
 );
 
 // Rechazar un reporte
@@ -39,11 +50,20 @@ router.patch(
     moderacionController.rejectReport,
 );
 
-// Retirar un artículo por moderación
+// Retirar un artículo por moderación (body: { reportId })
 router.patch(
     '/articulos/:id/retirar',
     ...moderatorGuard,
+    validateSchema(retireArticleSchema),
     moderacionController.retireArticle,
+);
+
+// Bloquear un usuario por moderación (body: { reportId })
+router.patch(
+    '/usuario/:id/bloquear',
+    ...moderatorGuard,
+    validateSchema(blockUserSchema),
+    moderacionController.blockUser,
 );
 
 module.exports = router;

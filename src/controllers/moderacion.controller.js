@@ -21,7 +21,8 @@ async function getReportsHistory(req, res) {
         return res.json(result);
     } catch (error) {
         return res.status(error.status || 500).json({
-            message: error.message || 'Error al obtener el histórico de reportes',
+            message:
+                error.message || 'Error al obtener el histórico de reportes',
         });
     }
 }
@@ -37,18 +38,33 @@ async function getReportById(req, res) {
     }
 }
 
-async function resolveReport(req, res) {
+async function markReportUnderReview(req, res) {
     try {
-        const { resolution, moderator_note } = req.body;
-        const result = await moderacionService.resolveReport(
+        await moderacionService.markReportUnderReview(
             req.params.id,
             req.user.id,
-            { resolution, moderatorNote: moderator_note },
+        );
+        return res.sendStatus(204);
+    } catch (error) {
+        return res.status(error.status || 500).json({
+            message: error.message || 'Error al marcar el reporte en revisión',
+        });
+    }
+}
+
+async function updateModeratorNote(req, res) {
+    try {
+        const { moderator_note } = req.body;
+        const result = await moderacionService.updateModeratorNote(
+            req.params.id,
+            req.user.id,
+            { moderatorNote: moderator_note },
         );
         return res.json(result);
     } catch (error) {
         return res.status(error.status || 500).json({
-            message: error.message || 'Error al resolver el reporte',
+            message:
+                error.message || 'Error al actualizar la nota del moderador',
         });
     }
 }
@@ -56,12 +72,10 @@ async function resolveReport(req, res) {
 async function rejectReport(req, res) {
     try {
         const { moderator_note } = req.body;
-        const result = await moderacionService.rejectReport(
-            req.params.id,
-            req.user.id,
-            { moderatorNote: moderator_note },
-        );
-        return res.json(result);
+        await moderacionService.rejectReport(req.params.id, req.user.id, {
+            moderatorNote: moderator_note,
+        });
+        return res.sendStatus(204);
     } catch (error) {
         return res.status(error.status || 500).json({
             message: error.message || 'Error al rechazar el reporte',
@@ -71,11 +85,30 @@ async function rejectReport(req, res) {
 
 async function retireArticle(req, res) {
     try {
-        const result = await moderacionService.retireArticle(req.params.id);
-        return res.json(result);
+        await moderacionService.retireArticle(
+            req.params.id,
+            req.body.reportId,
+            req.user.id,
+        );
+        return res.sendStatus(204);
     } catch (error) {
         return res.status(error.status || 500).json({
             message: error.message || 'Error al retirar el artículo',
+        });
+    }
+}
+
+async function blockUser(req, res) {
+    try {
+        await moderacionService.blockUser(
+            req.params.id,
+            req.body.reportId,
+            req.user.id,
+        );
+        return res.sendStatus(204);
+    } catch (error) {
+        return res.status(error.status || 500).json({
+            message: error.message || 'Error al bloquear el usuario',
         });
     }
 }
@@ -84,7 +117,9 @@ module.exports = {
     getReports,
     getReportsHistory,
     getReportById,
-    resolveReport,
+    markReportUnderReview,
+    updateModeratorNote,
     rejectReport,
     retireArticle,
+    blockUser,
 };

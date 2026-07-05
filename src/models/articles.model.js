@@ -1,5 +1,7 @@
 const db = require('../config/database');
-const { withTransaction } = db;
+const {
+    withTransaction
+} = db;
 
 async function getAll(page = 1, limit = 10) {
 
@@ -466,8 +468,14 @@ async function filter(filters) {
 
 }
 
-async function retire(id) {
-    await db.query(`UPDATE articles SET status = 'RETIRED' WHERE id = ?`, [id]);
+async function retire(id, connection) {
+    const sql = `UPDATE articles SET status = 'RETIRED' WHERE id = ?`;
+
+    if (connection) {
+        await connection.execute(sql, [id]);
+    } else {
+        await db.query(sql, [id]);
+    }
 }
 
 async function create(data, userId) {
@@ -524,17 +532,28 @@ async function getByUserIdAndStatus(userId, status, page = 1, limit = 10) {
     limit = parseInt(limit, 10);
     const offset = (page - 1) * limit;
 
-    let queryStr = `SELECT * FROM articles WHERE fk_users_id = ?`;
+    let queryStr = `
+        SELECT
+            a.*,
+            (
+                SELECT image_url
+                FROM articles_images ai2
+                WHERE ai2.fk_articles_id = a.id
+                ORDER BY ai2.is_cover DESC, ai2.id ASC
+                LIMIT 1
+            ) AS cover
+        FROM articles a
+        WHERE a.fk_users_id = ?`;
     let countQueryStr = `SELECT COUNT(*) as total FROM articles WHERE fk_users_id = ?`;
     const params = [userId];
 
     if (status) {
-        queryStr += ` AND status = ?`;
+        queryStr += ` AND a.status = ?`;
         countQueryStr += ` AND status = ?`;
         params.push(status);
     }
 
-    queryStr += ` ORDER BY published_at DESC LIMIT ? OFFSET ?`;
+    queryStr += ` ORDER BY a.published_at DESC LIMIT ? OFFSET ?`;
 
     const data = await db.query(queryStr, [...params, limit, offset]);
     const total = await db.query(countQueryStr, params);
@@ -831,6 +850,28 @@ async function getSimilar(articleId, currentUserId, limit = 3) {
     return articles.map(a => ({ ...a, is_favorite: favSet.has(a.id) }));
 }
 
+async function getArticlesByDate(periodo) {
+    let whereClause = `WHERE status = 'PUBLISHED'`;
+
+    if (periodo === '7d') {
+        whereClause += ` AND published_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
+    } else if (periodo === '30d') {
+        whereClause += ` AND published_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
+    } else if (periodo === 'today') {
+        whereClause += ` AND DATE(published_at) = CURDATE()`;
+    }
+
+    const result = await db.query(
+        `SELECT DATE(published_at) AS date, COUNT(*) AS total
+         FROM articles
+         ${whereClause}
+         GROUP BY DATE(published_at)
+         ORDER BY DATE(published_at) ASC`
+    );
+    return result;
+}
+
+
 async function addFavorite(userId, articleId) {
     const existing = await db.query(
         `SELECT id FROM favorite WHERE fk_users_id = ? AND fk_articles_id = ?`,
@@ -875,6 +916,7 @@ module.exports = {
     removeImages,
     addImages,
     getSimilar,
+    getArticlesByDate,
     addFavorite,
     removeFavorite,
 };
