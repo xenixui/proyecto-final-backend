@@ -20,7 +20,7 @@ async function getProfilesByRole(rol) {
 
 async function getByUserId(userId) {
     const result = await db.query(
-    `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
+        `SELECT id, username, rating, photo_url, name, surname, phone, country, city, postal_code, biography, created_at, fk_usuarios_id
         FROM profiles
         WHERE fk_usuarios_id = ?
         LIMIT 1`,
@@ -34,25 +34,16 @@ async function getPublicStatsByUser(userId) {
     const [stats] = await db.query(
         `SELECT
             COALESCE(SUM(CASE WHEN a.fk_users_id = ? AND a.status = 'SOLD' THEN 1 ELSE 0 END), 0) AS sales_count,
-            COALESCE(SUM(CASE WHEN a.fk_buyer_id = ? AND a.status = 'SOLD' THEN 1 ELSE 0 END), 0) AS purchases_count
+            COALESCE(SUM(CASE WHEN a.fk_buyer_id = ? AND a.status = 'SOLD' THEN 1 ELSE 0 END), 0) AS purchases_count,
+            COALESCE(SUM(CASE WHEN a.fk_users_id = ? AND a.status = 'PUBLISHED' THEN 1 ELSE 0 END), 0) AS published_count
          FROM articles a`,
-        [userId, userId],
-    );
-
-    const [reviews] = await db.query(
-        `SELECT
-            COUNT(*) AS reviews_count,
-            COALESCE(ROUND(AVG(stars), 2), 0) AS rating
-         FROM reviews
-         WHERE fk_seller_id = ?`,
-        [userId],
+        [userId, userId, userId],
     );
 
     return {
         sales_count: Number(stats?.sales_count || 0),
         purchases_count: Number(stats?.purchases_count || 0),
-        reviews_count: Number(reviews?.reviews_count || 0),
-        rating: Number(reviews?.rating || 0),
+        published_count: Number(stats?.published_count || 0),
     };
 }
 
