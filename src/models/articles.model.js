@@ -796,12 +796,14 @@ async function getSimilar(articleId, currentUserId, limit = 3) {
             a.year_of_manufacture,
             p.city,
             p.country,
+            b.name AS brand_name,
             (SELECT image_url FROM articles_images ai
                 WHERE ai.fk_articles_id = a.id
                 ORDER BY ai.is_cover DESC, ai.id ASC
                 LIMIT 1) AS cover
          FROM articles a
          INNER JOIN models m ON m.id = a.fk_models_id
+         LEFT JOIN brands b ON b.id = m.fk_brands_id
          LEFT JOIN profiles p ON p.fk_usuarios_id = a.fk_users_id
          WHERE a.id != ?
            AND a.status = 'PUBLISHED'
