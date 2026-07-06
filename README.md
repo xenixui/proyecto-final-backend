@@ -209,7 +209,7 @@ Componente backend desarrollado para el **Proyecto Final de Máster**, aplicando
 
 ## 👤 Autoría
 
-Proyecto académico mantenido por **xenixui** y colaboradores del proyecto final.
+Proyecto académico mantenido por el grupo de trabajo del proyecto final.
 
 ---
 
