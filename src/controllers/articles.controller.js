@@ -232,6 +232,7 @@ async function markAsSold(req, res) {
         const article = await ArticleModel.markAsSoldByUserId(
             req.params.article_id,
             req.user.id,
+            req.body?.buyer_id,
         );
 
         if (!article) {
@@ -256,6 +257,7 @@ async function publish(req, res) {
         const article = await ArticleModel.publishByUserId(
             req.params.article_id,
             req.user.id,
+            req.body?.buyer_id,
         );
 
         if (!article) {

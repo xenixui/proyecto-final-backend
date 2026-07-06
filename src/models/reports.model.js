@@ -153,6 +153,17 @@ async function insertReport(reason, comments, fk_articles_id, fk_users_id) {
     return result;
 }
 
+async function getArticleForReport(articleId) {
+    const result = await db.query(
+        `SELECT id, fk_users_id
+         FROM articles
+         WHERE id = ?`,
+        [articleId],
+    );
+
+    return result[0] || null;
+}
+
 async function getByStatus(filters = {}) {
     const {
         status,
@@ -293,6 +304,7 @@ module.exports = {
     updateModeratorNote,
     markUnderReview,
     insertReport,
+    getArticleForReport,
     countGestionados,
     countByStatus,
 };

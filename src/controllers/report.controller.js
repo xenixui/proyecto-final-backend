@@ -22,8 +22,8 @@ async function createReport(req, res) {
 
     } catch (error) {
         console.error('error:', error)
-        res.status(500).json({
-            message: 'Error al crear el reporte'
+        res.status(error.status || 500).json({
+            message: error.message || 'Error al crear el reporte'
         })
     }
 }

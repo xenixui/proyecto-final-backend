@@ -680,8 +680,32 @@ function markAsPublishedByUserId(articleId, userId) {
     return transitionStatusByUserId(articleId, userId, 'PUBLISHED', 'RESERVED');
 }
 
-function markAsSoldByUserId(articleId, userId) {
-    return transitionStatusByUserId(articleId, userId, 'SOLD', 'RESERVED');
+async function markAsSoldByUserId(articleId, userId, buyerId) {
+    if (!buyerId) {
+        return transitionStatusByUserId(articleId, userId, 'SOLD', 'RESERVED');
+    }
+
+    const result = await db.query(
+        `UPDATE articles a
+         SET a.status = 'SOLD',
+             a.fk_buyer_id = ?
+         WHERE a.id = ?
+         AND a.fk_users_id = ?
+         AND a.status = 'RESERVED'
+         AND EXISTS (
+             SELECT 1
+             FROM chats c
+             WHERE c.fk_articles_id = a.id
+             AND c.fk_buyer_id = ?
+         )`,
+        [buyerId, articleId, userId, buyerId]
+    );
+
+    if (result.affectedRows === 0) {
+        return null;
+    }
+
+    return getById(articleId);
 }
 
 
