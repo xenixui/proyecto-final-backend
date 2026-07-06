@@ -38,7 +38,7 @@ const router = express.Router();
 
 // ─── Rutas fijas (deben ir antes de /:userId para evitar colisiones) ───
 
-router.get('/', authMiddleware, requireRole('admin','moderator'), getProfiles);
+router.get('/', authMiddleware, requireRole('admin', 'moderator'), getProfiles);
 
 router.post(
     '/',
@@ -89,12 +89,11 @@ router.get(
 );
 // ─── Rutas admin con parámetros específicos ───────────────────────────
 
-
 // GET /api/profiles/:id/detail → detalle completo de un usuario (solo admin)
 router.get(
     '/:id/detail',
     authMiddleware,
-    requireRole('admin'),
+    requireRole('moderator', 'admin'),
     getProfileDetailById,
 );
 
@@ -102,27 +101,23 @@ router.get(
 router.get(
     '/:id/roles',
     authMiddleware,
-    requireRole('admin'),
+    requireRole('admin', 'moderator'),
     getUserRoles,
 );
 
 // DELETE /api/profiles/:id → dar de baja a un usuario (solo admin)
-router.delete('/:id', 
-    authMiddleware, 
-    requireRole('admin'), 
-    deleteUser);
+router.delete('/:id', authMiddleware, requireRole('admin'), deleteUser);
 
-// PATCH /api/profiles/:id/block → bloquear usuario (solo admin)    
-router.patch('/:id/block', 
-    authMiddleware, 
-    requireRole('admin'), 
-    blockedUser);
+// PATCH /api/profiles/:id/block → bloquear usuario (solo admin)
+router.patch('/:id/block', authMiddleware, requireRole('admin'), blockedUser);
 
 // PATCH /api/profiles/:id/unblock → desbloquear usuario (solo admin)
-router.patch('/:id/unblock', 
-    authMiddleware, 
-    requireRole('admin'), 
-    unblockedUser);
+router.patch(
+    '/:id/unblock',
+    authMiddleware,
+    requireRole('admin'),
+    unblockedUser,
+);
 
 // POST /api/profiles/:id/roles → asignar rol a un usuario (solo admin)
 router.post(
