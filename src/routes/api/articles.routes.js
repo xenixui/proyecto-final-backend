@@ -28,7 +28,7 @@ const { createArticleSchema, updateArticleSchema, deleteArticleImagesSchema } = 
 const router = require('express').Router();
 
 //Recuperar todos los artículos
-router.get('/', getAll);
+router.get('/', optionalAuthMiddleware,getAll);
 router.get('/filter', filter);
 
 //Buscar artículos
