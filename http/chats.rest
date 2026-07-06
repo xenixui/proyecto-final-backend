@@ -1,0 +1,56 @@
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+
+@password = secret123
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwMDQsImVtYWlsIjoidGVzdC51c2VyQGV4YW1wbGUuY29tIiwicm9sIjoidXNlciIsImlhdCI6MTc4MTYwNjkyNSwiZXhwIjoxNzgxNjkzMzI1fQ.5d5797h44A7A-C5H8kzkwv99YxsU2P7erUvb4SuF_Qg
+
+### Login para obtener token
+
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### ============================================
+### Chats
+### ============================================
+
+# Obtener mis chats
+GET {{baseUrl}}/api/chats
+Authorization: Bearer {{token}}
+
+### Crear chat nuevo
+POST {{baseUrl}}/api/chats
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "fk_articles_id": 90001
+}
+
+### Crear chat ya existente
+
+POST {{baseUrl}}/api/chats
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "fk_articles_id": 90001
+}
+
+### Ver mensajes de un chat
+GET {{baseUrl}}/api/chats/1/mensajes
+Authorization: Bearer {{token}}
+
+### Enviar mensaje a un chat
+POST {{baseUrl}}/api/chats/1/mensajes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "message": "Hola, me interesa este reloj. ¿Sigue disponible?"
+}

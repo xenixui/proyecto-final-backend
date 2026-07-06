@@ -1,0 +1,4 @@
+@baseUrl = http://localhost:3000/api
+
+### Obtener modelo por id de la marca
+GET {{baseUrl}}/models/brand/1

@@ -1,0 +1,100 @@
+@host = http://localhost:3000/api
+
+## Recuperar todos los artículos
+###
+GET {{host}}/articles?page=1&limit=10
+Content-Type: application/json
+
+## Recuperar artículo por ID
+###
+GET {{host}}/articles/30001
+Content-Type: application/json
+
+##Buscar artículos
+###
+GET {{host}}/articles/search/rolex air
+Content-Type: application/json
+
+## Filtrar artículos
+###
+GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
+Content-Type: application/json
+@host = http://localhost:3000/api
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+
+
+
+## Recuperar todos los artículos
+###
+GET {{host}}/articles?page=1&limit=10
+Content-Type: application/json
+
+## Recuperar artículo por ID
+###
+GET {{host}}/articles/id
+Content-Type: application/json
+
+##Buscar artículos
+###
+GET {{host}}/articles/search/rolex air
+Content-Type: application/json
+
+## Filtrar artículos
+###
+GET {{host}}/articles/filter?minPrice=100&maxPrice=3000&city=Madrid&shippingAvailable=true
+Content-Type: application/json
+
+### Crear anuncio
+POST {{host}}/articles
+Authorization: Bearer `token`
+Content-Type: application/json
+
+{
+  "title": "Rolex Datejust Cara Verde",
+  "description": "Rolex Datejust Cara Verde en muy buen estado. Revisión reciente.",
+  "price": 11500,
+  "condition": "VERY_GOOD",
+  "year_of_manufacture": 2021,
+  "case_material": "Acero inoxidable",
+  "bracelet_material": "Acero inoxidable",
+  "original_box": true,
+  "original_papers": true,
+  "shipping_available": true,
+  "fk_styles_id": 1,
+  "fk_models_id": 1,
+  "publish": true,
+}
+
+### Eliminar anuncio
+DELETE {{host}}/articles/id
+Authorization: Bearer 'token'
+Content-Type: application/json
+
+### Editar anuncio
+PUT {{host}}/articles/id
+Authorization: Bearer `token`
+Content-Type: application/json
+
+{
+  "title": "Audemars Piguet Royal Oak Offshore",
+  "description": "Audemars Piguet Royal Oak Offshore en buen estado. Revisión reciente aceptable.",
+  "price": 68000,
+  "condition": "VERY_GOOD",
+  "year_of_manufacture": 2024,
+  "case_material": "Acero inoxidable",
+  "bracelet_material": "Acero inoxidable",
+  "original_box": true,
+  "original_papers": false,
+  "shipping_available": true,
+  "fk_styles_id": 1,
+  "fk_models_id": 1
+}
+
+### Marcar como vendido
+PATCH {{host}}/articles/id/sold
+Authorization: Bearer `token`
+
+### Articulos similares (mismo estilo o marca)
+GET {{host}}/articles/1/similares

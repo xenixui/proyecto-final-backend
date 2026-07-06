@@ -1,0 +1,67 @@
+@host = http://localhost:3000/api
+@token = <JWT_TOKEN_MODERADOR>
+
+
+## Listar reportes activos (paginado)
+###
+GET {{host}}/moderacion/reportes?page=1&limit=10
+Content-Type: application/json
+Authorization: ******
+
+## Histórico de reportes resueltos (paginado)
+###
+GET {{host}}/moderacion/reportes/historial?page=1&limit=10
+Content-Type: application/json
+Authorization: ******
+
+## Detalle de un reporte
+###
+GET {{host}}/moderacion/reportes/1
+Content-Type: application/json
+Authorization: ******
+
+## Marcar reporte en revisión
+###
+PATCH {{host}}/moderacion/reportes/1/en_revision
+Content-Type: application/json
+Authorization: ******
+
+## Retirar artículo por moderación (cierra reporte como APPROVED)
+###
+PATCH {{host}}/moderacion/articulos/1/retirar
+Content-Type: application/json
+Authorization: ******
+
+{
+    "reportId": 1
+}
+
+## Bloquear usuario por moderación (cierra reporte como APPROVED)
+###
+PATCH {{host}}/moderacion/usuario/1/bloquear
+Content-Type: application/json
+Authorization: ******
+
+{
+    "reportId": 1
+}
+
+## Actualizar nota del moderador (no modifica estado ni resolución)
+###
+PATCH {{host}}/moderacion/reportes/1/nota_moderador
+Content-Type: application/json
+Authorization: ******
+
+{
+    "moderator_note": "Revisión en curso, pendiente de contactar al vendedor."
+}
+
+## Rechazar un reporte (cierra reporte como REJECTED)
+###
+PATCH {{host}}/moderacion/reportes/1/rechazar
+Content-Type: application/json
+Authorization: ******
+
+{
+    "moderator_note": "Reporte no válido, no se encontró infracción."
+}

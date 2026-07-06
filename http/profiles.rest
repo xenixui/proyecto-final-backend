@@ -1,0 +1,152 @@
+@host = http://localhost:3000/api
+@baseUrl = http://localhost:3000
+@email = test.user@example.com
+@password = secret123
+@userId = 1
+@token = {{login.response.body.token}}
+
+### Iniciar sesión (obtener token)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### ============================================
+### GESTIÓN DE PERFILES DESDE DASHBOARD ADMIN
+### ============================================
+
+### Listar todos los perfiles
+GET {{host}}/profiles
+Authorization: Bearer {{token}}
+
+### Listar perfiles con rol user
+GET {{host}}/profiles?rol=user
+Authorization: Bearer {{token}}
+
+### Listar perfiles con rol moderator
+GET {{host}}/profiles?rol=moderator
+Authorization: Bearer {{token}}
+
+### Listar perfiles con rol admin
+GET {{host}}/profiles?rol=admin
+Authorization: Bearer {{token}}
+
+### Ver datos de un perfil concreto (detalle)
+GET {{host}}/profiles/30004/detail
+Authorization: Bearer {{token}}
+
+### Ver roles de un perfil concreto
+GET {{host}}/profiles/330001/roles
+Authorization: Bearer {{token}}
+
+### Dar de alta
+POST {{host}}/profiles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "sara2.martin@gmail.com",
+  "password": "2026password",
+  "name": "Sara",
+  "username": "Sara9",
+  "rol": "moderator"
+}
+
+### Dar de baja
+DELETE {{host}}/profiles/180003
+Authorization: Bearer {{token}}
+
+### Bloquear
+PATCH {{host}}/profiles/180001/block
+Authorization: Bearer {{token}}
+
+### Desbloquear
+PATCH {{host}}/profiles/180001/unblock
+Authorization: Bearer {{token}}
+
+### Asignar rol
+POST {{host}}/profiles/180002/roles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "rol": "admin"
+}
+
+### Quitar rol
+DELETE {{host}}/profiles/210001/roles/2
+Authorization: Bearer {{token}}
+
+### ============================================
+### OBTENER PERFIL DE USUARIO
+### ============================================
+
+### Obtener perfil por userId (200)
+GET {{host}}/profiles/{{userId}}
+Authorization: Bearer {{token}}
+
+### Obtener perfil — Sin token (401)
+GET {{host}}/profiles/{{userId}}
+
+### Obtener perfil — userId no numérico (400)
+GET {{host}}/profiles/not-a-number
+Authorization: Bearer {{token}}
+
+### Obtener perfil — Usuario no encontrado (404)
+GET {{host}}/profiles/999999
+Authorization: Bearer {{token}}
+
+### ============================================
+### ACTUALIZAR PERFIL
+### ============================================
+
+### Editar mi perfil (usuario autenticado)
+PUT {{host}}/profiles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "testuser",
+  "name": "Test",
+  "surname": "User",
+  "photo_url": null,
+  "phone": null,
+  "country": "España",
+  "city": "Madrid",
+  "postal_code": "28001",
+  "biography": "Mi biografía"
+}
+
+### Admin edita perfil de cualquier usuario
+PUT {{host}}/profiles/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "updateduser",
+  "name": "Updated",
+  "surname": "Name",
+  "photo_url": null,
+  "phone": null,
+  "country": "España",
+  "city": "Barcelona",
+  "postal_code": "08001",
+  "biography": "Biografía actualizada por admin"
+}
+
+### Admin edita perfil — Sin rol admin (403)
+# Usar token de un usuario sin rol admin
+PUT {{host}}/profiles/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "username": "forbidden",
+  "country": "España",
+  "city": "Madrid",
+  "postal_code": "28001"
+}
